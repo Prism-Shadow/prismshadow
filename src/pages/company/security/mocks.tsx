@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { PixelField, type PixelLit, type PixelTone } from '../../../components/site/ui'
 import type {
   SecurityActionPolicyVisualCopy,
@@ -21,7 +22,15 @@ import {
  * Flat UI mocks for the four control areas. Each is one image for assistive
  * tech (role="img" + a full-sentence aria-label); the copy beside it carries
  * the controls themselves.
+ *
+ * Motion (security.css): each mock is `data-animate="custom"` and is
+ * remounted when its tab is selected, so its intro plays on every selection:
+ * the data signal sweeps the pipeline, the policy decisions tick in, memory
+ * cells settle, audit rows arrive one by one. Then everything holds.
  */
+
+/** Custom properties for a mock's staggered intro (read by security.css). */
+const vars = (values: Record<string, number>) => values as CSSProperties
 
 /* ---------- Data access flow ---------- */
 
@@ -43,7 +52,7 @@ const flowRows: PixelLit[][] = [
 export function DataFlowMock({ copy }: { copy: SecurityDataFlowVisualCopy }) {
   const last = copy.steps.length - 1
   return (
-    <div className="ds-panel pg-sec-window pg-sec-flow" role="img" aria-label={copy.ariaLabel}>
+    <div className="ds-panel pg-sec-window pg-sec-flow" role="img" aria-label={copy.ariaLabel} data-animate="custom">
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <DatabaseIcon />
@@ -56,7 +65,13 @@ export function DataFlowMock({ copy }: { copy: SecurityDataFlowVisualCopy }) {
       </div>
       <ol className="pg-sec-flow__steps">
         {copy.steps.map((step, index) => (
-          <li key={step} className="pg-sec-flow__step" data-final={index === last ? '' : undefined}>
+          <li
+            key={step}
+            className="pg-sec-flow__step"
+            data-final={index === last ? '' : undefined}
+            // The third row lights fewer cells, so it steps a little slower to keep pace.
+            style={vars({ '--row': index, '--step': flowCols / Math.max(1, flowRows[index]?.length ?? flowCols) })}
+          >
             <span className="pg-sec-flow__index">{String(index + 1).padStart(2, '0')}</span>
             <span className="pg-sec-flow__name">{step}</span>
             <span className="pg-sec-flow__note">{copy.notes[index]}</span>
@@ -83,7 +98,13 @@ const groupMarks = [CheckIcon, PersonCheckIcon, CrossIcon]
 
 export function ActionPolicyMock({ copy }: { copy: SecurityActionPolicyVisualCopy }) {
   return (
-    <div className="ds-panel pg-sec-window pg-sec-policy" role="img" aria-label={copy.ariaLabel}>
+    <div
+      className="ds-panel pg-sec-window pg-sec-policy"
+      role="img"
+      aria-label={copy.ariaLabel}
+      data-animate="custom"
+      style={vars({ '--decisions': copy.groups.reduce((sum, group) => sum + group.items.length, 0) })}
+    >
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <ToolIcon />
@@ -97,6 +118,8 @@ export function ActionPolicyMock({ copy }: { copy: SecurityActionPolicyVisualCop
       <div className="pg-sec-policy__groups">
         {copy.groups.map((group, index) => {
           const Mark = groupMarks[index] ?? CheckIcon
+          // Decisions tick in group by group, so number them across groups.
+          const before = copy.groups.slice(0, index).reduce((sum, g) => sum + g.items.length, 0)
           return (
             <div key={group.label} className="pg-sec-policy__group" data-tone={groupTones[index]}>
               <span className="pg-sec-policy__head">
@@ -105,8 +128,8 @@ export function ActionPolicyMock({ copy }: { copy: SecurityActionPolicyVisualCop
                 <span className="pg-sec-policy__count">{group.items.length}</span>
               </span>
               <ul className="pg-sec-policy__items">
-                {group.items.map((item) => (
-                  <li key={item} className="pg-sec-policy__item">
+                {group.items.map((item, itemIndex) => (
+                  <li key={item} className="pg-sec-policy__item" style={vars({ '--i': before + itemIndex })}>
                     <Mark />
                     {item}
                   </li>
@@ -148,7 +171,7 @@ const memoryCells: PixelLit[] = Array.from({ length: memoryCols * memoryRows }, 
 
 export function MemoryPolicyMock({ copy }: { copy: SecurityMemoryPolicyVisualCopy }) {
   return (
-    <div className="ds-panel pg-sec-window pg-sec-memory" role="img" aria-label={copy.ariaLabel}>
+    <div className="ds-panel pg-sec-window pg-sec-memory" role="img" aria-label={copy.ariaLabel} data-animate="custom">
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <LayersIcon />
@@ -162,7 +185,12 @@ export function MemoryPolicyMock({ copy }: { copy: SecurityMemoryPolicyVisualCop
       </div>
       <ul className="pg-sec-memory__rows">
         {copy.policies.map((policy, index) => (
-          <li key={policy.label} className="pg-sec-memory__row" data-tone={policyTones[index]}>
+          <li
+            key={policy.label}
+            className="pg-sec-memory__row"
+            data-tone={policyTones[index]}
+            style={vars({ '--i': index })}
+          >
             <span className="pg-sec-memory__label">{policy.label}</span>
             <span className="pg-sec-pill">
               <span className="pg-sec-dot" />
@@ -181,7 +209,7 @@ const auditTimes = ['09:41:12', '09:41:18', '09:52:03', '09:52:05', '09:52:06']
 
 export function AuditLogMock({ copy }: { copy: SecurityAuditLogVisualCopy }) {
   return (
-    <div className="ds-panel pg-sec-window pg-sec-audit" role="img" aria-label={copy.ariaLabel}>
+    <div className="ds-panel pg-sec-window pg-sec-audit" role="img" aria-label={copy.ariaLabel} data-animate="custom">
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <HistoryIcon />
@@ -205,6 +233,7 @@ export function AuditLogMock({ copy }: { copy: SecurityAuditLogVisualCopy }) {
             key={row.event}
             className="pg-sec-audit__row"
             data-tone={index === 2 ? 'amber' : 'accent'}
+            style={vars({ '--i': index })}
           >
             <ChevronIcon />
             <span className="pg-sec-audit__time">{auditTimes[index] ?? auditTimes[0]}</span>

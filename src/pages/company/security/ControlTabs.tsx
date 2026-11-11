@@ -20,7 +20,7 @@ import { ActionPolicyMock, AuditLogMock, DataFlowMock, MemoryPolicyMock } from '
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
 
-const controlOrder: SecurityControlId[] =['data', 'actions', 'memory', 'audit']
+const controlOrder: SecurityControlId[] = ['data', 'actions', 'memory', 'audit']
 
 const featureIcons: Record<SecurityControlId, Icon[]> = {
   data: [LockIcon, SearchKeyIcon, ServerIcon],
@@ -53,6 +53,10 @@ function ControlVisual({ id, visuals }: { id: SecurityControlId; visuals: Securi
  * Four control areas as WAI-ARIA tabs (hairline columns across the 12-column
  * grid). Every panel is rendered; inactive ones are `hidden`, so all copy is
  * in the markup.
+ *
+ * Each selection remounts that panel's mock (keyed by a per-tab run count), so
+ * the motion system sees a new `[data-animate]` element and plays its intro.
+ * The first render is identical on server and client (every count is 0).
  */
 export function ControlTabs({
   controls,
@@ -62,12 +66,19 @@ export function ControlTabs({
   visuals: SecurityPageCopy['visuals']
 }) {
   const [active, setActive] = useState<SecurityControlId>('data')
+  const [runs, setRuns] = useState<Record<SecurityControlId, number>>({ data: 0, actions: 0, memory: 0, audit: 0 })
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+
+  const activate = (id: SecurityControlId) => {
+    if (id === active) return
+    setActive(id)
+    setRuns((current) => ({ ...current, [id]: current[id] + 1 }))
+  }
 
   const select = (index: number) => {
     const count = controlOrder.length
     const next = (index + count) % count
-    setActive(controlOrder[next])
+    activate(controlOrder[next])
     tabRefs.current[next]?.focus()
   }
 
@@ -112,7 +123,7 @@ export function ControlTabs({
               aria-selected={selected}
               tabIndex={selected ? 0 : -1}
               className={cx('pg-sec-tabs__tab', selected && 'is-active')}
-              onClick={() => setActive(id)}
+              onClick={() => activate(id)}
               onKeyDown={(event) => onKeyDown(event, index)}
             >
               <span className="pg-sec-tabs__index">{String(index + 1).padStart(2, '0')}</span>
@@ -156,7 +167,7 @@ export function ControlTabs({
                 })}
               </ul>
             </div>
-            <div className="pg-sec-tabs__visual">
+            <div className="pg-sec-tabs__visual" key={runs[id]}>
               <ControlVisual id={id} visuals={visuals} />
             </div>
           </div>

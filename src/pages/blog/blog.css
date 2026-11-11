@@ -414,6 +414,35 @@
   color: var(--pg-blog-ink-2);
 }
 
+/*
+ * Motion (only under html[data-motion]; the resting CSS is the final state).
+ * Featured media rise in with the default reveal (data-animate). Other covers
+ * keep their dark frame and label still while the pixel field or image fades
+ * in on view. While a code-built cover is in view, its three glint cells
+ * light up in a slow stagger (9s cycle, offset per cover by --phase). The
+ * prose never moves.
+ */
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview='enter'],
+html[data-motion] .pg-blog .pg-blog-cover__image[data-inview='enter'] {
+  animation: ds-fade-in 900ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] rect[data-glint] {
+  animation: pg-blog-glint 9s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(400ms + var(--phase) * 2.4s + var(--g) * 1.8s);
+}
+
+@keyframes pg-blog-glint {
+  0%,
+  24%,
+  100% {
+    opacity: var(--ds-glint-rest, 0.45);
+  }
+  10% {
+    opacity: 1;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Article: header                                                     */
 /* ------------------------------------------------------------------ */

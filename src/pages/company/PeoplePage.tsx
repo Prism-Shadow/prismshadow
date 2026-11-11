@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ArrowRightIcon, ArrowUpRightIcon, DiamondIcon, GithubIcon } from '../../components/site/icons'
 import { ButtonLink, CtaBand, Eyebrow, SectionHead } from '../../components/site/ui'
 import { renderAccent } from '../../components/site/utils'
@@ -10,6 +11,9 @@ import { founderPhotoFrames } from './people/founderPhotos'
 import './people.css'
 
 const statIcons = [StarIcon, DownloadIcon, CubeIcon, ForkIcon]
+
+/** Stagger order for an item's intro (people.css reads `--i`). */
+const order = (index: number) => ({ '--i': index }) as CSSProperties
 
 export function PeoplePage({ locale }: PageProps) {
   const copy = peoplePageCopy[locale]
@@ -56,7 +60,7 @@ export function PeoplePage({ locale }: PageProps) {
           <ol className="pg-people-founders__list">
             {copy.founders.people.map((founder, index) => (
               <li key={founder.name} className="pg-people-founder">
-                <div className="ds-panel pg-people-founder__photo">
+                <div className="ds-panel pg-people-founder__photo" data-animate="">
                   <span className="pg-people-founder__index" aria-hidden="true">
                     {String(index + 1).padStart(2, '0')}
                   </span>
@@ -111,11 +115,11 @@ export function PeoplePage({ locale }: PageProps) {
               </span>
               <span className="pg-people-repo__label">{copy.openSource.footprintLabel}</span>
             </p>
-            <dl className="pg-people-repo__stats">
+            <dl className="pg-people-repo__stats" data-animate="custom">
               {copy.openSource.stats.map((stat, index) => {
                 const Icon = statIcons[index] ?? StarIcon
                 return (
-                  <div key={stat.label} className="pg-people-repo__stat">
+                  <div key={stat.label} className="pg-people-repo__stat" style={order(index)}>
                     <dt className="pg-people-repo__stat-label">
                       <Icon />
                       {stat.label}
@@ -162,9 +166,9 @@ export function PeoplePage({ locale }: PageProps) {
           <h2 id="backgrounds-title" className="pg-people-backgrounds__title">
             {copy.backgrounds.title}
           </h2>
-          <ul className="pg-people-backgrounds__logos">
-            {copy.backgrounds.logos.map((logo) => (
-              <li key={logo.name} className="pg-people-backgrounds__logo">
+          <ul className="pg-people-backgrounds__logos" data-animate="custom">
+            {copy.backgrounds.logos.map((logo, index) => (
+              <li key={logo.name} className="pg-people-backgrounds__logo" style={order(index)}>
                 {logo.src ? <img src={logo.src} alt="" loading="lazy" decoding="async" /> : null}
                 <span>{logo.name}</span>
               </li>

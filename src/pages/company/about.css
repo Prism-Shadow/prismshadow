@@ -43,6 +43,8 @@
   inset-block: calc((100% - var(--loop-rg)) / 4);
   border: 1px dashed var(--ds-line-strong);
   border-radius: 18px;
+  /* Size container: the travelling cell moves in cqw/cqh of the track. */
+  container-type: size;
 }
 
 .pg-about .pg-about-loop__arrow {
@@ -77,7 +79,13 @@
   transform: translate(-50%, -50%) rotate(315deg);
 }
 
-/* A single lit cell travelling clockwise; it passes behind the nodes at the corners. */
+/*
+ * A single lit cell travelling clockwise along the track (motion only; hidden
+ * at rest). It passes behind the nodes at the corners, so it shows in the
+ * gaps between stages. Transform-only: it moves in container units of the
+ * track, with each side's share of the cycle close to its share of the
+ * perimeter, so the speed stays even.
+ */
 .pg-about .pg-about-loop__pulse {
   position: absolute;
   top: 0;
@@ -86,39 +94,28 @@
   height: 6px;
   border-radius: 1.5px;
   background: var(--ds-accent);
+  opacity: 0;
   transform: translate(-50%, -50%);
 }
 
-html[data-motion] .pg-about .pg-about-loop__pulse {
-  animation: pg-about-loop 12s linear infinite;
+html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__pulse {
+  animation: pg-about-loop 14s linear infinite;
 }
 
 @keyframes pg-about-loop {
-  0% {
-    top: 0;
-    left: 0;
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%);
   }
-  25% {
-    top: 0;
-    left: 100%;
+  28% {
+    transform: translate(calc(100cqw - 50%), -50%);
   }
   50% {
-    top: 100%;
-    left: 100%;
+    transform: translate(calc(100cqw - 50%), calc(100cqh - 50%));
   }
-  75% {
-    top: 100%;
-    left: 0;
-  }
-  100% {
-    top: 0;
-    left: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pg-about .pg-about-loop__pulse {
-    display: none;
+  78% {
+    transform: translate(-50%, calc(100cqh - 50%));
   }
 }
 
@@ -333,6 +330,75 @@ html[data-motion] .pg-about .pg-about-loop__pulse {
 .pg-about .pg-about-art .pg-about-art__dots circle {
   fill: var(--tone);
   stroke: none;
+}
+
+/* Ring around one vertex dot; it only shows while it glints (motion). */
+.pg-about .pg-about-art .pg-about-art__glint {
+  fill: none;
+  stroke: var(--tone);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/*
+ * Motion. On entering view, the solid lines draw in (staggered across the
+ * three columns), then the dashed parts, lit cell and vertex dots fade in.
+ * While in view, one vertex per drawing glints in turn, left to right.
+ */
+html[data-motion] .pg-about .pg-about-art[data-inview='enter'] [data-draw] {
+  animation: pg-about-draw 1400ms var(--ds-ease-out) backwards;
+  animation-delay: calc(var(--art-i) * 160ms + var(--draw-at, 0ms));
+}
+
+/*
+ * Line draw for non-scaling strokes. The dash lives only inside the
+ * keyframes (fill: backwards), so once drawn the line is the plain solid
+ * resting stroke. A dash of 1.15 path lengths leaves room for the small
+ * mismatch between the authored pathLength and the on-screen length.
+ */
+@keyframes pg-about-draw {
+  from {
+    stroke-dasharray: 1.15;
+    stroke-dashoffset: 1.15;
+  }
+  to {
+    stroke-dasharray: 1.15;
+    stroke-dashoffset: 0;
+  }
+}
+
+.pg-about .pg-about-art .pg-about-art__faint [data-draw] {
+  --draw-at: 280ms;
+}
+
+html[data-motion]
+  .pg-about
+  .pg-about-art[data-inview='enter']
+  :is(.pg-about-art__ghost, .pg-about-art__dashed, .pg-about-art__cell, .pg-about-art__dots) {
+  animation: ds-fade-in 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--art-i) * 160ms + 650ms);
+}
+
+html[data-motion] .pg-about .pg-about-art[data-inview] .pg-about-art__glint {
+  animation: pg-about-glint 7.5s var(--ds-ease-out) infinite;
+  animation-delay: calc(1.8s + var(--art-i) * 2.5s);
+}
+
+@keyframes pg-about-glint {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  8% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  36%,
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
 }
 
 /* ---------- Products ---------- */

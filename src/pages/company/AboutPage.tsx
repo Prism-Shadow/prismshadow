@@ -115,7 +115,7 @@ export function AboutPage({ locale }: PageProps) {
           />
           <div className="pg-about-team__strip">
             <div className="pg-about-team__founders">
-              <ul className="pg-about-team__avatars" aria-hidden="true">
+              <ul className="pg-about-team__avatars" aria-hidden="true" data-animate="">
                 {copy.team.founders.map((founder) => (
                   <li key={founder.name} className="pg-about-team__avatar">
                     <img

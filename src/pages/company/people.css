@@ -33,23 +33,40 @@
   fill: var(--ds-accent);
 }
 
+/* Resting strength per level; the glint peaks a little brighter (motion only). */
+.pg-people .pg-people-field__mark {
+  opacity: var(--rest);
+}
+
 .pg-people .pg-people-field__mark--1 {
-  opacity: 0.16;
+  --rest: 0.16;
+  --peak: 0.5;
 }
 
 .pg-people .pg-people-field__mark--2 {
-  opacity: 0.3;
+  --rest: 0.3;
+  --peak: 0.7;
 }
 
 .pg-people .pg-people-field__mark--3 {
-  opacity: 0.52;
+  --rest: 0.52;
+  --peak: 0.9;
 }
 
-.pg-people .pg-people-field__ring {
+.pg-people .pg-people-field__ring,
+.pg-people .pg-people-field__ping {
   fill: none;
   stroke: var(--ds-accent-line);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
+}
+
+/* Second ring for the focal mark's answer; invisible at rest. */
+.pg-people .pg-people-field__ping {
+  stroke: var(--ds-accent);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 @media (max-width: 640px) {
@@ -395,6 +412,68 @@
     font-size: var(--ds-text-sm);
     white-space: normal;
   }
+}
+
+/* ---------- Motion (only under html[data-motion]; resting CSS is the final state) ---------- */
+
+/*
+ * Hero field: a slow glint sweeps the marks from the past toward "now"
+ * (delay from each mark's --d), and the focal mark answers with one soft
+ * ring. 9s cycle: about 4s of sweep, then rest. The field is on screen at
+ * first load, so it only fades in when it enters later (in-app navigation).
+ */
+html[data-motion] .pg-people .pg-people-field[data-inview='enter'] {
+  animation: ds-fade-in 1000ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__mark {
+  animation: pg-people-glint 9s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(400ms + var(--d) * 3.4s);
+}
+
+html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__ping {
+  animation: pg-people-answer 9s var(--ds-ease-out) infinite;
+  animation-delay: 4.3s;
+}
+
+@keyframes pg-people-glint {
+  0%,
+  22%,
+  100% {
+    opacity: var(--rest);
+  }
+  8% {
+    opacity: var(--peak);
+  }
+}
+
+@keyframes pg-people-answer {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  6% {
+    opacity: 0.85;
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* Founder portraits rise in with the default reveal (data-animate). */
+
+/* Open-source numbers fade up one after another. */
+html[data-motion] .pg-people .pg-people-repo__stats[data-inview='enter'] .pg-people-repo__stat {
+  animation: ds-fade-up 900ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 120ms);
+}
+
+/* Background logos fade in left to right. */
+html[data-motion] .pg-people .pg-people-backgrounds__logos[data-inview='enter'] .pg-people-backgrounds__logo {
+  animation: ds-fade-in 900ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 70ms);
 }
 
 /*
