@@ -216,3 +216,94 @@
     bottom: -33px;
   }
 }
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/* Signal dash: one short dash per wire, parked before the wire's start, so it
+   is invisible at rest. Dash lengths are screen pixels (non-scaling stroke). */
+.pg-flow__wire .pg-flow__pulse {
+  stroke: var(--ds-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 10 1200;
+  stroke-dashoffset: 10;
+  opacity: 0;
+}
+
+/* Output highlight ring, invisible at rest. */
+.pg-flow__node--out .pg-flow__box::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--flow-tone, var(--ds-accent));
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* One 9s cycle: the dash crosses its wire at ~110px/s, then waits off the end. */
+@keyframes pg-flow-pulse {
+  0% {
+    stroke-dashoffset: 10;
+    opacity: 0.9;
+  }
+  30%,
+  100% {
+    stroke-dashoffset: -280;
+    opacity: 0.9;
+  }
+}
+
+/* Each output glows for ~1.3s; with a 0.5s stagger one output leads at a time. */
+@keyframes pg-flow-light {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 0.75;
+  }
+  15% {
+    opacity: 0;
+  }
+}
+
+/* Loop: inputs converge on the core, then the signal fans out in a slow
+   top-to-bottom stagger and each output lights as its dash arrives. */
+html[data-motion] .pg-flow[data-inview] .pg-flow__wire--in .pg-flow__pulse {
+  animation: pg-flow-pulse 9s linear infinite;
+  animation-delay: calc(0.6s + var(--k) * 80ms);
+}
+
+html[data-motion] .pg-flow[data-inview] .pg-flow__wire--out .pg-flow__pulse {
+  animation: pg-flow-pulse 9s linear infinite;
+  animation-delay: calc(1.7s + var(--k) * 500ms);
+}
+
+html[data-motion] .pg-flow[data-inview] .pg-flow__node--out .pg-flow__box::after {
+  animation: pg-flow-light 9s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(2.4s + var(--k) * 500ms);
+}
+
+/* Intro (entering view, not first load): the figure assembles left to right. */
+html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__node--in {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--k) * 60ms);
+}
+
+html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__wire--in {
+  animation: ds-fade-in 600ms var(--ds-ease-out) 200ms both;
+}
+
+html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__core {
+  animation: ds-fade-in 600ms var(--ds-ease-out) 300ms both;
+}
+
+html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__wire--out {
+  animation: ds-fade-in 600ms var(--ds-ease-out) 400ms both;
+}
+
+html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__node--out {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+  animation-delay: calc(450ms + var(--k) * 50ms);
+}

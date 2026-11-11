@@ -11,6 +11,10 @@ import { cjkBreaks } from './cjkBreaks'
  * stacked in one grid cell so the section keeps the height of the tallest one
  * and nothing below jumps when the tab changes; inactive panels are hidden
  * with `visibility`, which also removes them from the accessibility tree.
+ *
+ * Motion: the active panel's trace list is re-keyed on selection, so the motion
+ * system sees a new `[data-animate]` element and its rows appear one by one
+ * (industry.css). The server and first render show the final state.
  */
 export function ScenarioExplorer({
   scenarios,
@@ -109,7 +113,11 @@ export function ScenarioExplorer({
                   <span className="pg-industry-workspace__title">{workspaceLabel}</span>
                   <span className="ds-tag">{scenario.badge}</span>
                 </div>
-                <ol className="pg-industry-workspace__trace">
+                <ol
+                  key={i === active ? 'active' : 'idle'}
+                  className="pg-industry-workspace__trace"
+                  data-animate="custom"
+                >
                   {scenario.trace.map(([label, value], step) => (
                     <li
                       key={label}

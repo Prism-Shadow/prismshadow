@@ -9,6 +9,11 @@ export type FlowTone = 'accent' | 'cyan' | 'amber' | 'coral' | 'green'
  * (non-scaling strokes, so the wires stay 1px at any size). Below ~520px of
  * container width it reflows into a vertical stack. The whole figure is one
  * image for assistive tech; pass a `label` that says what it shows.
+ *
+ * Motion (flow.css): a quiet signal runs along each input wire into the core,
+ * then out along each output wire, and the outputs light up in a slow stagger
+ * as it arrives. On entering view (not on first load) the nodes fade in from
+ * left to right. The markup is the static final state.
  */
 export function FlowSchematic({
   inputs,
@@ -37,10 +42,16 @@ export function FlowSchematic({
 
   return (
     <div className={cx('pg-flow-wrap', className)}>
-      <div className={cx('pg-flow', `pg-flow--${variant}`)} role="img" aria-label={label} style={style}>
+      <div
+        className={cx('pg-flow', `pg-flow--${variant}`)}
+        role="img"
+        aria-label={label}
+        style={style}
+        data-animate="custom"
+      >
         <ul className="pg-flow__col pg-flow__col--in">
           {inputs.map((node, i) => (
-            <li key={i} className="pg-flow__node pg-flow__node--in" data-tone={inputTone}>
+            <li key={i} className="pg-flow__node pg-flow__node--in" data-tone={inputTone} style={order(i)}>
               <span className="pg-flow__box">{node}</span>
             </li>
           ))}
@@ -50,7 +61,7 @@ export function FlowSchematic({
         <Wires count={outputs.length} side="out" />
         <ul className="pg-flow__col pg-flow__col--out">
           {outputs.map((node, i) => (
-            <li key={i} className="pg-flow__node pg-flow__node--out" data-tone={outputTone}>
+            <li key={i} className="pg-flow__node pg-flow__node--out" data-tone={outputTone} style={order(i)}>
               <span className="pg-flow__box">{node}</span>
             </li>
           ))}
@@ -59,6 +70,9 @@ export function FlowSchematic({
     </div>
   )
 }
+
+/** Position of a node or wire in the motion stagger. */
+const order = (k: number) => ({ '--k': k }) as CSSProperties
 
 function Wires({ count, side }: { count: number; side: 'in' | 'out' }) {
   const paths = Array.from({ length: count }, (_, i) => {
@@ -75,6 +89,10 @@ function Wires({ count, side }: { count: number; side: 'in' | 'out' }) {
     >
       {paths.map((d) => (
         <path key={d} d={d} />
+      ))}
+      {/* One short dash per wire, parked before the wire's start at rest. */}
+      {paths.map((d, k) => (
+        <path key={`pulse-${d}`} className="pg-flow__pulse" d={d} style={order(k)} />
       ))}
     </svg>
   )
