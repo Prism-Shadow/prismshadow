@@ -10,10 +10,11 @@ export type FlowTone = 'accent' | 'cyan' | 'amber' | 'coral' | 'green'
  * container width it reflows into a vertical stack. The whole figure is one
  * image for assistive tech; pass a `label` that says what it shows.
  *
- * Motion (flow.css): a quiet signal runs along each input wire into the core,
- * then out along each output wire, and the outputs light up in a slow stagger
- * as it arrives. On entering view (not on first load) the nodes fade in from
- * left to right. The markup is the static final state.
+ * Motion (flow.css), a diagram so it loops: solid packets run each input wire
+ * into the core (each input fills as it sends), then fan out down the output
+ * wires (each output fills as its packet lands). On entering view (also at
+ * first load) the nodes fade in from left to right. The markup is the static
+ * resting state.
  */
 export function FlowSchematic({
   inputs,

@@ -410,12 +410,8 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__check, .hp-dg
   animation: ds-fade-in 500ms var(--ds-ease-out) 900ms both;
 }
 
-/* When the loops start: at once if already showing, after the intro otherwise. */
+/* Loops and the one-time charts start after the intro (which now always plays). */
 html[data-motion] .pg-home .hp-dg[data-inview] {
-  --hp-loop: 300ms;
-}
-
-html[data-motion] .pg-home .hp-dg[data-inview='enter'] {
   --hp-loop: 1100ms;
 }
 
@@ -468,34 +464,34 @@ html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__wash {
   animation-delay: calc(var(--hp-loop) + 600ms + var(--i) * 1200ms);
 }
 
-/* The score line refills to 90%+ every run, lighting each evaluated run green. */
+/*
+ * The embedded charts (score line to 90%+, accuracy line) are statistics: they
+ * grow once when the diagram is shown and then rest, while the rest of the
+ * diagram keeps working. Each evaluated run flashes green once as the score
+ * line passes it.
+ */
 html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__score {
   stroke-dasharray: 1;
-  animation: hp-dg-progress 4400ms linear infinite backwards;
-  animation-delay: var(--hp-loop);
+  animation: ds-draw 2400ms var(--ds-ease-out) var(--hp-loop) both;
 }
 
 html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__dot--score {
-  animation: hp-dg-progress-dot 4400ms linear infinite backwards;
-  animation-delay: var(--hp-loop);
+  animation: ds-fade-in 500ms var(--ds-ease-out) calc(var(--hp-loop) + 2200ms) both;
 }
 
 html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__tick-lit {
-  animation: hp-dg-tick 4400ms var(--ds-ease-out) infinite backwards;
-  /* The score line covers one run's width every 141ms (track ÷ 19 runs at its pace). */
-  animation-delay: calc(var(--hp-loop) + var(--i) * 141ms);
+  animation: hp-dg-tick 4400ms var(--ds-ease-out) 1 backwards;
+  /* The score line covers one run's width every ~126ms over its 2400ms draw. */
+  animation-delay: calc(var(--hp-loop) + var(--i) * 126ms);
 }
 
-/* The accuracy line keeps drawing forward, a beat after each run. */
 html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__spark {
   stroke-dasharray: 1;
-  animation: hp-dg-progress 4400ms var(--ds-ease-in-out) infinite backwards;
-  animation-delay: calc(var(--hp-loop) + 900ms);
+  animation: ds-draw 2400ms var(--ds-ease-out) calc(var(--hp-loop) + 600ms) both;
 }
 
 html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__dot--spark {
-  animation: hp-dg-progress-dot 4400ms linear infinite backwards;
-  animation-delay: calc(var(--hp-loop) + 900ms);
+  animation: ds-fade-in 500ms var(--ds-ease-out) calc(var(--hp-loop) + 2800ms) both;
 }
 
 /* The executed solution pings when the winning run completes. */
@@ -602,42 +598,6 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__packet {
 }
 
 /* Fills over the first 55%, holds, fades, and starts again from empty. */
-@keyframes hp-dg-progress {
-  0% {
-    stroke-dashoffset: 1;
-    opacity: 1;
-  }
-
-  55%,
-  82% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-
-  94%,
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes hp-dg-progress-dot {
-  0%,
-  52% {
-    opacity: 0;
-  }
-
-  58%,
-  82% {
-    opacity: 1;
-  }
-
-  94%,
-  100% {
-    opacity: 0;
-  }
-}
-
 @keyframes hp-dg-tick {
   0% {
     opacity: 0;

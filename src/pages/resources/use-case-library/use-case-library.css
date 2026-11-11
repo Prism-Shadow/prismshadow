@@ -821,9 +821,10 @@
 
 /*
  * All animation runs under html[data-motion]; the rules above are the complete
- * static state, and every loop's first frame equals it. The hero atlas moves
- * through the shared FlowSchematic (solutions/departments/flow.css): packets
- * run its wires, the cases fill as they send, the results fill as they land.
+ * static state, and every loop's first frame equals it. Diagrams loop: the hero
+ * atlas (shared FlowSchematic, solutions/departments/flow.css), the featured
+ * pipeline and a benchmark's method steps. Charts grow once and rest: the
+ * benchmark bars and passed test cases.
  */
 
 /* Pipeline signal: per rail segment, a dot with a short tail (clipped to the
@@ -916,38 +917,6 @@
   }
 }
 
-/* Benchmark charts (7s): bars hold, drain, and rebuild from their base;
-   passed test cases empty and refill solid in a wave (3.6s). */
-@keyframes pg-usecases-rebuild {
-  0%,
-  64%,
-  100% {
-    transform: scaleX(1);
-  }
-  72%,
-  74% {
-    transform: scaleX(0);
-  }
-}
-
-@keyframes pg-usecases-pass {
-  0%,
-  44%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  12%,
-  20% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  30% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-}
-
 @keyframes pg-usecases-step {
   0%,
   30%,
@@ -979,20 +948,20 @@ html[data-motion] .pg-usecases__pipeline[data-inview] li[data-last]::after {
   animation-delay: calc(0.6s + var(--k) * 0.58s);
 }
 
-/* Entering view (and each newly selected benchmark): bars grow from their base
-   and passed cases fill; while in view the charts rebuild on a loop. */
-html[data-motion] .pg-usecases__bar[data-inview] > span,
-html[data-motion] .pg-usecases__compare[data-inview] .pg-usecases__compare-track > span {
-  transform-origin: left center;
-  animation: pg-usecases-rebuild 7s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(1.4s + var(--i) * 0.25s + var(--r, 0) * 0.15s);
+/* Benchmark charts grow once when they come into view (and again when their
+   benchmark is selected, since the panel is shown afresh), then rest. */
+@keyframes pg-usecases-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
 }
 
 html[data-motion] .pg-usecases__bar[data-inview='enter'] > span,
 html[data-motion] .pg-usecases__compare[data-inview='enter'] .pg-usecases__compare-track > span {
-  animation:
-    ds-grow-x 1100ms var(--ds-ease-out) calc(150ms + var(--i) * 140ms + var(--r, 0) * 160ms) both,
-    pg-usecases-rebuild 7s var(--ds-ease-in-out) calc(1.4s + var(--i) * 0.25s + var(--r, 0) * 0.15s) infinite;
+  transform-origin: left center;
+  animation: ds-grow-x 1100ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 140ms + var(--r, 0) * 160ms);
 }
 
 html[data-motion] .pg-usecases__compare[data-inview='enter'] {
@@ -1000,9 +969,9 @@ html[data-motion] .pg-usecases__compare[data-inview='enter'] {
   animation-delay: calc(var(--i) * 140ms);
 }
 
-html[data-motion] .pg-usecases__pass[data-inview] i[data-on]::after {
-  animation: pg-usecases-pass 3.6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(0.6s + var(--c) * 0.14s);
+html[data-motion] .pg-usecases__pass[data-inview='enter'] i[data-on]::after {
+  animation: pg-usecases-cell 500ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 140ms + var(--c) * 90ms);
 }
 
 html[data-motion] .pg-usecases__results:has([data-inview]) .pg-usecases__steps li::before {

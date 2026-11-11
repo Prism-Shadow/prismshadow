@@ -1267,8 +1267,12 @@ html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow_
   animation: pg-industry-caret 3s var(--ds-ease-in-out) infinite;
 }
 
-/* Intro (entering view, e.g. after an in-app navigation): the figure assembles
-   left to right. */
+/* Intro (entering view, also at first load): the panel fades in and the figure
+   assembles left to right. */
+html[data-motion] .pg-industry .pg-industry-flow[data-inview='enter'] {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+}
+
 html[data-motion] .pg-industry .pg-industry-flow[data-inview='enter'] .pg-industry-flow__signals > li {
   animation: ds-fade-in 600ms var(--ds-ease-out) both;
   animation-delay: calc(var(--k) * 60ms);

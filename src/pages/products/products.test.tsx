@@ -1,3 +1,6 @@
+/// <reference types="node" />
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { docsUrl, getDepartmentPath } from '../../components/site/navigation'
 import { locales } from '../../i18n/locales'
@@ -122,8 +125,8 @@ describe.each(locales)('PenguinHarness page (%s)', (locale) => {
     const compare = html.slice(html.indexOf('id="compare"'), html.indexOf('id="how-it-works"'))
     expect(count(compare, 'data-lit=""')).toBe(101)
     expect(compare).toContain('--i:99')
-    // The 1× field is live: a few of its background cells come and go.
-    expect(compare).toContain('data-twinkle=""')
+    // A chart: the comparison field fills once and rests (no live cells).
+    expect(compare).not.toContain('data-twinkle')
     expect(count(html, 'class="pg-penguin__arrow-lit"')).toBe(4)
     // Connectors render their hairlines on the server; packets are added only once measured on the client.
     expect(count(html, 'class="pg-product__wire"')).toBe(3)
@@ -363,4 +366,65 @@ describe('product page copy', () => {
   })
 
   // Bold type is checked site-wide in src/components/site/styleGuard.test.ts.
+})
+
+// Read the stylesheets from disk: under vitest, `?raw` CSS imports come back empty.
+const productCss = (file: string) =>
+  readFileSync(join(process.cwd(), 'src/pages/products', file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+
+/** Every rule as { selector, body }, innermost selector only (keyframe steps included, harmlessly). */
+const cssRules = (css: string) =>
+  css
+    .split('}')
+    .filter((block) => block.includes('{'))
+    .map((block) => {
+      const head = block.slice(0, block.lastIndexOf('{'))
+      return { selector: head.slice(head.lastIndexOf('{') + 1).trim(), body: block.slice(block.lastIndexOf('{') + 1) }
+    })
+
+const hasClass = (selector: string, name: string) => new RegExp(`\\.${name}(?![\\w-])`).test(selector)
+
+describe('product motion: charts grow once, diagrams loop', () => {
+  // Statistical charts: an intro when they enter view, never a loop.
+  const charts: [string, string[]][] = [
+    [
+      'penguin-harness.css',
+      ['pg-penguin__side-field', 'pg-penguin__side-field--ours', 'pg-penguin__bar', 'pg-penguin__seg', 'pg-penguin__spark'],
+    ],
+    [
+      'llama-factory.css',
+      ['pg-llama__wipe', 'pg-llama__cursor', 'pg-llama__progress-fill', 'pg-llama__live', 'pg-llama__mem-bar', 'pg-llama__cell'],
+    ],
+    ['panofy.css', ['pg-panofy__role-cell']],
+  ]
+
+  it.each(charts)('%s: charts grow once on entering view and never loop', (file, classes) => {
+    const rules = cssRules(productCss(file)).filter((rule) => /html\[data-motion\]/.test(rule.selector))
+    for (const name of classes) {
+      const own = rules.filter((rule) => hasClass(rule.selector, name))
+      expect(own.length, `${name} has motion rules`).toBeGreaterThan(0)
+      for (const rule of own) {
+        expect(rule.body, `${name} must not loop:\n  ${rule.selector}`).not.toMatch(/infinite/)
+        expect(rule.selector, `${name} grows on entering view`).toContain("[data-inview='enter']")
+      }
+    }
+  })
+
+  // Diagrams, flows and UI mocks keep their ambient loops.
+  const diagrams: [string, string][] = [
+    ['shared/product-kit.css', 'pg-product__packet'],
+    ['penguin-harness.css', 'pg-penguin__suite-cell'],
+    ['penguin-harness.css', 'pg-penguin__arrow-lit'],
+    ['llama-factory.css', 'pg-llama__skel'],
+    ['llama-factory.css', 'pg-llama__arch-arrow'],
+    ['panofy.css', 'pg-panofy__tile-fill'],
+    ['panofy.css', 'pg-panofy__control-solid'],
+  ]
+
+  it.each(diagrams)('%s: %s keeps its loop', (file, name) => {
+    const rules = cssRules(productCss(file)).filter(
+      (rule) => /html\[data-motion\]/.test(rule.selector) && hasClass(rule.selector, name),
+    )
+    expect(rules.some((rule) => /infinite/.test(rule.body))).toBe(true)
+  })
 })

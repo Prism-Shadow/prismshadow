@@ -5,12 +5,13 @@ import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } fro
  *
  * - Mark an animated visual with `data-animate` (or `data-animate="custom"`
  *   to skip the default fade-up and only use your own keyframes).
- * - When JS runs and motion is allowed, <html> gets `data-motion`. Marked
- *   elements stay hidden until they are about 20% in view, then get
- *   `data-inview="enter"` and play their intro once.
- * - Elements already on screen at the very first load get
- *   `data-inview="initial"`: no intro (the prerendered page is already
- *   showing them), but ambient loops still run.
+ * - When JS runs and motion is allowed, <html> gets `data-motion` before first
+ *   paint (inline boot script in index.html). Marked elements stay hidden
+ *   until they are about 20% in view, then get `data-inview="enter"` and play
+ *   their intro once, including on screen at first load, so e.g. the home
+ *   chart grows on every visit.
+ * - Statistical charts (curves, bars, counts) grow once and then rest; only
+ *   framework diagrams, flows and UI mocks may loop.
  * - Elements inserted later (an in-app navigation, a newly selected tab
  *   panel) are picked up automatically.
  * - No JS, reduced motion or prerendered HTML: no `data-motion`, so nothing
@@ -60,6 +61,7 @@ export function scanAnimations(mode: 'initial' | 'enter', root: ParentNode = doc
 export function initMotion() {
   if (typeof window === 'undefined' || observer) return
   if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
+    // scanAnimations removes the boot script's data-motion mark here.
     scanAnimations('initial')
     return
   }
@@ -75,9 +77,11 @@ export function initMotion() {
     { threshold: 0.2, rootMargin: '0px 0px -8% 0px' },
   )
 
-  // What is on screen at first load is already visible (prerendered): no intro.
-  scanAnimations('initial')
+  // Visuals on screen at first load were held in their pre-intro state since
+  // first paint (boot script), so they grow in now like everything else.
   document.documentElement.setAttribute('data-motion', '')
+  ;(window as Window & { __psMotion?: boolean }).__psMotion = true
+  scanAnimations('enter')
 
   // Anything mounted later (navigation, tab switch) plays its intro.
   mutations = new MutationObserver((records) => {

@@ -333,7 +333,7 @@ html[data-motion] .pg-flow[data-inview] .pg-flow__node--out .pg-flow__box::befor
   animation-delay: calc(1.3s + var(--k) * 0.75s);
 }
 
-/* Intro (entering view, not first load): the figure assembles left to right. */
+/* Intro (entering view, also at first load): the figure assembles left to right. */
 html[data-motion] .pg-flow[data-inview='enter'] .pg-flow__node--in {
   animation: ds-fade-in 600ms var(--ds-ease-out) both;
   animation-delay: calc(var(--k) * 60ms);

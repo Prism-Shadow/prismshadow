@@ -207,10 +207,10 @@
   height: auto;
 }
 
-/* Green (the improvement colour) at zero opacity, so each cell can fill in the loop. */
+/* Green (the improvement colour), softly filled: all thirty scenarios done. */
 .pg-customers .cu-grid__cell {
   fill: var(--ds-signal);
-  fill-opacity: 0;
+  fill-opacity: 0.32;
   stroke: rgba(255, 255, 255, 0.14);
   stroke-width: 1;
 }
@@ -525,13 +525,14 @@
  * that no-JS visitors, reduced motion and the prerendered page see.
  */
 
-/* Cobo: the thirty scenario cells fill solid one by one, hold, empty, and run again. */
+/* Cobo: a statistic, so it grows once: the thirty scenario cells light up
+   one by one and settle to their resting soft fill. */
 html[data-motion] .pg-customers .cu-grid[data-inview='enter'] {
   animation: ds-fade-in 700ms var(--ds-ease-out) both;
 }
 
 html[data-motion] .pg-customers .cu-grid[data-inview] .cu-grid__cell {
-  animation: cu-fill 6400ms var(--ds-ease-in-out) infinite backwards;
+  animation: cu-fill 1400ms var(--ds-ease-out) both;
   animation-delay: calc(400ms + var(--i) * 60ms);
 }
 
@@ -540,14 +541,12 @@ html[data-motion] .pg-customers .cu-grid[data-inview] .cu-grid__cell {
     fill-opacity: 0;
   }
 
-  5%,
-  60% {
-    fill-opacity: 0.72;
+  35% {
+    fill-opacity: 0.85;
   }
 
-  72%,
   100% {
-    fill-opacity: 0;
+    fill-opacity: 0.32;
   }
 }
 

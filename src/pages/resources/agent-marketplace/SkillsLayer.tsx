@@ -13,7 +13,7 @@ const CELLS = 8
  * Motion (agent-marketplace.css): skills deploy team by team on a loop: the
  * team's skill lights, a packet crosses the wire, and the team's next two
  * cells fill solid, hold, and clear. Adopted cells rest as faint fills so the
- * deploying ones stand out. On entering view (not on first load) the boxes
+ * deploying ones stand out. On entering view (also at first load) the boxes
  * fade in and the cells fill.
  */
 export function SkillsLayer({ locale }: { locale: Locale }) {

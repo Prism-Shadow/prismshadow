@@ -425,7 +425,9 @@
   }
 }
 
-/* ---------- Motion (only under html[data-motion]; resting CSS is the final state) ---------- */
+/* ---------- Motion (only under html[data-motion]; resting CSS is the final state) ----------
+   The hero field reads as a contribution graph, a statistic: its wave runs once
+   on entering view and the graph then rests. */
 
 /*
  * Hero field, a live contribution graph (6s cycle). A wave of activity sweeps
@@ -441,23 +443,19 @@ html[data-motion] .pg-people .pg-people-field[data-inview='enter'] {
 }
 
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__live--wave {
-  animation: pg-people-wave 6s var(--ds-ease-in-out) var(--wd) infinite;
-}
-
-html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__live--flicker {
-  animation: pg-people-flicker var(--ft) var(--ds-ease-in-out) var(--fd) infinite;
+  animation: pg-people-wave 6s var(--ds-ease-in-out) var(--wd) 1 backwards;
 }
 
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__mark {
-  animation: pg-people-glint 6s var(--ds-ease-in-out) var(--wd) infinite;
+  animation: pg-people-glint 6s var(--ds-ease-in-out) var(--wd) 1 backwards;
 }
 
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__focal {
-  animation: pg-people-pop 6s var(--ds-ease-out) 3.75s infinite;
+  animation: pg-people-pop 6s var(--ds-ease-out) 3.75s 1 backwards;
 }
 
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__ping {
-  animation: pg-people-answer 6s var(--ds-ease-out) 3.75s infinite;
+  animation: pg-people-answer 6s var(--ds-ease-out) 3.75s 1 backwards;
 }
 
 @keyframes pg-people-wave {

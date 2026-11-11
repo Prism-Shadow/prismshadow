@@ -868,8 +868,9 @@ a.ds-card:hover {
  * - `html[data-motion]` exists only when JS runs and motion is allowed.
  *   Write EVERY animation under it; the resting CSS is the final state.
  * - `[data-animate]` visuals stay hidden until in view, then get
- *   `data-inview="enter"` (intro plays once) or, if on screen at first load,
- *   `data-inview="initial"` (no intro).
+ *   `data-inview="enter"` and play their intro once (also at first load).
+ * - Statistical charts (curves, bars, counts, comparisons) grow once and rest:
+ *   intro only, never a loop. Framework diagrams, flows and UI mocks may loop.
  * - Intros:   html[data-motion] [data-inview='enter'] .x { animation: … both }
  * - Loops:    html[data-motion] [data-inview] .x { animation: … infinite }
  * Keep it quiet: slow eases, small distances, one or two effects per visual.

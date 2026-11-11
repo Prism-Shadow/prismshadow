@@ -566,7 +566,12 @@ html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[d
   animation-delay: calc(1s + var(--r) * 1s);
 }
 
-/* Intro (entering view, not first load): the boxes fade in, the adopted cells fill. */
+/* Intro (entering view, also at first load): the panel and boxes fade in, the
+   adopted cells fill. */
+html[data-motion] .pg-marketplace__layer[data-inview='enter'] {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+}
+
 html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__box--skills {
   animation: ds-fade-in 600ms var(--ds-ease-out) both;
 }

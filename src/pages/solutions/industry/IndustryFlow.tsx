@@ -17,7 +17,7 @@ const fill = (template: string, values: Record<string, string>) =>
  * Motion (industry.css): solid packets leave the source systems (each chip
  * fills as it sends), the agent rows light up solid in turn as they work, and
  * a packet crosses to review and on to the approved action, which fills; the
- * console caret breathes. On entering view (not on first load) the figure
+ * console caret breathes. On entering view (also at first load) the figure
  * assembles left to right. The markup is the static resting state.
  */
 export function IndustryFlow({
