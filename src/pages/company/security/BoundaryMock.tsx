@@ -1,10 +1,24 @@
+import type { CSSProperties } from 'react'
 import type { SecurityBoundaryCopy } from '../../../i18n/messages/security'
 import { CheckIcon, ShieldIcon } from '../icons'
 
-/** Hero mock: the runtime check an agent request passes before any action runs. */
+/**
+ * Hero mock: the runtime check an agent request passes before any action runs.
+ *
+ * Motion (security.css): when it enters view, the checks tick to "pass" one by
+ * one and the policy result follows, then everything holds; the status dot
+ * breathes while in view. On screen at first load, it simply shows the
+ * finished check.
+ */
 export function BoundaryMock({ copy }: { copy: SecurityBoundaryCopy }) {
   return (
-    <div className="ds-panel pg-sec-window pg-sec-boundary" role="img" aria-label={copy.ariaLabel}>
+    <div
+      className="ds-panel pg-sec-window pg-sec-boundary"
+      role="img"
+      aria-label={copy.ariaLabel}
+      data-animate=""
+      style={{ '--checks': copy.layers.length } as CSSProperties}
+    >
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <ShieldIcon />
@@ -24,7 +38,7 @@ export function BoundaryMock({ copy }: { copy: SecurityBoundaryCopy }) {
 
       <ol className="pg-sec-boundary__layers">
         {copy.layers.map((layer, index) => (
-          <li key={layer} className="pg-sec-boundary__layer">
+          <li key={layer} className="pg-sec-boundary__layer" style={{ '--i': index } as CSSProperties}>
             <span className="pg-sec-mono">{String(index + 1).padStart(2, '0')}</span>
             <span className="pg-sec-boundary__layer-name">{layer}</span>
             <span className="pg-sec-boundary__pass">

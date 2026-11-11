@@ -169,7 +169,8 @@ export const ChevronIcon = (props: IconProps) => (
 
 export const CheckIcon = (props: IconProps) => (
   <svg {...base(props)}>
-    <path d="M3 8.5l3 3 7-7" />
+    {/* pathLength lets a mock draw the tick in (security.css); no effect at rest. */}
+    <path d="M3 8.5l3 3 7-7" pathLength={1} />
   </svg>
 )
 

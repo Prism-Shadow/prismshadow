@@ -6,13 +6,17 @@ const stageTones = ['cyan', 'amber', 'green', 'accent'] as const
 /**
  * The platform loop: four stages on a clockwise track around the PrismShadow
  * core. Built in HTML so labels stay crisp and translatable at every width;
- * the track, arrows and travelling dot are CSS. It sits borderless on the
+ * the track, arrows and travelling cell are CSS. It sits borderless on the
  * canvas over a faint dot field that dissolves toward its edges. The whole figure is one image
  * for assistive tech, described by `copy.ariaLabel`.
+ *
+ * Motion (about.css, motion contract): the figure rises in when it enters
+ * view, and while it is in view one lit cell travels the loop. At rest (no
+ * JS, reduced motion, prerendered HTML) the cell is simply not shown.
  */
 export function PlatformLoop({ copy }: { copy: AboutPageCopy['loop'] }) {
   return (
-    <div className="pg-about-loop" role="img" aria-label={copy.ariaLabel}>
+    <div className="pg-about-loop" role="img" aria-label={copy.ariaLabel} data-animate="">
       <div className="pg-about-loop__grid">
         <div className="pg-about-loop__track" aria-hidden="true">
           <span className="pg-about-loop__arrow pg-about-loop__arrow--top" />

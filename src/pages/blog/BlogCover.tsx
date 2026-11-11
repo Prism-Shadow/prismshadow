@@ -1,7 +1,7 @@
-import { useId } from 'react'
+import { useId, type CSSProperties } from 'react'
 import type { BlogPost, BlogVisualPlacement } from '../../content/blogPosts'
 import { cx, type PixelTone } from '../../components/site/utils'
-import { coverCells, coverGeometry, topicTone, type CoverGeometry } from './blogData'
+import { coverCells, coverGeometry, coverGlints, topicTone, type CoverGeometry } from './blogData'
 
 // Same cell geometry and styling as the shared PixelField; the faint "off" cells
 // are drawn with one SVG pattern so a page of covers stays light on the DOM.
@@ -22,14 +22,19 @@ function CoverField({
   post,
   geometry,
   className,
+  animate,
 }: {
   post: BlogPost
   geometry: CoverGeometry
   className?: string
+  /** Fade the cells in on view (the dark frame stays put) and glint a few. */
+  animate: boolean
 }) {
   const patternId = `pg-blog-cells-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   const width = geometry.cols * STEP - GAP
   const height = geometry.rows * STEP - GAP
+  const cells = coverCells(post, geometry)
+  const glints = coverGlints(post, cells)
 
   return (
     <svg
@@ -38,6 +43,8 @@ function CoverField({
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       focusable="false"
+      style={{ '--phase': glints.phase.toFixed(3) } as CSSProperties}
+      data-animate={animate ? 'custom' : undefined}
     >
       <defs>
         <pattern id={patternId} width={STEP} height={STEP} patternUnits="userSpaceOnUse">
@@ -53,8 +60,9 @@ function CoverField({
         </pattern>
       </defs>
       <rect width={width + GAP} height={height + GAP} fill={`url(#${patternId})`} />
-      {coverCells(post, geometry).map((cell) => {
+      {cells.map((cell) => {
         const color = toneColor[cell.tone ?? 'accent']
+        const glint = glints.order.get(`${cell.c}:${cell.r}`)
         return (
           <rect
             key={`${cell.c}:${cell.r}`}
@@ -66,6 +74,9 @@ function CoverField({
             fill={cell.outline ? 'var(--pg-blog-cover-bg)' : color}
             stroke={color}
             opacity={cell.dim ? 0.45 : 1}
+            {...(glint === undefined
+              ? {}
+              : { 'data-glint': '', style: { '--g': glint, '--ds-glint-rest': 0.45 } as CSSProperties })}
           />
         )
       })}
@@ -78,6 +89,12 @@ function CoverField({
  * header). Genuine post images are used as-is; every other post gets a
  * code-built cover: a pixel field with the post's motif, lit in its topic tone,
  * and the post's short label set in it.
+ *
+ * Motion (blog.css): featured media rise in with the default reveal (the
+ * card's media frame carries `data-animate`). Everywhere else the cover's
+ * dark frame and label stay put while its pixel field (or image) fades in on
+ * view, and a few dim cells of a code-built cover glint in a slow stagger.
+ * Nothing moves inside the prose.
  */
 export function BlogCover({
   post,
@@ -93,6 +110,8 @@ export function BlogCover({
   lang?: string
 }) {
   const isArticle = placement === 'article'
+  // Featured media already rise in as a whole; other placements fade the content in.
+  const animate = placement !== 'featured'
 
   if (post.visualImage) {
     return (
@@ -106,6 +125,8 @@ export function BlogCover({
       >
         <div className="pg-blog-cover__stage">
           <img
+            className="pg-blog-cover__image"
+            data-animate={animate ? 'custom' : undefined}
             src={post.visualImage.src}
             // Cards repeat the title right below, so their image is decorative.
             alt={isArticle ? post.visualImage.alt : ''}
@@ -128,15 +149,21 @@ export function BlogCover({
       <div className="pg-blog-cover__stage" aria-hidden="true">
         {isArticle ? (
           <>
-            <CoverField post={post} geometry={coverGeometry.wide} className="pg-blog-cover__field--wide" />
+            <CoverField
+              post={post}
+              geometry={coverGeometry.wide}
+              className="pg-blog-cover__field--wide"
+              animate={animate}
+            />
             <CoverField
               post={post}
               geometry={coverGeometry.compact}
               className="pg-blog-cover__field--compact"
+              animate={animate}
             />
           </>
         ) : (
-          <CoverField post={post} geometry={coverGeometry.compact} />
+          <CoverField post={post} geometry={coverGeometry.compact} animate={animate} />
         )}
         <span className="pg-blog-cover__brand">
           <img src="/prism-shadow-mark-white.png" alt="" width={14} height={14} />
