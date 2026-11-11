@@ -947,16 +947,17 @@ html[data-motion] [data-animate]:not([data-animate='custom'])[data-inview='enter
   }
 }
 
-/* Expanding ring around a focal point (loop). */
+/* Expanding hairline ring around a focal point (loop). A ring, not content,
+   so it may grow past the 1.4 scale limit for moving content. */
 @keyframes ds-ping {
   0% {
-    opacity: 0.6;
+    opacity: 0.5;
     transform: scale(1);
   }
   80%,
   100% {
     opacity: 0;
-    transform: scale(2.4);
+    transform: scale(2);
   }
 }
 
