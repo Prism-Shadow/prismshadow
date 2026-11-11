@@ -10,10 +10,6 @@ import { LlamaFactoryPage } from './LlamaFactoryPage'
 import { PanofyPage } from './PanofyPage'
 import { PenguinHarnessPage } from './PenguinHarnessPage'
 import { appScreens, buildScreen, heroScreen, screenSrc } from './penguin/data'
-import llamaCss from './llama-factory.css?raw'
-import panofyCss from './panofy.css?raw'
-import penguinCss from './penguin-harness.css?raw'
-import kitCss from './shared/product-kit.css?raw'
 
 /** Visible text of server-rendered HTML (tags stripped, entities decoded). */
 const textOf = (html: string) =>
@@ -356,9 +352,5 @@ describe('product page copy', () => {
     }
   })
 
-  it('never uses bold type in the product stylesheets', () => {
-    for (const css of [kitCss, penguinCss, panofyCss, llamaCss]) {
-      expect(css).not.toMatch(/font-weight:\s*(600|700|800|900|bold)/)
-    }
-  })
+  // Bold type is checked site-wide in src/components/site/styleGuard.test.ts.
 })
