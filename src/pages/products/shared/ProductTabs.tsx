@@ -14,6 +14,9 @@ export type ProductTabItem = {
  * Modal-style product tabs: a vertical tab list, the active tab's copy and one big
  * media panel. WAI-ARIA tabs with automatic activation (arrows, Home, End).
  * Every panel is server-rendered; inactive ones are `hidden`.
+ *
+ * The media panel is a motion visual (`data-animate`): it fades up when it enters
+ * view, and it is re-keyed on every selection so its intro replays.
  */
 export function ProductTabs({
   idBase,
@@ -25,11 +28,18 @@ export function ProductTabs({
   items: ProductTabItem[]
 }) {
   const [active, setActive] = useState(0)
+  const [round, setRound] = useState(0)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+
+  const activate = (index: number) => {
+    if (index === active) return
+    setActive(index)
+    setRound((value) => value + 1)
+  }
 
   const select = (index: number) => {
     const next = (index + items.length) % items.length
-    setActive(next)
+    activate(next)
     tabRefs.current[next]?.focus()
   }
 
@@ -71,7 +81,7 @@ export function ProductTabs({
             aria-selected={index === active}
             tabIndex={index === active ? 0 : -1}
             className="pg-product__tab"
-            onClick={() => setActive(index)}
+            onClick={() => activate(index)}
             onKeyDown={(event) => onKeyDown(event, index)}
           >
             {item.icon}
@@ -101,7 +111,13 @@ export function ProductTabs({
               ))}
             </ul>
           </div>
-          <div className="pg-product__tab-visual">{item.visual}</div>
+          <div
+            className="pg-product__tab-visual"
+            data-animate=""
+            key={index === active ? `on-${round}` : 'off'}
+          >
+            {item.visual}
+          </div>
         </div>
       ))}
     </div>

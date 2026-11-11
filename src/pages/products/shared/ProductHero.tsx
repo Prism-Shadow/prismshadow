@@ -65,7 +65,8 @@ export function ProductHero({
             ) : null}
           </div>
         </div>
-        <div className="pg-product__hero-media" id={mediaId}>
+        {/* A motion visual: no intro when on screen at first load, but its loops run. */}
+        <div className="pg-product__hero-media" id={mediaId} data-animate="">
           {media}
         </div>
       </div>

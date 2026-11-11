@@ -87,6 +87,11 @@ export type PenguinHarnessCopy = {
   }
   features: SectionHeadCopy & {
     items: FeatureCopy[]
+    /** Screens of the web app, in the order of `appScreens` (penguin/data.ts). */
+    gallery: {
+      label: string
+      screens: { label: string; caption: string; alt: string }[]
+    }
   }
   inTheBox: SectionHeadCopy & {
     pluginsTitle: string
@@ -137,7 +142,7 @@ export const penguinHarnessCopy = {
       productHunt: 'Featured on Product Hunt',
       windowLabel: 'penguin web',
       imageAlt:
-        'PenguinHarness building a Claude Code docs expert from a one-sentence request, on DeepSeek V4 Pro',
+        'The PenguinHarness web app: in a chat, the general agent finishes a self-evolution round on the Docs Expert agent and compares the per-case scores of versions v14 and v15',
     },
     proof: {
       title: 'PenguinHarness in numbers',
@@ -275,7 +280,7 @@ export const penguinHarnessCopy = {
             'Collect the docs from github.com/ericbuess/claude-code-docs and build a RAG app that answers Claude Code questions as a configuration expert, citing its sources.',
           cost: '$0.02 of tokens · DeepSeek V4 Pro',
           imageAlt:
-            'The generated RAG app: a Claude Code docs expert answering with cited, clickable sources',
+            'The PenguinHarness new-chat page: a message box with model and agent pickers, and one-sentence examples that build a RAG docs expert, an investment analyst or a legal agent app',
         },
         evaluate: {
           title: 'Evaluation Center',
@@ -390,6 +395,36 @@ export const penguinHarnessCopy = {
           body: 'Admins provision users. Each gets an independent Project with isolated data.',
         },
       ],
+      gallery: {
+        label: 'Screens of the PenguinHarness web app',
+        screens: [
+          {
+            label: 'Agents',
+            caption: 'Every agent with its activity, tools, skills and schedules, one click from a new chat.',
+            alt: 'The Agents page: each agent listed with an activity sparkline, counts of its sessions, tools, skills and schedules, and buttons to start a chat or open its settings',
+          },
+          {
+            label: 'Evaluation Center',
+            caption: 'Each benchmark keeps its cases, the score history across agent versions and every run.',
+            alt: 'A benchmark in the Evaluation Center: four test cases, a line chart of the score over time and a table of evaluation runs by agent version and model',
+          },
+          {
+            label: 'Cost Center',
+            caption: 'Tokens, spend, requests and success rate, by day, agent or model.',
+            alt: 'The Cost Center: totals for tokens, requests and cost, with charts of requests and success rate by agent and by model, and the token and cost trends',
+          },
+          {
+            label: 'Models',
+            caption: 'Models grouped by provider, with context window, prices and key status.',
+            alt: 'The Models page: models grouped by provider, each card showing its context window, prices and whether a key is set',
+          },
+          {
+            label: 'Plugins',
+            caption: 'Plugins by category, including the built-in agent self-evolution toolkits.',
+            alt: 'The Plugins page: the agent self-evolution category with its RSI toolkits, each showing its version, install status and the agents that use it',
+          },
+        ],
+      },
     },
     inTheBox: {
       eyebrow: 'In the box',
@@ -498,7 +533,8 @@ export const penguinHarnessCopy = {
       meta: ['1000+ 模型', 'Linux · macOS · Windows', 'Apache 2.0 开源', 'Agent 自进化'],
       productHunt: 'Product Hunt 精选',
       windowLabel: 'penguin web',
-      imageAlt: 'PenguinHarness 用一句话需求构建 Claude Code 文档专家，使用 DeepSeek V4 Pro 模型',
+      imageAlt:
+        'PenguinHarness 网页端：通用智能体在对话中完成一轮对「文档专家」智能体的自进化，并对比 v14 与 v15 两个版本在各用例上的得分',
     },
     proof: {
       title: 'PenguinHarness 关键数据',
@@ -635,7 +671,8 @@ export const penguinHarnessCopy = {
           prompt:
             '收集 github.com/ericbuess/claude-code-docs 的文档，做一个化身 Claude Code 配置专家、回答带来源引用的 RAG 问答应用。',
           cost: '$0.02 token 花费 · DeepSeek V4 Pro',
-          imageAlt: '生成的 RAG 应用成品：Claude Code 配置专家，回答带可点击的来源引用',
+          imageAlt:
+            'PenguinHarness 新对话页：输入框、模型与智能体选择，以及「一句话生成 AI 应用」的示例：RAG 文档专家、投资分析助理、法务智能体应用',
         },
         evaluate: {
           title: '评估中心',
@@ -748,6 +785,36 @@ export const penguinHarnessCopy = {
           body: '管理员创建用户，各自拥有独立 Project，数据相互隔离。',
         },
       ],
+      gallery: {
+        label: 'PenguinHarness 网页端界面',
+        screens: [
+          {
+            label: '智能体',
+            caption: '每个智能体的活动曲线、工具、Skill 与定时任务一览，一键新建对话。',
+            alt: '智能体页面：每个智能体带活动曲线，以及会话、工具、Skill 与定时任务的计数，和「新建对话」「设置」按钮',
+          },
+          {
+            label: '评估中心',
+            caption: '每个评估任务保存用例、各版本的分数走势和每一次评估记录。',
+            alt: '评估中心里的一个评估任务：四道题目、分数随时间变化的折线图，以及按智能体版本与模型列出的评估明细',
+          },
+          {
+            label: '成本中心',
+            caption: 'Token、花费、请求数与成功率，按日期、智能体或模型查看。',
+            alt: '成本中心：Token、请求数与成本汇总，各智能体与各模型的请求数与成功率图表，以及 Token 与成本的变化趋势',
+          },
+          {
+            label: '模型库',
+            caption: '按供应商分组的模型，附上下文窗口、价格与密钥状态。',
+            alt: '模型库页面：按供应商分组的模型卡片，显示上下文窗口、价格与是否已配置密钥',
+          },
+          {
+            label: '插件市场',
+            caption: '按分类浏览插件，包括内置的智能体自进化工具包。',
+            alt: '插件市场页面：「Agent 自进化」分类下的 RSI 工具包，每个显示版本、安装状态与使用它的智能体',
+          },
+        ],
+      },
     },
     inTheBox: {
       eyebrow: '开箱即用',

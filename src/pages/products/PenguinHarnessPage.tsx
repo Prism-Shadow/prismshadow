@@ -6,6 +6,7 @@ import { penguinHarnessCopy } from '../../i18n/messages/products/penguinHarness'
 import { siteText } from '../../i18n/messages/shared'
 import type { PageProps } from '../types'
 import { installSnippets, penguinLinks } from './penguin/data'
+import { ScreenGallery } from './penguin/gallery'
 import {
   BenchmarkChart,
   BuildVisual,
@@ -136,6 +137,7 @@ export function PenguinHarnessPage({ locale }: PageProps) {
       </ProductSection>
 
       <ProductSection id="features" head={t.features} tone="raised">
+        <ScreenGallery locale={locale} copy={t.features.gallery} />
         <FeatureGrid items={t.features.items.map((item, i) => ({ ...item, icon: featureIcons[i] }))} />
       </ProductSection>
 
