@@ -86,8 +86,6 @@ export function CompareVisual({ sides }: { sides: PenguinHarnessCopy['compare'][
               cell={14}
               gap={6}
               lit={ours ? hundredCells : oneCell}
-              live={ours ? 0 : 0.05}
-              seed={11}
             />
             <p className="pg-penguin__side-note">{side.note}</p>
           </li>

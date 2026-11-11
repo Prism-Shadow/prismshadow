@@ -223,15 +223,6 @@
   background: var(--ds-accent);
 }
 
-.pg-llama .pg-llama__live::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border: 1px solid var(--ds-accent);
-  border-radius: 50%;
-  opacity: 0;
-}
-
 .pg-llama .pg-llama__chart-y {
   grid-column: 1;
   grid-row: 1;
@@ -651,7 +642,7 @@
   border-bottom: 0;
 }
 
-/* Outline first: a quiet accent cell per supported pair; the fill lights only in the sweep. */
+/* One accent cell per supported pair: a hairline cell with a calm solid fill. */
 .pg-llama .pg-llama__cell {
   position: relative;
   display: inline-block;
@@ -669,7 +660,7 @@
   inset: -1px;
   border-radius: inherit;
   background: var(--ds-accent);
-  opacity: 0;
+  opacity: 0.7;
 }
 
 .pg-llama .pg-llama__approach-short {
@@ -1000,156 +991,49 @@
 /* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
 
 /*
- * Loops are primary. Every keyframe starts from the resting state, so a visual
- * on screen at first load never snaps; visuals that enter later start mid-loop.
+ * Two kinds of visual, two logics:
+ * - Charts (the loss charts, GPU-memory bars, the methods matrix) grow ONCE when
+ *   they enter view, then rest. No loops on them.
+ * - Diagrams, flows and UI mocks (the model picker, dataset processing, the
+ *   model-family highlight, the architecture flow) keep their loops.
+ * Every intro ends exactly on the resting CSS.
  */
 
 /*
- * Loss charts keep training: the curve fades, then redraws left to right behind
- * a hairline drawing edge while the run's progress bar refills; the latest step
- * pops back in and pings. 8s period; entering visuals start at the redraw.
+ * Loss charts: the curves draw in left to right behind a hairline drawing edge;
+ * the hero run's progress bar fills with them; the latest step then arrives.
  */
-html[data-motion] .pg-llama [data-inview] .pg-llama__wipe {
-  animation: pg-llama-redraw 8s linear infinite;
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__wipe {
+  animation: ds-grow-x 1600ms var(--ds-ease-in-out) 200ms both;
 }
 
-html[data-motion] .pg-llama [data-inview] .pg-llama__curves {
-  animation: pg-llama-curves 8s linear infinite;
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__cursor {
+  animation: pg-llama-cursor 1600ms var(--ds-ease-in-out) 200ms both;
 }
 
-html[data-motion] .pg-llama [data-inview] .pg-llama__cursor {
-  animation: pg-llama-cursor 8s linear infinite;
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__progress-fill {
+  animation: ds-grow-x 1600ms var(--ds-ease-in-out) 200ms both;
 }
 
-html[data-motion] .pg-llama [data-inview] .pg-llama__progress-fill {
-  animation: pg-llama-progress 8s linear infinite;
-}
-
-html[data-motion] .pg-llama [data-inview] .pg-llama__live {
-  animation: pg-llama-latest 8s linear infinite;
-}
-
-html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__wipe,
-html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__curves,
-html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__cursor,
-html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__progress-fill,
 html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__live {
-  animation-delay: -1.3s;
+  animation: pg-product-pop 500ms var(--ds-ease-out) 1750ms both;
 }
 
-html[data-motion] .pg-llama [data-inview] .pg-llama__live::after {
-  animation: pg-llama-ping 2.6s var(--ds-ease-out) infinite;
-}
-
-@keyframes pg-llama-redraw {
-  0%,
-  16% {
-    transform: scaleX(1);
-  }
-
-  16.1% {
-    transform: scaleX(0);
-  }
-
-  80%,
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes pg-llama-curves {
-  0%,
-  9% {
-    opacity: 1;
-  }
-
-  16% {
-    opacity: 0;
-  }
-
-  16.1%,
-  100% {
-    opacity: 1;
-  }
-}
-
+/* The drawing edge crosses the plot once with the curve, then fades away. */
 @keyframes pg-llama-cursor {
-  0%,
-  16.1% {
+  0% {
     opacity: 0;
     transform: translateX(0);
   }
 
-  19%,
-  77% {
+  8%,
+  90% {
     opacity: 1;
-  }
-
-  80% {
-    opacity: 0;
-    transform: translateX(100%);
   }
 
   100% {
     opacity: 0;
     transform: translateX(100%);
-  }
-}
-
-@keyframes pg-llama-progress {
-  0%,
-  9% {
-    opacity: 1;
-    transform: scaleX(0.62);
-  }
-
-  16% {
-    opacity: 0;
-    transform: scaleX(0.62);
-  }
-
-  16.1% {
-    opacity: 1;
-    transform: scaleX(0);
-  }
-
-  80%,
-  100% {
-    opacity: 1;
-    transform: scaleX(0.62);
-  }
-}
-
-@keyframes pg-llama-latest {
-  0%,
-  8% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  12%,
-  80% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-
-  86%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pg-llama-ping {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-
-  70%,
-  100% {
-    opacity: 0;
-    transform: scale(2);
   }
 }
 
@@ -1166,16 +1050,10 @@ html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__skel {
   animation-delay: calc(200ms + (var(--r, 0) + var(--c, 0)) * 80ms);
 }
 
-/* GPU memory: bars grow on arrival, then refill from the axis and settle on a loop. */
-html[data-motion] .pg-llama [data-inview] .pg-llama__mem-bar {
-  animation: pg-product-rebuild 4.8s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--r, 0) * 140ms);
-}
-
+/* GPU memory: bars grow once from the axis, top to bottom; then their values fade in. */
 html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__mem-bar {
-  animation:
-    pg-product-rebuild 4.8s var(--ds-ease-in-out) calc(-0.58s + var(--r, 0) * 140ms) infinite,
-    ds-grow-x 1000ms var(--ds-ease-out) calc(250ms + var(--r, 0) * 110ms) backwards;
+  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--r, 0) * 110ms);
 }
 
 html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__mem-value {
@@ -1183,15 +1061,16 @@ html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__mem-value {
   animation-delay: calc(850ms + var(--r, 0) * 110ms);
 }
 
-/* Methods matrix: waves of solid fill sweep the grid along the diagonal. */
-html[data-motion] .pg-llama [data-inview] .pg-llama__cell::after {
-  animation: pg-product-wave 3.6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--d, 0) * 0.2s);
-}
-
+/* Methods matrix: the cells arrive along the diagonal and fill once to their
+   resting solid; then the table rests. */
 html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__cell {
   animation: pg-product-pop 500ms var(--ds-ease-out) both;
   animation-delay: calc(150ms + var(--d, 0) * 50ms);
+}
+
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__cell::after {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+  animation-delay: calc(500ms + var(--d, 0) * 90ms);
 }
 
 /* Model families: a wave crosses the grid; each card tints and its corner cell

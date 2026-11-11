@@ -1130,37 +1130,33 @@
 /* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
 
 /*
- * Loops are primary: each visual stays visibly alive while in view, with fills
- * moving between outline, soft and solid. Every keyframe starts from the resting
- * state, so nothing snaps on first load. Intros only on [data-inview='enter'].
+ * Two kinds of visual, two logics:
+ * - Charts (the 1×/100× field, benchmark bars, the trace timeline, the evolve
+ *   trend line) grow ONCE when they enter view, then rest. No loops on them.
+ * - Diagrams, flows and UI mocks (suite runs, the evolve loop, deploy packets,
+ *   the prompt cursor, the terminal caret) keep their loops.
+ * Every intro ends exactly on the resting CSS, so the final state is the
+ * static one; tab visuals replay their intro when selected.
  */
 
-/* 1× vs 100×: waves of solid fill sweep the hundred along the diagonal; the single
-   hand-built cell blinks slowly while a few background cells come and go. */
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__side-field--ours [data-lit] {
-  animation: pg-product-wave-fill 4.6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--i, 0) * 46ms);
+/* 1× vs 100×: the cells arrive along the diagonal and a single wave of solid fill
+   crosses the hundred, settling back to rest. The single 1× cell just arrives. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field [data-lit] {
+  animation: ds-fade-in 500ms var(--ds-ease-out) both;
+  animation-delay: calc(200ms + var(--i, 0) * 8ms);
 }
 
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field--ours [data-lit] {
   animation:
     ds-fade-in 500ms var(--ds-ease-out) calc(200ms + var(--i, 0) * 8ms) both,
-    pg-product-wave-fill 4.6s var(--ds-ease-in-out) calc(1100ms + var(--i, 0) * 46ms) infinite;
+    pg-penguin-pass 1600ms var(--ds-ease-in-out) calc(900ms + var(--i, 0) * 14ms);
 }
 
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__side-field:not(.pg-penguin__side-field--ours) [data-lit] {
-  animation: pg-penguin-blink 3.2s var(--ds-ease-in-out) infinite;
-}
-
-@keyframes pg-penguin-blink {
-  0%,
-  100% {
-    opacity: var(--ds-glint-rest, 0.45);
-  }
-
-  45%,
-  60% {
-    opacity: 0.8;
+/* One pass of solid fill; both ends are the cell's own resting fill and opacity. */
+@keyframes pg-penguin-pass {
+  35% {
+    fill-opacity: 0.92;
+    opacity: 1;
   }
 }
 
@@ -1173,27 +1169,22 @@ html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__build-shot img 
   animation: ds-fade-up 900ms var(--ds-ease-out) 250ms both;
 }
 
-/* Evaluate: each suite runs its tasks left to right (the running cell solid, done
-   cells soft), then the queue resets; the trace timeline keeps re-recording. */
+/* Evaluate: each suite keeps running its tasks left to right (the running cell
+   solid, done cells soft), then the queue resets. The trace timeline is a chart
+   of the run: its segments grow once, in time order. */
 html[data-motion] .pg-penguin [data-inview] .pg-penguin__suite-cell::before {
   --pk-done: 0.55;
   animation: pg-product-queue 6s linear infinite;
   animation-delay: calc(var(--r, 0) * 0.45s + var(--c, 0) * 0.34s);
 }
 
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__seg {
-  animation: pg-product-rebuild 6.4s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--at, 0) * 2.6s);
-}
-
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__seg {
-  animation:
-    pg-product-rebuild 6.4s var(--ds-ease-in-out) calc(-1.57s + var(--at, 0) * 2.6s) infinite,
-    ds-grow-x 560ms var(--ds-ease-out) calc(300ms + var(--at, 0) * 1100ms) backwards;
+  animation: ds-grow-x 560ms var(--ds-ease-out) both;
+  animation-delay: calc(300ms + var(--at, 0) * 1100ms);
 }
 
-/* Evolve: a solid signal walks the loop arrow by arrow; the evaluators fill green
-   in parallel, each on its own rhythm; the trend line redraws and its tip pings. */
+/* Evolve: a solid signal walks the loop arrow by arrow and the evaluators fill green
+   in parallel (the diagram loops); the trend line draws once and its tip arrives. */
 html[data-motion] .pg-penguin [data-inview] .pg-penguin__arrow-lit {
   animation: pg-product-light 3.6s var(--ds-ease-in-out) infinite;
   animation-delay: calc(var(--k, 0) * 0.9s);
@@ -1214,74 +1205,15 @@ html[data-motion] .pg-penguin [data-inview] .pg-penguin__hex::before {
   animation-delay: calc(var(--i, 0) * 0.37s);
 }
 
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__spark path {
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark path {
   stroke-dasharray: 1;
-  animation: pg-penguin-trend 5.2s var(--ds-ease-in-out) infinite;
+  animation: ds-draw 1400ms var(--ds-ease-out) 300ms both;
 }
 
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__spark circle {
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark circle {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pg-penguin-tip 5.2s var(--ds-ease-in-out) infinite;
-}
-
-@keyframes pg-penguin-trend {
-  0%,
-  58% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-
-  66% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-
-  66.1% {
-    opacity: 1;
-    stroke-dashoffset: 1;
-  }
-
-  92%,
-  100% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-}
-
-/* The tip pings twice while the line holds, hides while it redraws. */
-@keyframes pg-penguin-tip {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  14% {
-    opacity: 1;
-    transform: scale(2);
-  }
-
-  28% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  42% {
-    opacity: 1;
-    transform: scale(2);
-  }
-
-  56% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  62%,
-  92% {
-    opacity: 0;
-    transform: scale(1);
-  }
+  animation: pg-product-pop 500ms var(--ds-ease-out) 1600ms both;
 }
 
 /* Deploy: solid packets run down from every entry point (shared packets) and the
@@ -1304,17 +1236,10 @@ html[data-motion] .pg-penguin [data-inview] .pg-penguin__root-ping {
   }
 }
 
-/* Benchmark: bars grow once on arrival, then rebuild from the axis on a loop
-   (values and cost multiples stay put; they only fade in once). */
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__bar {
-  animation: pg-product-rebuild 5.6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--r, 0) * 120ms);
-}
-
+/* Benchmark: bars grow once from the axis, then the values and cost multiples fade in. */
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar {
-  animation:
-    pg-product-rebuild 5.6s var(--ds-ease-in-out) calc(-0.67s + var(--r, 0) * 120ms) infinite,
-    ds-grow-x 1000ms var(--ds-ease-out) calc(250ms + var(--r, 0) * 110ms) backwards;
+  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--r, 0) * 110ms);
 }
 
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar-value {

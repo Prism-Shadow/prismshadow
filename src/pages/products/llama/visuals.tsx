@@ -41,9 +41,9 @@ const [lastX, lastY] = trainCurve[trainCurve.length - 1].split(' ').map(Number)
 const lastPoint = { left: `${(lastX / W) * 100}%`, top: `${(lastY / H) * 100}%` }
 
 /**
- * Loss chart. Under motion the curves are revealed left to right by a clip
- * (dashes would be mis-measured on these non-scaling strokes), and with `live`
- * the latest step carries a marker that pings slowly.
+ * Loss chart. A chart grows once: under motion the curves draw in left to right
+ * by a clip (dashes would be mis-measured on these non-scaling strokes) behind a
+ * hairline drawing edge, then rest. With `live` the latest step carries a marker.
  */
 function LossChart({
   showEval = false,
@@ -71,7 +71,7 @@ function LossChart({
             <line key={f} className="pg-llama__grid" x1="0" x2={W} y1={H * f} y2={H * f} />
           ))}
           <line className="pg-llama__axis" x1="0" x2={W} y1={H - 4} y2={H - 4} />
-          <g className="pg-llama__curves" clipPath={`url(#${clipId})`}>
+          <g clipPath={`url(#${clipId})`}>
             <path className="pg-llama__area" d={toArea(trainCurve)} />
             <path className="pg-llama__curve" d={toLine(trainCurve)} />
             {showEval ? <path className="pg-llama__curve pg-llama__curve--eval" d={toLine(evalCurve)} /> : null}
