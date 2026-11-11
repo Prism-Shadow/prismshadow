@@ -219,70 +219,118 @@
 
 /* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
 
-/* Signal dash: one short dash per wire, parked before the wire's start, so it
-   is invisible at rest. Dash lengths are screen pixels (non-scaling stroke). */
+/* Packets: one solid pill per wire, parked before the wire's start at rest.
+   Dash lengths are screen pixels (non-scaling stroke). */
 .pg-flow__wire .pg-flow__pulse {
   stroke: var(--ds-accent);
-  stroke-width: 1.5;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 10 1200;
-  stroke-dashoffset: 10;
+  stroke-dasharray: 4 1200;
+  stroke-dashoffset: 6;
   opacity: 0;
 }
 
-/* Output highlight ring, invisible at rest. */
+/* Chip fills: a solid-tinted layer with a full-tone border, invisible at rest
+   (inputs use ::before, outputs ::after; the other pseudo is the wire dot). */
+.pg-flow__node--in .pg-flow__box::before,
 .pg-flow__node--out .pg-flow__box::after {
   content: '';
   position: absolute;
   inset: -1px;
   border: 1px solid var(--flow-tone, var(--ds-accent));
   border-radius: inherit;
+  background: color-mix(in srgb, var(--flow-tone, var(--ds-accent)) 24%, transparent);
   opacity: 0;
   pointer-events: none;
 }
 
-/* One 9s cycle: the dash crosses its wire at ~110px/s, then waits off the end. */
-@keyframes pg-flow-pulse {
+/* Inputs: one packet every 0.6s, cycling down the inputs (3s per input). */
+@keyframes pg-flow-pulse-in {
   0% {
-    stroke-dashoffset: 10;
-    opacity: 0.9;
+    stroke-dashoffset: 6;
+    opacity: 1;
   }
+  40%,
+  100% {
+    stroke-dashoffset: -170;
+    opacity: 1;
+  }
+}
+
+/* Outputs: one packet every 0.75s, cycling down the departments (6s each). */
+@keyframes pg-flow-pulse-out {
+  0% {
+    stroke-dashoffset: 6;
+    opacity: 1;
+  }
+  22%,
+  100% {
+    stroke-dashoffset: -210;
+    opacity: 1;
+  }
+}
+
+@keyframes pg-flow-fill-in {
+  0%,
+  34%,
+  100% {
+    opacity: 0;
+  }
+  8%,
+  16% {
+    opacity: 1;
+  }
+}
+
+@keyframes pg-flow-fill-out {
+  0%,
   30%,
   100% {
-    stroke-dashoffset: -280;
-    opacity: 0.9;
+    opacity: 0;
+  }
+  5%,
+  18% {
+    opacity: 1;
   }
 }
 
-/* Each output glows for ~1.3s; with a 0.5s stagger one output leads at a time. */
-@keyframes pg-flow-light {
+@keyframes pg-flow-dot {
   0%,
+  20%,
   100% {
-    opacity: 0;
+    transform: scale(1);
   }
-  4% {
-    opacity: 0.75;
-  }
-  15% {
-    opacity: 0;
+  6% {
+    transform: scale(1.6);
   }
 }
 
-/* Loop: inputs converge on the core, then the signal fans out in a slow
-   top-to-bottom stagger and each output lights as its dash arrives. */
+/* Loop: inputs fill as they send a packet into the core; the core fans
+   packets out down the list, and each output fills solid as its packet lands
+   (about two outputs lit at a time). */
 html[data-motion] .pg-flow[data-inview] .pg-flow__wire--in .pg-flow__pulse {
-  animation: pg-flow-pulse 9s linear infinite;
-  animation-delay: calc(0.6s + var(--k) * 80ms);
+  animation: pg-flow-pulse-in 3s linear infinite;
+  animation-delay: calc(0.4s + var(--k) * 0.6s);
+}
+
+html[data-motion] .pg-flow[data-inview] .pg-flow__node--in .pg-flow__box::before {
+  animation: pg-flow-fill-in 3s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.15s + var(--k) * 0.6s);
 }
 
 html[data-motion] .pg-flow[data-inview] .pg-flow__wire--out .pg-flow__pulse {
-  animation: pg-flow-pulse 9s linear infinite;
-  animation-delay: calc(1.7s + var(--k) * 500ms);
+  animation: pg-flow-pulse-out 6s linear infinite;
+  animation-delay: calc(0.6s + var(--k) * 0.75s);
 }
 
 html[data-motion] .pg-flow[data-inview] .pg-flow__node--out .pg-flow__box::after {
-  animation: pg-flow-light 9s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(2.4s + var(--k) * 500ms);
+  animation: pg-flow-fill-out 6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1.3s + var(--k) * 0.75s);
+}
+
+html[data-motion] .pg-flow[data-inview] .pg-flow__node--out .pg-flow__box::before {
+  animation: pg-flow-dot 6s var(--ds-ease-out) infinite;
+  animation-delay: calc(1.3s + var(--k) * 0.75s);
 }
 
 /* Intro (entering view, not first load): the figure assembles left to right. */

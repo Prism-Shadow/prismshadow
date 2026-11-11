@@ -377,8 +377,10 @@
   stroke: var(--ds-accent-line);
 }
 
+/* The cyan fill sits at zero opacity, so a window can light up in the loop. */
 .pg-platform .pf-dg__window {
-  fill: none;
+  fill: var(--ds-cyan);
+  fill-opacity: 0;
   stroke: rgba(255, 255, 255, 0.14);
 }
 
@@ -667,6 +669,8 @@
   display: block;
   width: 100%;
   height: auto;
+  /* The PrismShadow cell's glow ring may grow past the track. */
+  overflow: visible;
 }
 
 .pg-platform .pf-cost__cell {
@@ -678,8 +682,10 @@
   stroke: rgba(255, 255, 255, 0.05);
 }
 
+/* Same 2% white as before, kept as fill + fill-opacity so the loop can fill it. */
 .pg-platform .pf-cost__cell--ref {
-  fill: rgba(255, 255, 255, 0.02);
+  fill: var(--ds-text);
+  fill-opacity: 0.02;
   stroke: rgba(255, 255, 255, 0.32);
 }
 
@@ -799,22 +805,82 @@
  * The motion contract (src/components/site/motion.ts): every rule below runs
  * only under html[data-motion]; the resting styles above are the final frame
  * that no-JS visitors, reduced motion and the prerendered page see.
- * Intros play on `[data-inview='enter']`, loops on any `[data-inview]`.
+ * Intros play on `[data-inview='enter']`; the live loops on any `[data-inview]`,
+ * each on its own period so a visual never moves all in sync.
  */
 
-/* Signals: a short accent dash, invisible at rest. */
-.pg-platform :is(.pf-dg__signal, .pf-loopdg__signal) {
+/* ----- Live marks: all invisible at rest ----- */
+
+.pg-platform :is(.pf-dg__fill, .pf-stack__lit, .pf-loopdg__glow, .pf-loopdg__entry-fill) {
+  fill-opacity: 0;
+}
+
+.pg-platform .pf-dg__fill--accent,
+.pg-platform .pf-stack__lit--accent {
+  --pf-peak: 0.88;
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__fill--cyan,
+.pg-platform .pf-stack__lit--cyan {
+  --pf-peak: 0.8;
+  fill: var(--ds-cyan);
+}
+
+.pg-platform .pf-dg__fill--signal {
+  --pf-peak: 0.6;
+  fill: var(--ds-signal);
+}
+
+.pg-platform .pf-dg__fill--text {
+  --pf-peak: 0.22;
+  fill: var(--ds-text);
+}
+
+/* Big plate faces wash with their colour; the model cube goes solid. */
+.pg-platform .pf-stack__lit {
+  --pf-peak: 0.24;
+}
+
+.pg-platform .pf-stack__lit--amber {
+  --pf-peak: 0.24;
+  fill: var(--ds-amber);
+}
+
+.pg-platform .pf-stack__lit--solid {
+  --pf-peak: 0.85;
+  fill: var(--ds-accent);
+}
+
+.pg-platform :is(.pf-dg__wash, .pf-loopdg__glow, .pf-loopdg__entry-fill) {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__wash {
+  fill-opacity: 0;
+}
+
+/* Packets: small solid dots along a connector (a dash pattern). */
+.pg-platform :is(.pf-dg__packet, .pf-loopdg__packet) {
   fill: none;
-  /* A lighter tint of the accent, so it still reads where it runs on an accent wire. */
-  stroke: color-mix(in srgb, var(--ds-accent) 55%, #fff);
-  stroke-width: 1.5;
+  stroke: var(--ds-accent);
+  stroke-width: 4.5;
   stroke-linecap: round;
-  stroke-dasharray: 18 2000;
-  stroke-dashoffset: 18;
   opacity: 0;
 }
 
-/* Hides whatever runs behind the engine box (the signal passes through it). */
+.pg-platform .pf-dg__packet {
+  stroke-dasharray: 0.5 99.5;
+}
+
+/* One packet per arc (a single dot, far longer gap than the arc), a touch larger. */
+.pg-platform .pf-loopdg__packet {
+  stroke-width: 5.5;
+  stroke-dasharray: 0.5 2000;
+  stroke-dashoffset: 0;
+}
+
+/* Hides whatever runs behind the engine box (packets pass through it). */
 .pg-platform .pf-dg__mask {
   fill: var(--ds-panel);
 }
@@ -824,7 +890,26 @@
   opacity: 0;
 }
 
-/* Hero stack: plates settle in from the base up, labels with them; then the lit point breathes. */
+.pg-platform :is(.pf-cost__ping, .pf-dg__ping) {
+  fill: none;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pg-platform .pf-cost__ping {
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__ping {
+  stroke: var(--ds-signal);
+}
+
+/* ----- Hero stack ----- */
+
+/* Intro (in-app visits): plates settle in from the base up, labels with them. */
 html[data-motion] .pg-platform .pf-stack[data-inview='enter'] .pf-stack__plate {
   animation: ds-fade-up 900ms var(--ds-ease-out) both;
   animation-delay: calc(var(--i) * 150ms);
@@ -835,17 +920,61 @@ html[data-motion] .pg-platform .pf-stack[data-inview='enter'] .pf-stack__layer {
   animation-delay: calc(200ms + var(--i) * 150ms);
 }
 
+html[data-motion] .pg-platform .pf-stack[data-inview] {
+  --pf-loop: 300ms;
+}
+
+html[data-motion] .pg-platform .pf-stack[data-inview='enter'] {
+  --pf-loop: 1300ms;
+}
+
+/* Loop: the layers light up base to top (face wash + dots solid), the cube fills last. */
+html[data-motion] .pg-platform .pf-stack[data-inview] .pf-stack__lit {
+  animation: pf-stack-layer 5600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 700ms);
+}
+
+html[data-motion] .pg-platform .pf-stack[data-inview] .pf-stack__dot--faint {
+  animation: pf-stack-dot 5600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 700ms);
+}
+
 html[data-motion] .pg-platform .pf-stack[data-inview] .pf-stack__dot--focus {
   transform-box: fill-box;
   transform-origin: center;
-  animation: ds-pulse 4s var(--ds-ease-in-out) 600ms infinite;
+  animation: ds-pulse 2800ms var(--ds-ease-in-out) infinite;
+  animation-delay: var(--pf-loop);
 }
 
-html[data-motion] .pg-platform .pf-stack[data-inview='enter'] .pf-stack__dot--focus {
-  animation-delay: 1500ms;
+@keyframes pf-stack-layer {
+  0%,
+  30%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  7%,
+  22% {
+    fill-opacity: var(--pf-peak, 0.24);
+  }
 }
 
-/* Capability boards: frame fades in, wires draw, the result lands last; then one signal. */
+@keyframes pf-stack-dot {
+  0%,
+  30%,
+  100% {
+    fill: rgba(255, 255, 255, 0.2);
+  }
+
+  7%,
+  22% {
+    fill: var(--ds-accent);
+  }
+}
+
+/* ----- Capability boards ----- */
+
+/* Intro: the frame fades in, solid wires draw, heads and joints follow. */
 html[data-motion] .pg-platform .pf-dg[data-inview='enter'] :is(
     text,
     .pf-dg__box,
@@ -853,7 +982,6 @@ html[data-motion] .pg-platform .pf-dg[data-inview='enter'] :is(
     .pf-dg__bar,
     .pf-dg__chip,
     .pf-dg__pill,
-    .pf-dg__window,
     .pf-dg__boundary,
     .pf-dg__lock,
     .pf-dg__cyl,
@@ -875,45 +1003,95 @@ html[data-motion] .pg-platform .pf-dg[data-inview='enter'] :is(.pf-dg__head, .pf
   animation: ds-fade-in 500ms var(--ds-ease-out) 650ms both;
 }
 
-html[data-motion] .pg-platform .pf-dg[data-inview='enter'] .pf-dg__spark {
-  stroke-dasharray: 1;
-  animation: ds-draw 900ms var(--ds-ease-out) 500ms both;
-}
-
 html[data-motion] .pg-platform .pf-dg[data-inview='enter'] :is(.pf-dg__check, .pf-dg__focus-ring, .pf-dg__pip--signal) {
   animation: ds-fade-in 500ms var(--ds-ease-out) 900ms both;
 }
 
-html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__signal {
-  animation: pf-signal 4800ms linear 600ms infinite;
+html[data-motion] .pg-platform .pf-dg[data-inview] {
+  --pf-loop: 300ms;
 }
 
-html[data-motion] .pg-platform .pf-dg[data-inview='enter'] .pf-dg__signal {
-  animation-delay: 1600ms;
+html[data-motion] .pg-platform .pf-dg[data-inview='enter'] {
+  --pf-loop: 1100ms;
 }
 
-/* Travels in the first 70% of the period, fading in and out at the ends, then rests. */
-@keyframes pf-signal {
-  0% {
-    stroke-dashoffset: 18;
-    opacity: 0;
-    animation-timing-function: var(--ds-ease-in-out);
-  }
-
-  8%,
-  60% {
-    opacity: 1;
-  }
-
-  70%,
-  100% {
-    stroke-dashoffset: calc(var(--pf-sig-len) * -1px);
-    opacity: 0;
-  }
+/* The active agent: one solid cell at a time, stepping along the team. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__fill--turn {
+  animation: pf-turn 5500ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 1100ms);
 }
 
-/* Loop ring: arcs draw in clockwise; then one signal goes round, arc by arc. */
-html[data-motion] .pg-platform .pf-loopdg[data-inview='enter'] :is(circle, rect, text, .pf-loopdg__head) {
+/* A quick sweep (RSI algorithms trying in turn). */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__fill--scan {
+  animation: pf-scan 4200ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 420ms);
+}
+
+/* Cells on their own rhythm (models answering, the engine working, runs that fail). */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__fill--blink {
+  animation: pf-blink var(--t, 4s) var(--ds-ease-in-out) var(--d, 0s) infinite;
+}
+
+/* Queues: fill in turn as work completes, hold, then empty for the next batch. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__fill--climb {
+  animation: pf-climb 5600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 110ms);
+}
+
+/* Environments spin up one by one. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__window {
+  --pf-peak: 0.22;
+  animation: pf-climb 4800ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + 400ms + var(--i) * 500ms);
+}
+
+/* Verified rows stream in, then clear for the next batch. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__row {
+  animation: pf-stream 4800ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--i) * 450ms);
+}
+
+/* Requests land on the systems in turn. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__wash {
+  --pf-peak: 0.2;
+  animation: pf-turn3 3600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + 600ms + var(--i) * 1200ms);
+}
+
+/* The accuracy line keeps drawing forward; its end point lands with it. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__spark {
+  stroke-dasharray: 1;
+  animation: pf-progress 4400ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: var(--pf-loop);
+}
+
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__spark-end {
+  animation: pf-progress-end 4400ms linear infinite backwards;
+  animation-delay: var(--pf-loop);
+}
+
+/* The executed solution pings when the winning run completes. */
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__ping {
+  animation: pf-ping 5600ms var(--ds-ease-out) infinite;
+  animation-delay: calc(var(--pf-loop) + 1500ms);
+}
+
+html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__packet {
+  opacity: 1;
+  animation: pf-packet 2400ms linear infinite;
+  animation-delay: calc(var(--phase, 0) * -2400ms);
+}
+
+html[data-motion] .pg-platform .pf-dg[data-inview='enter'] .pf-dg__packet {
+  animation:
+    ds-fade-in 600ms var(--ds-ease-out) 1100ms both,
+    pf-packet 2400ms linear calc(var(--phase, 0) * -2400ms) infinite;
+}
+
+/* ----- Loop ring ----- */
+
+/* Intro: the arcs draw in clockwise. */
+html[data-motion] .pg-platform .pf-loopdg[data-inview='enter'] :is(circle:not(.pf-loopdg__glow), rect:not(.pf-loopdg__entry-fill), text, .pf-loopdg__head) {
   animation: ds-fade-in 700ms var(--ds-ease-out) both;
 }
 
@@ -932,62 +1110,265 @@ html[data-motion] .pg-platform .pf-loopdg[data-inview='enter'] .pf-loopdg__head 
   animation-delay: calc(500ms + var(--k, 0) * 220ms);
 }
 
-html[data-motion] .pg-platform .pf-loopdg[data-inview] .pf-loopdg__signal {
-  animation: pf-loop-signal 6s linear infinite;
-  animation-delay: calc(600ms + var(--k, 0) * 1.5s);
+html[data-motion] .pg-platform .pf-loopdg[data-inview] {
+  --pf-loop: 300ms;
 }
 
-html[data-motion] .pg-platform .pf-loopdg[data-inview='enter'] .pf-loopdg__signal {
-  animation-delay: calc(1600ms + var(--k, 0) * 1.5s);
+html[data-motion] .pg-platform .pf-loopdg[data-inview='enter'] {
+  --pf-loop: 1300ms;
 }
 
-/* Each arc carries the signal for a fifth of the lap, then hands it on through the node. */
-@keyframes pf-loop-signal {
+/* Loop: one solid packet goes round, arc by arc; each node fills as it arrives. */
+html[data-motion] .pg-platform .pf-loopdg[data-inview] .pf-loopdg__packet {
+  animation: pf-loop-packet 4800ms linear infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--k, 0) * 1200ms);
+}
+
+/* Knowledge enters from ingest once a lap, arriving with the feedback. */
+html[data-motion] .pg-platform .pf-loopdg[data-inview] .pf-loopdg__packet--ingest {
+  animation-delay: calc(var(--pf-loop) + 3600ms);
+}
+
+html[data-motion] .pg-platform .pf-loopdg[data-inview] .pf-loopdg__glow {
+  animation: pf-node 4800ms var(--ds-ease-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + var(--k, 0) * 1200ms + 1050ms);
+}
+
+html[data-motion] .pg-platform .pf-loopdg[data-inview] .pf-loopdg__entry-fill {
+  animation: pf-node 4800ms var(--ds-ease-out) infinite backwards;
+  animation-delay: calc(var(--pf-loop) + 3500ms);
+}
+
+/* ----- Cost chart ----- */
+
+html[data-motion] .pg-platform .pf-cost__track[data-inview='enter'] {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+}
+
+/* Claude Code's thirty cells fill one at a time, hold, then empty for the next run. */
+html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__cell--ref {
+  animation: pf-refill 6400ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(400ms + var(--i, 0) * 70ms);
+}
+
+/* PrismShadow is done after the first step: its cell glows, sheen and ring. */
+html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__glint {
+  animation: pf-cost-glint 6400ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: 470ms;
+}
+
+html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__ping {
+  animation: pf-ping 6400ms var(--ds-ease-out) infinite;
+  animation-delay: 470ms;
+}
+
+/* ----- Keyframes ----- */
+
+@keyframes pf-turn {
+  0%,
+  22%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  4%,
+  18% {
+    fill-opacity: var(--pf-peak, 0.88);
+  }
+}
+
+@keyframes pf-turn3 {
+  0%,
+  34%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  6%,
+  28% {
+    fill-opacity: var(--pf-peak, 0.88);
+  }
+}
+
+@keyframes pf-scan {
+  0%,
+  13%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  3%,
+  8% {
+    fill-opacity: var(--pf-peak, 0.88);
+  }
+}
+
+/* Lit about a quarter of the time, so only a few cells are solid at once. */
+@keyframes pf-blink {
+  0%,
+  38%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  12%,
+  24% {
+    fill-opacity: var(--pf-peak, 0.88);
+  }
+}
+
+@keyframes pf-climb {
   0% {
-    stroke-dashoffset: 18;
+    fill-opacity: 0;
+  }
+
+  8%,
+  44% {
+    fill-opacity: var(--pf-peak, 0.88);
+  }
+
+  58%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+
+@keyframes pf-stream {
+  0% {
+    opacity: 0.12;
+  }
+
+  8%,
+  70% {
+    opacity: 1;
+  }
+
+  84%,
+  100% {
+    opacity: 0.12;
+  }
+}
+
+/* Draws over the first 55%, holds, fades, and starts again from empty. */
+@keyframes pf-progress {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  55%,
+  82% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes pf-progress-end {
+  0%,
+  52% {
+    opacity: 0;
+  }
+
+  58%,
+  82% {
+    opacity: 1;
+  }
+
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pf-ping {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  6% {
+    opacity: 0.85;
+  }
+
+  34%,
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@keyframes pf-packet {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* Each arc carries the packet for a fifth of the lap, then hands it on through the node. */
+@keyframes pf-loop-packet {
+  0% {
+    stroke-dashoffset: 0;
     opacity: 0;
     animation-timing-function: var(--ds-ease-in-out);
   }
 
-  3%,
-  17% {
+  2%,
+  20% {
     opacity: 1;
   }
 
-  20%,
+  22%,
   100% {
-    stroke-dashoffset: calc(var(--pf-sig-len) * -1px);
+    stroke-dashoffset: calc(var(--pf-len) * -1px);
     opacity: 0;
   }
 }
 
-/* Cost chart: both rows fill at one pace; PrismShadow stops at one cell, which then glints. */
-html[data-motion] .pg-platform .pf-cost__track[data-inview='enter'] .pf-cost__cell {
-  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+@keyframes pf-node {
+  0%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  5% {
+    fill-opacity: 0.5;
+  }
+
+  24% {
+    fill-opacity: 0;
+  }
 }
 
-html[data-motion] .pg-platform .pf-cost__track[data-inview='enter'] :is(.pf-cost__cell--ref, .pf-cost__cell--ours) {
-  animation: ds-fade-in 450ms var(--ds-ease-out) both;
-  animation-delay: calc(150ms + var(--i, 0) * 30ms);
-}
+@keyframes pf-refill {
+  0% {
+    fill-opacity: 0.02;
+  }
 
-html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__glint {
-  animation: pf-cost-glint 4.5s var(--ds-ease-in-out) 900ms infinite;
-}
+  6%,
+  64% {
+    fill-opacity: 0.5;
+  }
 
-html[data-motion] .pg-platform .pf-cost__track[data-inview='enter'] .pf-cost__glint {
-  animation-delay: 1700ms;
+  76%,
+  100% {
+    fill-opacity: 0.02;
+  }
 }
 
 @keyframes pf-cost-glint {
   0%,
-  30%,
+  26%,
   100% {
     opacity: 0;
   }
 
-  12% {
-    opacity: 0.4;
+  5% {
+    opacity: 0.5;
   }
 }
 

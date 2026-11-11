@@ -766,23 +766,6 @@ html[data-motion] .pg-product [data-inview] .pg-product__terminal-caret {
   }
 }
 
-/*
- * A signal travelling once along a connector, then resting out of sight until
- * the next period. Give the path pathLength="1", stroke-dasharray: 0.14 1.2 and a
- * resting stroke-dashoffset of 0.2 (both ends keep the round caps off the path),
- * and no non-scaling stroke: dashes would then be measured in screen pixels.
- */
-@keyframes pg-product-signal {
-  0% {
-    stroke-dashoffset: 0.2;
-  }
-
-  32%,
-  100% {
-    stroke-dashoffset: -1.06;
-  }
-}
-
 /* An overlay that lights up briefly at the start of its period, then rests unlit. */
 @keyframes pg-product-light {
   0%,
@@ -796,5 +779,162 @@ html[data-motion] .pg-product [data-inview] .pg-product__terminal-caret {
 
   20% {
     opacity: 0;
+  }
+}
+
+/* ---------- Connectors with solid packets (shared/Connectors.tsx) ---------- */
+
+.pg-product .pg-product__wires {
+  display: block;
+  overflow: visible;
+}
+
+.pg-product .pg-product__wire {
+  fill: none;
+  stroke: var(--ds-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A solid round packet: a zero-length dash with a round cap, at the path start. */
+.pg-product .pg-product__packet {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: var(--pk-packet-size, 4px);
+  stroke-linecap: round;
+  stroke-dasharray: 0 2;
+  opacity: 0;
+}
+
+/*
+ * Packets travel continuously: each connector (--k) starts a little later than
+ * the last, and the packets on one connector (--p, a fraction) are spread over
+ * the period. Tune per visual with --pk-packet (period) and --pk-packet-k.
+ */
+html[data-motion] .pg-product [data-inview] .pg-product__packet {
+  animation: pg-product-packet var(--pk-packet, 2.6s) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: calc(var(--pk-packet-0, 0s) + var(--k, 0) * var(--pk-packet-k, 0.42s) + var(--p, 0) * var(--pk-packet, 2.6s));
+}
+
+@keyframes pg-product-packet {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+
+  10%,
+  86% {
+    opacity: 0.95;
+  }
+
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+/* An HTML packet riding a straight connector: a full-length track whose dot
+   (::before at its start) is carried across by translating the track. */
+@keyframes pg-product-ride {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+
+  12%,
+  84% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--pk-ride-x, 0), var(--pk-ride-y, 0));
+  }
+}
+
+/*
+ * Bars rebuilding on a loop. Starts and ends full (the resting state), so a
+ * visual already on screen never snaps: hold, fade out, grow back from the axis.
+ * Give the bar transform-origin: left center.
+ */
+@keyframes pg-product-rebuild {
+  0%,
+  62% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+
+  70.1% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+
+  90%,
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* A queue cell: runs (solid), settles as done (soft), then resets with the queue. */
+@keyframes pg-product-queue {
+  0% {
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 0.95;
+  }
+
+  14%,
+  78% {
+    opacity: var(--pk-done, 0.38);
+  }
+
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A short solid window in a long period: waves of fill across a grid (HTML overlay). */
+@keyframes pg-product-wave {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  8%,
+  20% {
+    opacity: var(--pk-wave-peak, 0.9);
+  }
+
+  34% {
+    opacity: 0;
+  }
+}
+
+/* The same wave for SVG cells: outline → solid → outline (fill-opacity). */
+@keyframes pg-product-wave-fill {
+  0%,
+  100% {
+    fill-opacity: 0;
+    opacity: var(--ds-glint-rest, 1);
+  }
+
+  8%,
+  20% {
+    fill-opacity: 0.92;
+    opacity: 1;
+  }
+
+  34% {
+    fill-opacity: 0;
+    opacity: var(--ds-glint-rest, 1);
   }
 }

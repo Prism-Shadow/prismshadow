@@ -273,8 +273,10 @@
   stroke-opacity: 0.5;
 }
 
+/* The cyan fill sits at zero opacity, so a window can light up in the loop. */
 .pg-home .hp-dg__window {
-  fill: none;
+  fill: var(--ds-cyan);
+  fill-opacity: 0;
   stroke: var(--hp-dg-line);
 }
 
@@ -308,27 +310,73 @@
   stroke-linecap: round;
 }
 
-/* Hides whatever runs behind the engine box (the signal passes through it). */
+/* Hides whatever runs behind the engine box (packets pass through it). */
 .pg-home .hp-dg__mask {
   fill: var(--ds-panel);
 }
 
-.pg-home .hp-dg__signal {
+/* ---------- Live marks: all invisible at rest ---------- */
+
+/* Solid fills inside cells. */
+.pg-home .hp-dg__fill {
+  fill-opacity: 0;
+}
+
+.pg-home .hp-dg__fill--accent {
+  --hp-peak: 0.88;
+  fill: var(--ds-accent);
+}
+
+.pg-home .hp-dg__fill--cyan {
+  --hp-peak: 0.8;
+  fill: var(--ds-cyan);
+}
+
+.pg-home .hp-dg__fill--text {
+  --hp-peak: 0.22;
+  fill: var(--ds-text);
+}
+
+/* Washes over whole boxes (systems receiving requests). */
+.pg-home .hp-dg__wash {
+  fill: var(--ds-accent);
+  fill-opacity: 0;
+}
+
+/* Evaluated runs light up green as the score line passes them. */
+.pg-home .hp-dg__tick-lit {
   fill: none;
-  /* A lighter tint of the accent, so it still reads where it runs on an accent wire. */
-  stroke: color-mix(in srgb, var(--ds-accent) 55%, #fff);
-  stroke-width: 1.5;
+  stroke: var(--ds-signal);
+  stroke-width: 1.25;
+  opacity: 0;
+}
+
+.pg-home .hp-dg__ping {
+  fill: none;
+  stroke: var(--ds-signal);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Packets: a conveyor of small solid dots along a connector (a dash pattern). */
+.pg-home .hp-dg__packet {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 4.5;
   stroke-linecap: round;
-  stroke-dasharray: 18 2000;
-  stroke-dashoffset: 18;
+  stroke-dasharray: 0.5 99.5;
   opacity: 0;
 }
 
 /*
  * Motion (src/components/site/motion.ts). The resting styles above are the
  * final frame. Intro, when a diagram enters (scrolled to, or its tab newly
- * selected): the frame fades in, solid wires draw, then heads and joints and
- * last the result. Loop: one signal travels the key connector.
+ * selected): the frame fades in, solid wires draw, heads and joints follow.
+ * Then the diagram runs live, every loop on its own period so nothing moves
+ * in sync: fills turn solid and back, progress lines refill, packets flow.
  */
 html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(
     text,
@@ -339,7 +387,6 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(
     .hp-dg__tick,
     .hp-dg__chip,
     .hp-dg__pill,
-    .hp-dg__window,
     .hp-dg__boundary,
     .hp-dg__glyph,
     .hp-dg__cyl,
@@ -359,40 +406,275 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__head, .hp-dg_
   animation: ds-fade-in 500ms var(--ds-ease-out) 650ms both;
 }
 
-html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__score, .hp-dg__spark) {
-  stroke-dasharray: 1;
-  animation: ds-draw 900ms var(--ds-ease-out) 500ms both;
-}
-
-html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__dot, .hp-dg__check, .hp-dg__ring) {
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__check, .hp-dg__ring) {
   animation: ds-fade-in 500ms var(--ds-ease-out) 900ms both;
 }
 
-html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__signal {
-  animation: hp-dg-signal 4800ms linear 600ms infinite;
+/* When the loops start: at once if already showing, after the intro otherwise. */
+html[data-motion] .pg-home .hp-dg[data-inview] {
+  --hp-loop: 300ms;
 }
 
-html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__signal {
-  animation-delay: 1600ms;
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] {
+  --hp-loop: 1100ms;
 }
 
-/* Travels in the first 70% of the period, fading in and out at the ends, then rests. */
-@keyframes hp-dg-signal {
+/* The active agent: one solid cell at a time, stepping along the team. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__fill--turn {
+  animation: hp-dg-turn 5500ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + var(--i) * 1100ms);
+}
+
+/* A quick sweep (RSI algorithms trying in turn). */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__fill--scan {
+  animation: hp-dg-scan 4200ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + var(--i) * 420ms);
+}
+
+/* Cells on their own rhythm (models answering, the engine working, runs that fail). */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__fill--blink {
+  animation: hp-dg-blink var(--t, 4s) var(--ds-ease-in-out) var(--d, 0s) infinite;
+}
+
+/* Queues: fill in turn as work completes, hold, then empty for the next batch. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__fill--climb {
+  animation: hp-dg-climb 5600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + var(--i) * 150ms);
+}
+
+/* Environments spin up one by one. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__window {
+  --hp-peak: 0.22;
+  animation: hp-dg-climb 4800ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + 400ms + var(--i) * 500ms);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__window {
+  animation:
+    ds-fade-in 700ms var(--ds-ease-out) both,
+    hp-dg-climb 4800ms var(--ds-ease-in-out) calc(var(--hp-loop) + 400ms + var(--i) * 500ms) infinite backwards;
+}
+
+/* Verified rows stream in, then clear for the next batch. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__row {
+  animation: hp-dg-stream 4800ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + var(--i) * 450ms);
+}
+
+/* Requests land on the systems in turn. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__wash {
+  --hp-peak: 0.2;
+  animation: hp-dg-turn3 3600ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + 600ms + var(--i) * 1200ms);
+}
+
+/* The score line refills to 90%+ every run, lighting each evaluated run green. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__score {
+  stroke-dasharray: 1;
+  animation: hp-dg-progress 4400ms linear infinite backwards;
+  animation-delay: var(--hp-loop);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__dot--score {
+  animation: hp-dg-progress-dot 4400ms linear infinite backwards;
+  animation-delay: var(--hp-loop);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__tick-lit {
+  animation: hp-dg-tick 4400ms var(--ds-ease-out) infinite backwards;
+  /* The score line covers one run's width every 141ms (track ÷ 19 runs at its pace). */
+  animation-delay: calc(var(--hp-loop) + var(--i) * 141ms);
+}
+
+/* The accuracy line keeps drawing forward, a beat after each run. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__spark {
+  stroke-dasharray: 1;
+  animation: hp-dg-progress 4400ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-loop) + 900ms);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__dot--spark {
+  animation: hp-dg-progress-dot 4400ms linear infinite backwards;
+  animation-delay: calc(var(--hp-loop) + 900ms);
+}
+
+/* The executed solution pings when the winning run completes. */
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__ping {
+  animation: hp-dg-ping 5600ms var(--ds-ease-out) infinite;
+  animation-delay: calc(var(--hp-loop) + 1500ms);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__packet {
+  opacity: 1;
+  animation: hp-dg-packet 2400ms linear infinite;
+  animation-delay: calc(var(--phase, 0) * -2400ms);
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__packet {
+  animation:
+    ds-fade-in 600ms var(--ds-ease-out) 1100ms both,
+    hp-dg-packet 2400ms linear calc(var(--phase, 0) * -2400ms) infinite;
+}
+
+@keyframes hp-dg-turn {
+  0%,
+  22%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  4%,
+  18% {
+    fill-opacity: var(--hp-peak, 0.88);
+  }
+}
+
+@keyframes hp-dg-turn3 {
+  0%,
+  34%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  6%,
+  28% {
+    fill-opacity: var(--hp-peak, 0.88);
+  }
+}
+
+@keyframes hp-dg-scan {
+  0%,
+  13%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  3%,
+  8% {
+    fill-opacity: var(--hp-peak, 0.88);
+  }
+}
+
+/* Lit about a quarter of the time, so only a few cells are solid at once. */
+@keyframes hp-dg-blink {
+  0%,
+  38%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  12%,
+  24% {
+    fill-opacity: var(--hp-peak, 0.88);
+  }
+}
+
+@keyframes hp-dg-climb {
   0% {
-    stroke-dashoffset: 18;
-    opacity: 0;
-    animation-timing-function: var(--ds-ease-in-out);
+    fill-opacity: 0;
   }
 
   8%,
-  60% {
+  44% {
+    fill-opacity: var(--hp-peak, 0.88);
+  }
+
+  58%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+
+@keyframes hp-dg-stream {
+  0% {
+    opacity: 0.12;
+  }
+
+  8%,
+  70% {
     opacity: 1;
   }
 
-  70%,
+  84%,
   100% {
-    stroke-dashoffset: calc(var(--hp-sig-len) * -1px);
+    opacity: 0.12;
+  }
+}
+
+/* Fills over the first 55%, holds, fades, and starts again from empty. */
+@keyframes hp-dg-progress {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  55%,
+  82% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  94%,
+  100% {
+    stroke-dashoffset: 0;
     opacity: 0;
+  }
+}
+
+@keyframes hp-dg-progress-dot {
+  0%,
+  52% {
+    opacity: 0;
+  }
+
+  58%,
+  82% {
+    opacity: 1;
+  }
+
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hp-dg-tick {
+  0% {
+    opacity: 0;
+  }
+
+  3%,
+  48% {
+    opacity: 0.9;
+  }
+
+  58%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hp-dg-ping {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  8% {
+    opacity: 0.8;
+  }
+
+  40%,
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+/* One dash period per loop, so the conveyor runs seamlessly. */
+@keyframes hp-dg-packet {
+  to {
+    stroke-dashoffset: -100;
   }
 }
 

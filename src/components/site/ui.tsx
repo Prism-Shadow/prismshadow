@@ -240,6 +240,8 @@ export function CtaBand({
         <PixelField
           className="ds-cta__field"
           animate
+          live={0.06}
+          seed={3}
           cols={22}
           rows={9}
           shape="square"
@@ -276,6 +278,14 @@ const toneVar: Record<PixelTone, string> = {
  * describe what it shows in nearby text if it carries meaning.
  * Deterministic, so it renders identically on server and client.
  */
+/** Deterministic 0–1 noise per cell (same on server and client). */
+function cellNoise(c: number, r: number, seed: number) {
+  let h = (Math.imul(c + 1, 73856093) ^ Math.imul(r + 1, 19349663) ^ Math.imul(seed, 83492791)) >>> 0
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0
+  h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+}
+
 export function PixelField({
   cols,
   rows,
@@ -286,6 +296,8 @@ export function PixelField({
   fade = 'none',
   fit = 'meet',
   animate = false,
+  live = 0,
+  seed = 1,
   className,
   style,
 }: {
@@ -300,6 +312,14 @@ export function PixelField({
   fit?: 'meet' | 'slice'
   /** Opt into the motion system (data-animate="custom"); style the motion in CSS. */
   animate?: boolean
+  /**
+   * Share (0–1) of background cells that fill and empty on their own slow,
+   * staggered rhythm while the field is in view (`ds-twinkle`). Deterministic
+   * per cell, so server and client render the same markup.
+   */
+  live?: number
+  /** Varies which cells twinkle and when, so neighbouring fields differ. */
+  seed?: number
   className?: string
   style?: CSSProperties
 }) {
@@ -315,12 +335,16 @@ export function PixelField({
       const x = c * step
       const y = r * step
       const color = p ? toneVar[p.tone ?? 'accent'] : undefined
-      const fill = p && !p.outline ? color : 'var(--ds-pixel-off, rgba(255,255,255,0.035))'
+      // Outlined lit cells keep their colour as fill at zero opacity, so CSS can
+      // turn them solid (animate fill-opacity) without changing the resting look.
+      const fill = p ? color : 'var(--ds-pixel-off, rgba(255,255,255,0.035))'
       const stroke = p ? color : 'var(--ds-pixel-line, rgba(255,255,255,0.07))'
       const opacity = p?.dim ? 0.45 : 1
       const key = `${c}:${r}`
-      // Lit cells carry their order (--i) and resting opacity so CSS can
-      // animate them (e.g. a staggered glint) without knowing the layout.
+      const noise = cellNoise(c, r, seed)
+      const twinkle = !p && live > 0 && noise < live
+      // Lit cells carry their order (--i) and resting opacity; twinkling cells
+      // carry their own delay (--d) and period (--t). CSS does the animating.
       const common = {
         fill,
         stroke,
@@ -332,7 +356,15 @@ export function PixelField({
               'data-lit': '',
               style: { '--i': p.index, '--ds-glint-rest': opacity } as CSSProperties,
             }
-          : {}),
+          : twinkle
+            ? {
+                'data-twinkle': '',
+                style: {
+                  '--d': `${(cellNoise(r, c, seed + 7) * 6).toFixed(2)}s`,
+                  '--t': `${(3.2 + cellNoise(c + 3, r + 5, seed) * 3.6).toFixed(2)}s`,
+                } as CSSProperties,
+              }
+            : {}),
       }
       if (shape === 'circle') {
         cells.push(<circle key={key} {...common} cx={x + cell / 2} cy={y + cell / 2} r={cell / 2 - 0.5} />)

@@ -162,14 +162,22 @@ describe.each(locales)('HomePage (%s)', (locale) => {
     expect(animated(html, 'hp-proof__stats'), 'proof numbers').toBe(1)
   })
 
-  it('renders each visual complete at rest, with its loop marks hidden until motion runs', () => {
-    // One ping ring per frontier layout, one signal per tab diagram.
-    expect(count(html, 'class="hp-fr__ping"')).toBe(3)
-    expect(count(html, 'class="hp-dg__signal"')).toBe(copy.platform.modules.length)
-    // The solved mass is grouped into reveal bands, but every band is in the markup.
+  it('renders each visual complete at rest, with its live marks in the markup', () => {
+    // Hero: the reveal bands, the live wave groups, the solving sparks and one ping per layout.
     expect(count(html, 'class="hp-fr__band"')).toBeGreaterThanOrEqual(3 * 8)
-    // Product vertex dots and proof stats carry their stagger order.
-    expect(html).toMatch(/class="hp-iso__dot[^"]*"[^>]*style="--i:0"/)
+    expect(count(html, 'class="hp-fr__wave"')).toBeGreaterThanOrEqual(3 * 8)
+    expect(count(html, 'class="hp-fr__spark"')).toBeGreaterThan(3 * 10)
+    expect(count(html, 'class="hp-fr__ping"')).toBe(3)
+    // Tab diagrams: solid packets on every board, solid fills on the key cells.
+    const boards = html.split('class="hp-dg"').slice(1)
+    expect(boards).toHaveLength(copy.platform.modules.length)
+    for (const board of boards) expect(board).toContain('class="hp-dg__packet"')
+    expect(count(html, 'hp-dg__fill hp-dg__fill--turn')).toBe(5)
+    expect(count(html, 'hp-dg__fill hp-dg__fill--climb')).toBeGreaterThanOrEqual(12)
+    expect(count(html, 'class="hp-dg__tick-lit"')).toBe(18)
+    // Product drawings fill their faces; proof stats carry their stagger order.
+    expect(count(html, 'class="hp-iso__lit')).toBeGreaterThanOrEqual(3)
+    expect(count(html, 'class="hp-iso__packet')).toBeGreaterThanOrEqual(3)
     expect(count(html, 'class="ds-stat hp-proof__stat" style="--i:')).toBe(4)
   })
 

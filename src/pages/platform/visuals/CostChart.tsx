@@ -6,9 +6,10 @@ import type { PlatformPageCopy } from '../../../i18n/messages/platformPage'
  * cost is drawn as outlined cells, so Claude Code reads as thirty quiet
  * outlines and PrismShadow as the one lit cell: honest, and calm.
  *
- * Motion (platform.css): as the chart scrolls in, both rows fill at the same
- * pace, one cell at a time (`--i`): PrismShadow stops after its first cell,
- * Claude Code runs on to thirty. Then the PrismShadow cell glints now and then.
+ * Motion (platform.css): both rows run the same task at the same pace, again
+ * and again: Claude Code's thirty cells fill solid one at a time (`--i`),
+ * hold, then empty for the next run, while the PrismShadow cell is done after
+ * one step and glows (a sheen and a ring) each time. Invisible at rest.
  */
 
 const CELL = 14
@@ -40,18 +41,13 @@ function Track({ value, max, emphasis }: { value: number; max: number; emphasis:
           />
         )
       })}
-      {/* A sheen over the lit cells, invisible at rest; it glints in the loop. */}
+      {/* A sheen and a ring over the lit cells, invisible at rest; they glow in the loop. */}
       {emphasis
         ? Array.from({ length: value }, (_, i) => (
-            <rect
-              key={`glint-${i}`}
-              className="pf-cost__glint"
-              x={i * STEP + 0.5}
-              y="0.5"
-              width={CELL - 1}
-              height={CELL - 1}
-              rx="3"
-            />
+            <g key={`glow-${i}`}>
+              <rect className="pf-cost__glint" x={i * STEP + 0.5} y="0.5" width={CELL - 1} height={CELL - 1} rx="3" />
+              <rect className="pf-cost__ping" x={i * STEP + 0.5} y="0.5" width={CELL - 1} height={CELL - 1} rx="3" />
+            </g>
           ))
         : null}
     </svg>

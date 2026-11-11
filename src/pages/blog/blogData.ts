@@ -383,28 +383,60 @@ export const coverGeometry: Record<'compact' | 'wide', CoverGeometry> = {
   wide: { cols: 48, rows: 15, motif: [31, 2], clear: [[0, 7, 26, 15], [0, 0, 12, 3]] },
 }
 
-/** How many cells of a cover glint when motion is on. */
-const COVER_GLINTS = 3
+/** Share of a cover's free background cells that fill and clear on their own (motion only). */
+const COVER_LIVE = 0.045
+
+export type CoverMotion = {
+  /** Where the solid wave reaches each lit cell, 0–1 (`c:r` → position). */
+  wave: Map<string, number>
+  /** Background cells that fill solid and clear on their own rhythm. */
+  live: Array<{ c: number; r: number; peak: number; delay: number; period: number }>
+  /** Seconds for one wave cycle, and a 0–1 offset so covers never move in step. */
+  period: number
+  phase: number
+}
 
 /**
- * The few cells of a cover that glint in a slow stagger (motion only): dim
- * tone cells spread along the motif and scatter. Returns `c:r` → stagger
- * order, plus a 0–1 phase so neighbouring covers rarely glint in step.
- * Deterministic, so server and client agree.
+ * Motion plan for a code-built cover, varied per post (seeded by its slug):
+ * a solid wave sweeps the motif along one of three axes (across, down, or out
+ * from the centre, either way round), and a few free background cells fill
+ * and clear on their own. Deterministic, so server and client agree; nothing
+ * here changes the resting picture.
  */
-export function coverGlints(post: BlogPost, cells: PixelLit[]): { order: Map<string, number>; phase: number } {
-  const h = hashString(`${post.slug}#glint`)
-  const pool = cells.filter((cell) => cell.dim && !cell.outline && cell.tone !== 'text')
-  const order = new Map<string, number>()
-  const count = Math.min(COVER_GLINTS, pool.length)
-  if (count) {
-    const offset = h % Math.max(1, Math.floor(pool.length / count))
-    for (let k = 0; k < count; k += 1) {
-      const cell = pool[(offset + Math.floor((k * pool.length) / count)) % pool.length]
-      order.set(`${cell.c}:${cell.r}`, k)
-    }
+export function coverMotion(post: BlogPost, geometry: CoverGeometry, cells: PixelLit[]): CoverMotion {
+  const seed = hashString(`${post.slug}#motion`)
+  const rand = makeRandom(seed)
+  const [mx, my] = geometry.motif
+  const axis = seed % 3
+  const reverse = (seed >>> 3) % 2 === 1
+  const maxRadius = Math.hypot(MOTIF_W / 2, MOTIF_H / 2)
+  const wave = new Map<string, number>()
+  for (const cell of cells) {
+    const x = Math.min(1, Math.max(0, (cell.c - mx) / (MOTIF_W - 1)))
+    const y = Math.min(1, Math.max(0, (cell.r - my) / (MOTIF_H - 1)))
+    const radial = Math.min(1, Math.hypot(cell.c - mx - MOTIF_W / 2, cell.r - my - MOTIF_H / 2) / maxRadius)
+    const w = axis === 0 ? x : axis === 1 ? y : radial
+    wave.set(`${cell.c}:${cell.r}`, Math.round((reverse ? 1 - w : w) * 100) / 100)
   }
-  return { order, phase: (h % 997) / 997 }
+
+  const taken = new Set(cells.map((cell) => `${cell.c}:${cell.r}`))
+  const calm = (c: number, r: number) =>
+    geometry.clear.some(([c0, r0, c1, r1]) => c >= c0 && c < c1 && r >= r0 && r < r1)
+  const live: CoverMotion['live'] = []
+  for (let r = 0; r < geometry.rows; r += 1)
+    for (let c = 0; c < geometry.cols; c += 1) {
+      const roll = rand()
+      if (roll >= COVER_LIVE || taken.has(`${c}:${r}`) || calm(c, r)) continue
+      live.push({
+        c,
+        r,
+        peak: 0.55 + Math.round(rand() * 30) / 100,
+        delay: Math.round(rand() * 400) / 100,
+        period: 3 + Math.round(rand() * 300) / 100,
+      })
+    }
+
+  return { wave, live, period: 5 + (seed % 15) / 10, phase: (seed % 997) / 997 }
 }
 
 /** Lit cells of a post cover: its motif plus a light seeded scatter. */

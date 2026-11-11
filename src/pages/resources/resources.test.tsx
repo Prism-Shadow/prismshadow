@@ -192,8 +192,9 @@ describe.each(locales)('AgentMarketplacePage (%s)', (locale) => {
     expect(animated(html, 'pg-marketplace__layer'), 'hero').toBe(1)
     expect(animated(html, 'pg-marketplace__skills'), 'catalogue').toBe(1)
     expect(animated(html, 'pg-marketplace__track-line'), 'adoption line').toBe(1)
-    // One "next cell" per team row for the arrival glint; nothing filtered yet.
-    expect(count(html, /data-next="true"/g)).toBe(t.visual.signals.length)
+    // Two deploying cells per team row for the loop; nothing filtered yet.
+    expect(count(html, /data-next="1"/g)).toBe(t.visual.signals.length)
+    expect(count(html, /data-next="2"/g)).toBe(t.visual.signals.length)
     expect(html).not.toContain('data-filtered')
     expect(html).not.toContain('data-inview')
   })

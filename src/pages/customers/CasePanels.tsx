@@ -6,9 +6,10 @@ import type { CoboPanelCopy, SubconsciousPanelCopy } from '../../i18n/messages/c
  * point; the schematic under it stays quiet: empty outlined cells for Cobo's
  * thirty scenarios, a hairline lifecycle for Subconscious.ai.
  *
- * Motion (customers.css): Cobo's thirty cells light up one after another,
- * column by column, then hold; the lifecycle's highlight steps through
- * Develop → Train → Optimize → Iterate, a few seconds per stage.
+ * Motion (customers.css): Cobo's thirty cells fill solid one by one, column
+ * by column, hold, empty and run again; the lifecycle's active stage is a
+ * solid fill stepping Develop → Train → Optimize → Iterate. The enterprise
+ * meters below run their own small live patterns. Invisible at rest.
  */
 
 const COLS = 15
@@ -39,20 +40,18 @@ export function CoboPanel({ copy }: { copy: CoboPanelCopy }) {
           {Array.from({ length: COLS * ROWS }, (_, i) => {
             const col = i % COLS
             const row = Math.floor(i / COLS)
-            const cell = {
-              x: col * STEP + 0.5,
-              y: row * STEP + 0.5,
-              width: CELL - 1,
-              height: CELL - 1,
-              rx: 4,
-              // Lighting order: column by column, top cell first.
-              style: { '--i': col * ROWS + row } as CSSProperties,
-            }
             return (
-              <g key={i}>
-                <rect className="cu-grid__cell" {...cell} />
-                <rect className="cu-grid__flash" {...cell} />
-              </g>
+              <rect
+                key={i}
+                className="cu-grid__cell"
+                x={col * STEP + 0.5}
+                y={row * STEP + 0.5}
+                width={CELL - 1}
+                height={CELL - 1}
+                rx="4"
+                // Fill order: column by column, top cell first.
+                style={{ '--i': col * ROWS + row } as CSSProperties}
+              />
             )
           })}
         </svg>
@@ -85,7 +84,11 @@ export function LifecyclePanel({ copy }: { copy: SubconsciousPanelCopy }) {
               className={index === 1 || index === 2 ? 'cu-life__stage is-ours' : 'cu-life__stage'}
               style={{ '--i': index } as CSSProperties}
             >
-              {stage}
+              <span className="cu-life__label">{stage}</span>
+              {/* The same label in dark ink, shown only while the stage is solid. */}
+              <span className="cu-life__label cu-life__label--on" aria-hidden="true">
+                {stage}
+              </span>
             </li>
           ))}
         </ol>
@@ -97,5 +100,56 @@ export function LifecyclePanel({ copy }: { copy: SubconsciousPanelCopy }) {
         </p>
       </div>
     </figure>
+  )
+}
+
+const METER_CELLS = 14
+const METER_CELL = 10
+const METER_STEP = 14
+
+export type MeterPattern = 'queue' | 'trials' | 'scan'
+
+/** Deterministic 0–1 noise, so the meter's timings match on server and client. */
+const meterNoise = (i: number, seed: number) => {
+  const x = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453
+  return x - Math.floor(x)
+}
+
+/**
+ * A small live strip for an enterprise case: a queue of tasks that fills and
+ * resets, experiments running in parallel, or a screening pass sweeping
+ * across. Decorative (aria-hidden); outlined cells at rest.
+ */
+export function LiveMeter({ pattern }: { pattern: MeterPattern }) {
+  const width = METER_CELLS * METER_STEP - (METER_STEP - METER_CELL)
+  return (
+    <svg
+      className={`cu-meter cu-meter--${pattern}`}
+      viewBox={`0 0 ${width} ${METER_CELL}`}
+      width={width}
+      height={METER_CELL}
+      aria-hidden="true"
+      focusable="false"
+      data-animate="custom"
+    >
+      {Array.from({ length: METER_CELLS }, (_, i) => (
+        <rect
+          key={i}
+          className="cu-meter__cell"
+          x={i * METER_STEP + 0.5}
+          y="0.5"
+          width={METER_CELL - 1}
+          height={METER_CELL - 1}
+          rx="2"
+          style={
+            {
+              '--i': i,
+              '--t': `${(2.8 + meterNoise(i, 4) * 2.4).toFixed(2)}s`,
+              '--d': `${(-meterNoise(i, 9) * 5).toFixed(2)}s`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    </svg>
   )
 }

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { PixelField, type PixelLit, type PixelTone } from '../../../components/site/ui'
+import { cx } from '../../../components/site/utils'
 import type {
   SecurityActionPolicyVisualCopy,
   SecurityAuditLogVisualCopy,
@@ -17,6 +18,7 @@ import {
   SearchKeyIcon,
   ToolIcon,
 } from '../icons'
+import { useLiveTick } from './useLiveTick'
 
 /*
  * Flat UI mocks for the four control areas. Each is one image for assistive
@@ -24,9 +26,19 @@ import {
  * the controls themselves.
  *
  * Motion (security.css): each mock is `data-animate="custom"` and is
- * remounted when its tab is selected, so its intro plays on every selection:
- * the data signal sweeps the pipeline, the policy decisions tick in, memory
- * cells settle, audit rows arrive one by one. Then everything holds.
+ * remounted when its tab is selected, so its intro plays on every selection
+ * (the data signal sweeps the pipeline, the policy decisions tick in, memory
+ * cells settle, audit rows arrive one by one). Then each keeps working while
+ * in view:
+ * - data: a bright crest streams along every stage; blocked cells flash solid
+ *   as it hits them; the delivered tick rings;
+ * - actions: the decision being made steps from item to item as a solid mark
+ *   (state-driven), while the approval request's timer fills;
+ * - memory: empty slots fill with new items and some items are evicted and
+ *   rewritten;
+ * - audit: new events stream in at the bottom and the oldest leaves at the
+ *   top (state-driven).
+ * Server, no-JS and reduced-motion renders are the static mocks.
  */
 
 /** Custom properties for a mock's staggered intro (read by security.css). */
@@ -97,13 +109,18 @@ const groupTones = ['green', 'amber', 'coral'] as const
 const groupMarks = [CheckIcon, PersonCheckIcon, CrossIcon]
 
 export function ActionPolicyMock({ copy }: { copy: SecurityActionPolicyVisualCopy }) {
+  const decisions = copy.groups.reduce((sum, group) => sum + group.items.length, 0)
+  // The decision being made steps through every item (none at rest).
+  const { ref, tick, live } = useLiveTick<HTMLDivElement>(650)
+  const deciding = live ? tick % decisions : -1
   return (
     <div
+      ref={ref}
       className="ds-panel pg-sec-window pg-sec-policy"
       role="img"
       aria-label={copy.ariaLabel}
       data-animate="custom"
-      style={vars({ '--decisions': copy.groups.reduce((sum, group) => sum + group.items.length, 0) })}
+      style={vars({ '--decisions': decisions })}
     >
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
@@ -129,8 +146,14 @@ export function ActionPolicyMock({ copy }: { copy: SecurityActionPolicyVisualCop
               </span>
               <ul className="pg-sec-policy__items">
                 {group.items.map((item, itemIndex) => (
-                  <li key={item} className="pg-sec-policy__item" style={vars({ '--i': before + itemIndex })}>
-                    <Mark />
+                  <li
+                    key={item}
+                    className={cx('pg-sec-policy__item', deciding === before + itemIndex && 'is-deciding')}
+                    style={vars({ '--i': before + itemIndex })}
+                  >
+                    <span className="pg-sec-policy__mark">
+                      <Mark />
+                    </span>
                     {item}
                   </li>
                 ))}
@@ -181,7 +204,7 @@ export function MemoryPolicyMock({ copy }: { copy: SecurityMemoryPolicyVisualCop
       </div>
       <div className="pg-sec-memory__store">
         <span className="pg-sec-mono">{copy.storeLabel}</span>
-        <PixelField cols={memoryCols} rows={memoryRows} cell={12} gap={6} lit={memoryCells} />
+        <PixelField cols={memoryCols} rows={memoryRows} cell={12} gap={6} lit={memoryCells} live={0.22} seed={11} />
       </div>
       <ul className="pg-sec-memory__rows">
         {copy.policies.map((policy, index) => (
@@ -206,10 +229,50 @@ export function MemoryPolicyMock({ copy }: { copy: SecurityMemoryPolicyVisualCop
 /* ---------- Audit log ---------- */
 
 const auditTimes = ['09:41:12', '09:41:18', '09:52:03', '09:52:05', '09:52:06']
+const VISIBLE_ROWS = 5
+
+/** Time of the n-th logged event: the authored times first, then a few seconds apart. */
+function auditTime(n: number) {
+  if (n < auditTimes.length) return auditTimes[n]
+  const [h, m, sec] = auditTimes[auditTimes.length - 1].split(':').map(Number)
+  const extra = n - (auditTimes.length - 1)
+  const total = h * 3600 + m * 60 + sec + extra * 3 + ((n * 7) % 4)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${pad(Math.floor(total / 3600) % 24)}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`
+}
 
 export function AuditLogMock({ copy }: { copy: SecurityAuditLogVisualCopy }) {
+  // Every 2.2s a new event arrives at the bottom and the oldest leaves at the
+  // top. `tick` is the first visible event (0 at rest: the authored log).
+  const { ref, tick } = useLiveTick<HTMLDivElement>(2200)
+  const entries = Array.from({ length: VISIBLE_ROWS }, (_, j) => tick + j)
+  const row = (n: number, j: number, leaving = false) => {
+    const event = copy.rows[n % copy.rows.length]
+    return (
+      <div
+        key={leaving ? `leaving-${n}` : `row-${n}`}
+        className={cx('pg-sec-audit__row', leaving && 'pg-sec-audit__row--leaving')}
+        data-tone={n % copy.rows.length === 2 ? 'amber' : 'accent'}
+        style={vars({ '--i': j })}
+      >
+        <ChevronIcon />
+        <span className="pg-sec-audit__time">{auditTime(n)}</span>
+        <span className="pg-sec-audit__event">{event.event}</span>
+        <span className="pg-sec-audit__actor">
+          <span className="pg-sec-chip__avatar" />
+          {event.actor}
+        </span>
+      </div>
+    )
+  }
   return (
-    <div className="ds-panel pg-sec-window pg-sec-audit" role="img" aria-label={copy.ariaLabel} data-animate="custom">
+    <div
+      ref={ref}
+      className="ds-panel pg-sec-window pg-sec-audit"
+      role="img"
+      aria-label={copy.ariaLabel}
+      data-animate="custom"
+    >
       <div className="pg-sec-window__bar">
         <span className="pg-sec-window__title">
           <HistoryIcon />
@@ -228,22 +291,11 @@ export function AuditLogMock({ copy }: { copy: SecurityAuditLogVisualCopy }) {
             <span key={column}>{column}</span>
           ))}
         </div>
-        {copy.rows.map((row, index) => (
-          <div
-            key={row.event}
-            className="pg-sec-audit__row"
-            data-tone={index === 2 ? 'amber' : 'accent'}
-            style={vars({ '--i': index })}
-          >
-            <ChevronIcon />
-            <span className="pg-sec-audit__time">{auditTimes[index] ?? auditTimes[0]}</span>
-            <span className="pg-sec-audit__event">{row.event}</span>
-            <span className="pg-sec-audit__actor">
-              <span className="pg-sec-chip__avatar" />
-              {row.actor}
-            </span>
-          </div>
-        ))}
+        {/* data-tick alternates per arrival so the slide animation restarts each time. */}
+        <div className="pg-sec-audit__rows" data-tick={tick > 0 ? tick % 2 : undefined}>
+          {tick > 0 ? row(tick - 1, -1, true) : null}
+          {entries.map((n, j) => row(n, j))}
+        </div>
       </div>
     </div>
   )

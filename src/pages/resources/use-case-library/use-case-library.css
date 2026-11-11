@@ -821,9 +821,9 @@
 
 /*
  * All animation runs under html[data-motion]; the rules above are the complete
- * static state. The hero atlas moves through the shared FlowSchematic
- * (solutions/departments/flow.css): a signal runs along its wires and the
- * results glint in turn.
+ * static state, and every loop's first frame equals it. The hero atlas moves
+ * through the shared FlowSchematic (solutions/departments/flow.css): packets
+ * run its wires, the cases fill as they send, the results fill as they land.
  */
 
 /* Pipeline signal: per rail segment, a dot with a short tail (clipped to the
@@ -845,7 +845,7 @@
   inset: 0;
   background:
     radial-gradient(circle 2.5px at 50% calc(100% - 3px), var(--ds-accent) 95%, transparent),
-    linear-gradient(180deg, transparent 50%, rgba(169, 156, 255, 0.5)) center / 1px 100% no-repeat;
+    linear-gradient(180deg, transparent 40%, rgba(169, 156, 255, 0.6)) center / 1px 100% no-repeat;
   transform: translateY(-100%);
 }
 
@@ -862,18 +862,42 @@
   opacity: 0;
 }
 
-/* One 6s cycle: the head crosses one segment every 0.6s, so the signal reads
-   as one dot running down the rail; the final step pings when it arrives. */
+/* Method steps of a benchmark: a fill ring per step, invisible at rest. */
+.pg-usecases__steps li::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent);
+  border-radius: inherit;
+  background: rgba(169, 156, 255, 0.16);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Pipeline (4.8s): the signal runs down the rail, each node fills solid as it
+   passes and holds, the final step pings, then the nodes empty in order. */
 @keyframes pg-usecases-spark {
   0% {
     transform: translateY(-100%);
   }
-  10% {
+  12% {
     transform: translateY(0);
   }
-  20%,
+  24%,
   100% {
     transform: translateY(100%);
+  }
+}
+
+@keyframes pg-usecases-node {
+  0%,
+  80%,
+  100% {
+    background-color: var(--ds-bg-raised);
+  }
+  6%,
+  64% {
+    background-color: var(--ds-accent);
   }
 }
 
@@ -886,16 +910,53 @@
   4% {
     opacity: 0.9;
   }
-  26% {
+  30% {
     opacity: 0;
-    transform: scale(1.4);
+    transform: scale(2);
   }
 }
 
-@keyframes pg-usecases-cell {
-  from {
+/* Benchmark charts (7s): bars hold, drain, and rebuild from their base;
+   passed test cases empty and refill solid in a wave (3.6s). */
+@keyframes pg-usecases-rebuild {
+  0%,
+  64%,
+  100% {
+    transform: scaleX(1);
+  }
+  72%,
+  74% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pg-usecases-pass {
+  0%,
+  44%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  12%,
+  20% {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes pg-usecases-step {
+  0%,
+  30%,
+  100% {
+    opacity: 0;
+  }
+  6%,
+  22% {
+    opacity: 1;
   }
 }
 
@@ -904,21 +965,34 @@ html[data-motion] .pg-usecases__pipeline[data-inview='enter'] {
 }
 
 html[data-motion] .pg-usecases__pipeline[data-inview] .pg-usecases__spark::before {
-  animation: pg-usecases-spark 6s linear infinite;
-  animation-delay: calc(0.8s + var(--k) * 0.6s);
+  animation: pg-usecases-spark 4.8s linear infinite;
+  animation-delay: calc(0.6s + var(--k) * 0.58s);
+}
+
+html[data-motion] .pg-usecases__pipeline[data-inview] li:not([data-last])::before {
+  animation: pg-usecases-node 4.8s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.6s + var(--k) * 0.58s);
 }
 
 html[data-motion] .pg-usecases__pipeline[data-inview] li[data-last]::after {
-  animation: pg-usecases-ping 6s var(--ds-ease-out) 3.2s infinite;
+  animation: pg-usecases-ping 4.8s var(--ds-ease-out) infinite;
+  animation-delay: calc(0.6s + var(--k) * 0.58s);
 }
 
-/* Benchmark charts grow once from their base when they come into view (and
-   again when their benchmark is selected). Labels and numbers only fade. */
+/* Entering view (and each newly selected benchmark): bars grow from their base
+   and passed cases fill; while in view the charts rebuild on a loop. */
+html[data-motion] .pg-usecases__bar[data-inview] > span,
+html[data-motion] .pg-usecases__compare[data-inview] .pg-usecases__compare-track > span {
+  transform-origin: left center;
+  animation: pg-usecases-rebuild 7s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1.4s + var(--i) * 0.25s + var(--r, 0) * 0.15s);
+}
+
 html[data-motion] .pg-usecases__bar[data-inview='enter'] > span,
 html[data-motion] .pg-usecases__compare[data-inview='enter'] .pg-usecases__compare-track > span {
-  transform-origin: left center;
-  animation: ds-grow-x 1100ms var(--ds-ease-out) both;
-  animation-delay: calc(150ms + var(--i) * 140ms + var(--r, 0) * 160ms);
+  animation:
+    ds-grow-x 1100ms var(--ds-ease-out) calc(150ms + var(--i) * 140ms + var(--r, 0) * 160ms) both,
+    pg-usecases-rebuild 7s var(--ds-ease-in-out) calc(1.4s + var(--i) * 0.25s + var(--r, 0) * 0.15s) infinite;
 }
 
 html[data-motion] .pg-usecases__compare[data-inview='enter'] {
@@ -926,9 +1000,14 @@ html[data-motion] .pg-usecases__compare[data-inview='enter'] {
   animation-delay: calc(var(--i) * 140ms);
 }
 
-html[data-motion] .pg-usecases__pass[data-inview='enter'] i[data-on]::after {
-  animation: pg-usecases-cell 500ms var(--ds-ease-out) both;
-  animation-delay: calc(150ms + var(--i) * 140ms + var(--c) * 90ms);
+html[data-motion] .pg-usecases__pass[data-inview] i[data-on]::after {
+  animation: pg-usecases-pass 3.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.6s + var(--c) * 0.14s);
+}
+
+html[data-motion] .pg-usecases__results:has([data-inview]) .pg-usecases__steps li::before {
+  animation: pg-usecases-step 4.5s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.4s + var(--i) * 1s);
 }
 
 /* Keep the accent phrase of the closing CTA on one line (zh breaks otherwise split it). */

@@ -123,9 +123,15 @@ describe.each(locales)('departments overview (%s)', (locale) => {
     // One signal dash per wire; the server never decides what is in view.
     expect(count(html, /class="pg-flow__pulse"/g)).toBe(t.overview.hero.inputs.length + departmentOrder.length)
     expect(html).not.toContain('data-inview')
-    // One breathing status dot per row-based mock; the pipeline breathes its
-    // focal deal's score and the KPI chart pings its spike instead.
-    expect(count(html, /class="pg-mock__tag"[^>]*data-focal="true"/g)).toBe(departmentOrder.length - 2)
+    // One breathing status dot per row-based mock; the ticket queue, pipeline
+    // and KPI chart carry their own loops instead.
+    expect(count(html, /class="pg-mock__tag"[^>]*data-focal="true"/g)).toBe(departmentOrder.length - 3)
+    // The ticket conveyor renders its tickets twice (the incoming copy is hidden
+    // from assistive tech) and the fulfillment queues mark their wave cells.
+    const queue = t.solutions['customer-support'].mock.items
+    expect(count(html, /class="pg-mock__row"/g)).toBe(queue.length * 2)
+    expect(html).toMatch(/data-wave="up1"/)
+    expect(html).toMatch(/data-wave="down1"/)
   })
 })
 

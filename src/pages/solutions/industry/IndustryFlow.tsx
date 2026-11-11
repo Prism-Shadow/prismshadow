@@ -14,10 +14,11 @@ const fill = (template: string, values: Record<string, string>) =>
  * review before it becomes an action. The whole figure is one image for
  * assistive tech, described by `copy.label`.
  *
- * Motion (industry.css): every few seconds a signal travels from the source
- * systems to the agent team, on to review, and the approved action lights up;
- * the console caret breathes. On entering view (not on first load) the figure
- * assembles left to right. The markup is the static final state.
+ * Motion (industry.css): solid packets leave the source systems (each chip
+ * fills as it sends), the agent rows light up solid in turn as they work, and
+ * a packet crosses to review and on to the approved action, which fills; the
+ * console caret breathes. On entering view (not on first load) the figure
+ * assembles left to right. The markup is the static resting state.
  */
 export function IndustryFlow({
   signals,
@@ -98,7 +99,7 @@ export function IndustryFlow({
 
         <ul className="pg-industry-flow__team">
           {agents.map((agent, i) => (
-            <li key={agent} style={{ '--tone': agentTones[i % agentTones.length] } as CSSProperties}>
+            <li key={agent} style={{ '--tone': agentTones[i % agentTones.length], '--k': i } as CSSProperties}>
               <span className="pg-industry-flow__agent-dot" aria-hidden="true" />
               {agent}
             </li>

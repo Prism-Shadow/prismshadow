@@ -80,11 +80,11 @@
 }
 
 /*
- * A single lit cell travelling clockwise along the track (motion only; hidden
- * at rest). It passes behind the nodes at the corners, so it shows in the
- * gaps between stages. Transform-only: it moves in container units of the
- * track, with each side's share of the cycle close to its share of the
- * perimeter, so the speed stays even.
+ * A solid packet lapping the track clockwise every 7s (motion only; hidden at
+ * rest). It passes behind the nodes at the corners, so it shows in the gaps
+ * between stages. Transform-only: it moves in container units of the track,
+ * with each side's share of the cycle close to its share of the perimeter, so
+ * the speed stays even. --at is when it reaches each stage's corner.
  */
 .pg-about .pg-about-loop__pulse {
   position: absolute;
@@ -99,13 +99,13 @@
 }
 
 html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__pulse {
-  animation: pg-about-loop 14s linear infinite;
+  animation: pg-about-loop 7s linear 0.6s infinite;
 }
 
 @keyframes pg-about-loop {
   0%,
   100% {
-    opacity: 0.85;
+    opacity: 0.95;
     transform: translate(-50%, -50%);
   }
   28% {
@@ -132,19 +132,102 @@ html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__pulse {
 }
 
 .pg-about .pg-about-loop__node--1 {
+  --at: 0s;
   grid-area: 1 / 1;
 }
 
 .pg-about .pg-about-loop__node--2 {
+  --at: 1.96s;
   grid-area: 1 / 2;
 }
 
 .pg-about .pg-about-loop__node--3 {
+  --at: 3.5s;
   grid-area: 2 / 2;
 }
 
 .pg-about .pg-about-loop__node--4 {
+  --at: 5.46s;
   grid-area: 2 / 1;
+}
+
+/* Active-stage frame and tint: invisible at rest, lit as the packet passes. */
+.pg-about .pg-about-loop__node::before,
+.pg-about .pg-about-loop__node::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The tint sits under the node's text (the node is its own stacking context). */
+.pg-about .pg-about-loop__node::before {
+  z-index: -1;
+  background: color-mix(in srgb, var(--tone) 9%, transparent);
+}
+
+.pg-about .pg-about-loop__node::after {
+  border: 1px solid var(--tone);
+}
+
+/* Four-cell meter at the right of each stage's head: empty outlines at rest. */
+.pg-about .pg-about-loop__meter {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.pg-about .pg-about-loop__meter-cell {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: 1.5px;
+}
+
+.pg-about .pg-about-loop__meter-cell::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--tone);
+  opacity: 0;
+}
+
+/* As the packet passes a stage: its frame lights, then its meter fills in turn, holds and empties. */
+html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__node::before,
+html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__node::after {
+  animation: pg-about-stage 7s var(--ds-ease-in-out) calc(var(--at) + 0.25s) infinite;
+}
+
+html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__meter-cell::before {
+  animation: pg-about-meter 7s var(--ds-ease-out) calc(var(--at) + 0.4s + var(--j) * 0.16s) infinite;
+}
+
+@keyframes pg-about-stage {
+  0%,
+  30%,
+  100% {
+    opacity: 0;
+  }
+  5%,
+  23% {
+    opacity: 1;
+  }
+}
+
+@keyframes pg-about-meter {
+  0%,
+  26%,
+  100% {
+    opacity: 0;
+  }
+  3%,
+  19% {
+    opacity: 0.9;
+  }
 }
 
 .pg-about [data-tone='cyan'] {
@@ -332,13 +415,30 @@ html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__pulse {
   stroke: none;
 }
 
-/* Ring around one vertex dot; it only shows while it glints (motion). */
-.pg-about .pg-about-art .pg-about-art__glint {
-  fill: none;
+.pg-about .pg-about-art .pg-about-art__cell {
+  --rest: 0.24;
+}
+
+/* Moving parts, all invisible at rest: plate cells and cube faces (zero fill),
+   spoke packets and the generation ring (zero opacity). */
+.pg-about .pg-about-art .pg-about-art__live,
+.pg-about .pg-about-art .pg-about-art__face {
+  fill: var(--tone);
+  fill-opacity: 0;
+  stroke: none;
+}
+
+.pg-about .pg-about-art .pg-about-art__packet {
+  fill: var(--tone);
+  stroke: none;
+  opacity: 0;
+}
+
+.pg-about .pg-about-art .pg-about-art__wave {
   stroke: var(--tone);
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
+  transform-box: view-box;
+  transform-origin: 120px 90px;
 }
 
 /*
@@ -375,29 +475,92 @@ html[data-motion] .pg-about .pg-about-art[data-inview='enter'] [data-draw] {
 html[data-motion]
   .pg-about
   .pg-about-art[data-inview='enter']
-  :is(.pg-about-art__ghost, .pg-about-art__dashed, .pg-about-art__cell, .pg-about-art__dots) {
+  :is(.pg-about-art__ghost, .pg-about-art__dashed, .pg-about-art__dots) {
   animation: ds-fade-in 1000ms var(--ds-ease-out) both;
   animation-delay: calc(var(--art-i) * 160ms + 650ms);
 }
 
-html[data-motion] .pg-about .pg-about-art[data-inview] .pg-about-art__glint {
-  animation: pg-about-glint 7.5s var(--ds-ease-out) infinite;
-  animation-delay: calc(1.8s + var(--art-i) * 2.5s);
+/*
+ * Loops (while in view; they start once the intro has drawn the lines).
+ * Data production: the plate's cells fill solid in a wave from the top
+ * vertex down (--w is the cell's diagonal), the lit cell included.
+ */
+html[data-motion] .pg-about .pg-about-art[data-inview] :is(.pg-about-art__live, .pg-about-art__cell) {
+  animation: pg-about-cellwave 4.2s var(--ds-ease-in-out) calc(1.3s + var(--w) * 0.32s) infinite;
 }
 
-@keyframes pg-about-glint {
+/* On entry the lit cell also fades in with the dots. */
+html[data-motion] .pg-about .pg-about-art[data-inview='enter'] .pg-about-art__cell {
+  animation:
+    ds-fade-in 1000ms var(--ds-ease-out) calc(var(--art-i) * 160ms + 650ms) both,
+    pg-about-cellwave 4.2s var(--ds-ease-in-out) calc(1.3s + var(--w) * 0.32s) infinite;
+}
+
+/* Model training and self-evolution: the model's faces fill in turn, hold, then empty. */
+html[data-motion] .pg-about .pg-about-art[data-inview] .pg-about-art__face {
+  animation: pg-about-face 3.6s var(--ds-ease-in-out) calc(1.4s + var(--art-i) * 0.3s + var(--i) * 0.6s) infinite;
+}
+
+/* Model training: a packet runs in along each spoke, one spoke after another. */
+html[data-motion] .pg-about .pg-about-art[data-inview] .pg-about-art__packet {
+  animation: pg-about-inflow 2.8s var(--ds-ease-in-out) calc(1.2s + var(--i) * 0.47s) infinite;
+}
+
+/* Self-evolution: a new generation ring grows from the middle hexagon to the outer one. */
+html[data-motion] .pg-about .pg-about-art[data-inview] .pg-about-art__wave {
+  animation: pg-about-grow 3.2s var(--ds-ease-out) 1.5s infinite;
+}
+
+@keyframes pg-about-cellwave {
+  0%,
+  26%,
+  100% {
+    fill-opacity: var(--rest, 0);
+  }
+  9% {
+    fill-opacity: 0.75;
+  }
+}
+
+@keyframes pg-about-face {
+  0%,
+  60%,
+  100% {
+    fill-opacity: 0;
+  }
+  12%,
+  45% {
+    fill-opacity: 0.8;
+  }
+}
+
+@keyframes pg-about-inflow {
   0% {
     opacity: 0;
-    transform: scale(0.8);
+    transform: translate(0, 0);
   }
-  8% {
-    opacity: 0.9;
-    transform: scale(1);
+  12%,
+  76% {
+    opacity: 0.95;
   }
-  36%,
+  90%,
   100% {
     opacity: 0;
-    transform: scale(1.4);
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+@keyframes pg-about-grow {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  12% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
   }
 }
 
