@@ -624,16 +624,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* A meter cell's solid fill; under motion the meter fills cell by cell. */
-.pg-panofy .pg-panofy__role-cell::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--ds-accent);
-  opacity: 0;
-}
-
 .pg-panofy .pg-panofy__role-cell.is-lit {
   background: var(--ds-accent);
 }
@@ -963,16 +953,19 @@ html[data-motion] .pg-panofy [data-inview] .pg-panofy__control::after {
   animation-delay: calc(0.4s + var(--k, 0) * 0.7s);
 }
 
-/* Rollout: packets run from the hub to each role (shared packets); each role's
-   meter fills cell by cell to its level, holds, and resets. */
-html[data-motion] .pg-panofy [data-inview] .pg-panofy__role-cell.is-lit {
-  background: rgba(255, 255, 255, 0.08);
+/* Rollout: packets keep running from the hub to each role (shared packets, the
+   flow loops). Each role's meter encodes a level, so it fills cell by cell ONCE
+   on entering view, then rests. */
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__role-cell.is-lit {
+  animation: pg-panofy-meter 420ms var(--ds-ease-out) both;
+  animation-delay: calc(400ms + var(--r, 0) * 0.3s + var(--c, 0) * 0.12s);
 }
 
-html[data-motion] .pg-panofy [data-inview] .pg-panofy__role-cell.is-lit::before {
-  --pk-done: 0.9;
-  animation: pg-product-queue 4.6s linear infinite;
-  animation-delay: calc(var(--r, 0) * 0.5s + var(--c, 0) * 0.2s);
+/* A meter cell filling: from the empty track to its resting accent. */
+@keyframes pg-panofy-meter {
+  from {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* Training loop: the steps arrive along the timeline; then a ring steps from one
