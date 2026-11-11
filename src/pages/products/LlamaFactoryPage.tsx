@@ -162,7 +162,13 @@ export function LlamaFactoryPage({ locale }: PageProps) {
       <ProductSection id="models" head={t.models} tone="paper">
         <ul className="pg-llama__families" aria-label={t.models.familiesLabel} data-animate="">
           {modelFamilies.map((family, i) => (
-            <li key={family.name} className="pg-llama__family" style={{ '--i': i } as CSSProperties}>
+            // --d: diagonal position on the four-column grid, for the wave of fill.
+            <li
+              key={family.name}
+              className="pg-llama__family"
+              style={{ '--d': (i % 4) + Math.floor(i / 4) } as CSSProperties}
+            >
+              <span className="pg-llama__family-mark" aria-hidden="true" />
               <span className="pg-llama__family-name">{family.name}</span>
               <span className="pg-llama__family-sizes">{family.sizes}</span>
             </li>
