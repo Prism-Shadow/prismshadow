@@ -1,0 +1,972 @@
+/*
+ * Industry solution pages: one data-driven template for all eight industries.
+ *
+ * Root: .pg-industry (every rule is scoped under it).
+ *   .pg-industry-flow       hero schematic (signals → agent team → review → action)
+ *   .pg-industry__point     why-now hairline columns
+ *   .pg-industry-explorer   scenario tabs; .pg-industry-workspace is the panel mock
+ *   .pg-industry-fit        why PrismShadow: reasons + .pg-industry-loop
+ *   .pg-industry-resource   resource rows on the paper band
+ *
+ * Grid contract (12 columns): section heads put the title in 1–7 and the lead
+ * in 8–12; every right-hand visual below a head starts at column 8 so its edge
+ * lines up with the lead above it.
+ */
+
+/* ---------- Shared bits ---------- */
+
+.pg-industry .pg-industry__why {
+  border-top: 1px solid var(--ds-line);
+}
+
+/* zh headings carry word-boundary hints (cjkBreaks): break only there, and
+   still wrap anywhere rather than overflow if a run is ever too long. */
+.pg-industry:lang(zh) :is(h1, h2, h3, .ds-cta__title) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.pg-industry .pg-industry-flow__title,
+.pg-industry .pg-industry-workspace__title,
+.pg-industry .pg-industry-loop__title {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  letter-spacing: 0.02em;
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-flow__label,
+.pg-industry .pg-industry-flow__prompt,
+.pg-industry .pg-industry-workspace__insight-kind {
+  font-family: var(--ds-font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-3);
+}
+
+.pg-industry:lang(zh) .pg-industry-flow__label,
+.pg-industry:lang(zh) .pg-industry-flow__prompt,
+.pg-industry:lang(zh) .pg-industry-workspace__insight-kind {
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Hero schematic ---------- */
+
+.pg-industry .pg-industry-flow {
+  display: grid;
+  margin: 0;
+}
+
+.pg-industry .pg-industry-flow__bar,
+.pg-industry .pg-industry-flow__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--ds-panel);
+}
+
+.pg-industry .pg-industry-flow__bar {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-flow__foot {
+  align-items: baseline;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-flow__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1.25fr) 28px minmax(0, 0.95fr);
+  grid-template-rows: auto auto;
+  row-gap: 14px;
+  padding: 28px 24px 32px;
+}
+
+.pg-industry .pg-industry-flow__label {
+  grid-row: 1;
+}
+
+.pg-industry .pg-industry-flow__label--signals {
+  grid-column: 1;
+}
+
+.pg-industry .pg-industry-flow__label--team {
+  grid-column: 3;
+}
+
+.pg-industry .pg-industry-flow__label--output {
+  grid-column: 5;
+}
+
+/* Equal 1fr tracks keep every chip centred at (i + 0.5) / n of the column,
+   which is where the wires start. */
+.pg-industry .pg-industry-flow__signals {
+  grid-row: 2;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+}
+
+.pg-industry .pg-industry-flow__signals > li {
+  display: flex;
+  padding-block: 4px;
+}
+
+.pg-industry .pg-industry-flow__chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-sm);
+  background: var(--ds-panel-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.35;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-flow__chip::after,
+.pg-industry .pg-industry-flow__team::before,
+.pg-industry .pg-industry-flow__team::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 1px;
+}
+
+.pg-industry .pg-industry-flow__chip::after {
+  right: -4px;
+  background: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry-flow__wires {
+  grid-row: 2;
+  grid-column: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ds-line-strong);
+  stroke-width: 1;
+}
+
+.pg-industry .pg-industry-flow__team {
+  position: relative;
+  grid-row: 2;
+  grid-column: 3;
+  align-self: center;
+  padding-block: 4px;
+  border: 1px solid var(--ds-accent-line);
+  border-radius: var(--ds-r);
+  background: var(--ds-panel);
+}
+
+.pg-industry .pg-industry-flow__team::before {
+  left: -4px;
+  background: var(--ds-accent);
+}
+
+.pg-industry .pg-industry-flow__team::after {
+  right: -4px;
+  background: var(--ds-accent);
+}
+
+.pg-industry .pg-industry-flow__team > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: var(--ds-text-xs);
+  line-height: 1.35;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-flow__team > li + li {
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-flow__agent-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--tone);
+  transform: rotate(45deg);
+}
+
+.pg-industry .pg-industry-flow__link {
+  position: relative;
+  grid-row: 2;
+  grid-column: 4;
+  align-self: center;
+  height: 1px;
+  background: var(--ds-line-strong);
+}
+
+.pg-industry .pg-industry-flow__link::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  border-left: 5px solid var(--ds-text-3);
+  border-block: 3.5px solid transparent;
+}
+
+.pg-industry .pg-industry-flow__output {
+  grid-row: 2;
+  grid-column: 5;
+  align-self: center;
+  display: grid;
+}
+
+.pg-industry .pg-industry-flow__review,
+.pg-industry .pg-industry-flow__act {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--ds-r-sm);
+  font-size: var(--ds-text-xs);
+  line-height: 1.35;
+}
+
+.pg-industry .pg-industry-flow__review {
+  border: 1px dashed var(--ds-line-strong);
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-flow__review svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.pg-industry .pg-industry-flow__step {
+  justify-self: center;
+  width: 1px;
+  height: 18px;
+  background: var(--ds-line-strong);
+}
+
+.pg-industry .pg-industry-flow__act {
+  border: 1px solid var(--ds-accent-line);
+  background: var(--ds-accent-soft);
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-flow__prompt {
+  flex: none;
+}
+
+.pg-industry .pg-industry-flow__next {
+  min-width: 0;
+  font-size: var(--ds-text-xs);
+  line-height: 1.5;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-flow__caret {
+  display: inline-block;
+  width: 7px;
+  height: 1em;
+  margin-left: 4px;
+  vertical-align: -2px;
+  background: var(--ds-accent);
+  animation: pg-industry-blink 1.1s steps(1) infinite;
+}
+
+@keyframes pg-industry-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-industry .pg-industry-flow__body {
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1.2fr);
+    padding: 20px 16px 24px;
+  }
+
+  .pg-industry .pg-industry-flow__label--output,
+  .pg-industry .pg-industry-flow__link,
+  .pg-industry .pg-industry-flow__output,
+  .pg-industry .pg-industry-flow__team::after {
+    display: none;
+  }
+
+  .pg-industry .pg-industry-flow__chip {
+    padding: 7px 10px;
+  }
+
+  .pg-industry .pg-industry-flow__team > li {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .pg-industry .pg-industry-flow__bar,
+  .pg-industry .pg-industry-flow__foot {
+    padding: 12px 16px;
+  }
+}
+
+/* ---------- Why now ---------- */
+
+/* The last track absorbs the extra height of the row, so optional notes sit
+   on one baseline across columns. */
+.pg-industry .pg-industry__point {
+  grid-template-rows: auto auto auto 1fr;
+  gap: 10px;
+}
+
+.pg-industry .pg-industry__index {
+  margin-bottom: 24px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1;
+  color: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry__note {
+  align-self: end;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry__note svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ds-accent);
+  transform: translateY(2px);
+}
+
+/* ---------- Scenario explorer ---------- */
+
+.pg-industry .pg-industry-explorer {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 40px;
+  align-items: start;
+}
+
+.pg-industry .pg-industry-explorer__tabs {
+  grid-column: 1 / span 3;
+  display: grid;
+  gap: 2px;
+}
+
+.pg-industry .pg-industry-explorer__tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--ds-r);
+  font-size: var(--ds-text-sm);
+  line-height: 1.35;
+  color: var(--ds-text-2);
+  text-align: left;
+  transition:
+    background-color 160ms var(--ds-ease),
+    border-color 160ms var(--ds-ease),
+    color 160ms var(--ds-ease);
+}
+
+.pg-industry .pg-industry-explorer__tab:hover {
+  color: var(--ds-text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pg-industry .pg-industry-explorer__tab[aria-selected='true'] {
+  color: var(--ds-text);
+  background: var(--ds-panel-2);
+  border-color: var(--ds-line);
+}
+
+.pg-industry .pg-industry-explorer__index {
+  flex: none;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+  transition: color 160ms var(--ds-ease);
+}
+
+.pg-industry .pg-industry-explorer__tab[aria-selected='true'] .pg-industry-explorer__index {
+  color: var(--ds-accent);
+}
+
+/* All panels share one grid cell (stable height); columns come from the
+   explorer grid through subgrid, so copy and panel edges stay on the grid. */
+.pg-industry .pg-industry-explorer__panels {
+  grid-column: 4 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.pg-industry .pg-industry-explorer__panel {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: 32px;
+  align-items: start;
+  visibility: hidden;
+}
+
+.pg-industry .pg-industry-explorer__panel.is-active {
+  visibility: visible;
+}
+
+.pg-industry .pg-industry-explorer__panel:focus-visible {
+  outline-offset: 8px;
+}
+
+.pg-industry .pg-industry-explorer__copy {
+  grid-column: 1 / span 4;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.pg-industry .pg-industry-explorer__description {
+  font-size: var(--ds-text-sm);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-explorer__uses {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.pg-industry .pg-industry-explorer__uses > li {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-explorer__use-title {
+  font-size: 0.875rem;
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.45;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-explorer__use-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+/* Workspace mock */
+
+.pg-industry .pg-industry-workspace {
+  grid-column: 5 / -1;
+  display: grid;
+  align-content: start;
+}
+
+.pg-industry .pg-industry-workspace__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-workspace__trace {
+  padding: 6px 20px 10px;
+}
+
+.pg-industry .pg-industry-workspace__step {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 0.8fr) minmax(0, 1.2fr);
+  column-gap: 14px;
+}
+
+.pg-industry .pg-industry-workspace__key,
+.pg-industry .pg-industry-workspace__value {
+  padding-block: 11px;
+  border-top: 1px solid var(--ds-line);
+  line-height: 20px;
+}
+
+.pg-industry .pg-industry-workspace__step:first-child .pg-industry-workspace__key,
+.pg-industry .pg-industry-workspace__step:first-child .pg-industry-workspace__value {
+  border-top: 0;
+}
+
+.pg-industry .pg-industry-workspace__key {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry-workspace__value {
+  font-size: 0.875rem;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-workspace__step--output .pg-industry-workspace__value {
+  color: var(--ds-accent);
+}
+
+/* Rail: a vertical line through one node per step. */
+.pg-industry .pg-industry-workspace__rail {
+  position: relative;
+  align-self: stretch;
+}
+
+.pg-industry .pg-industry-workspace__rail::before {
+  content: '';
+  position: absolute;
+  left: 7.5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ds-line-strong);
+}
+
+.pg-industry .pg-industry-workspace__step:first-child .pg-industry-workspace__rail::before {
+  top: 21px;
+}
+
+.pg-industry .pg-industry-workspace__step:last-child .pg-industry-workspace__rail::before {
+  bottom: auto;
+  height: 21px;
+}
+
+.pg-industry .pg-industry-workspace__rail::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 17.5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry-workspace__step--input .pg-industry-workspace__rail::after {
+  border: 1px solid var(--ds-accent);
+  background: var(--ds-panel);
+}
+
+.pg-industry .pg-industry-workspace__step--output .pg-industry-workspace__rail::after {
+  background: var(--ds-accent);
+}
+
+.pg-industry .pg-industry-workspace__insight {
+  display: grid;
+  gap: 6px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--ds-line);
+  background: var(--ds-panel-2);
+}
+
+.pg-industry .pg-industry-workspace__insight-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 0.875rem;
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.45;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-workspace__insight-kind {
+  color: var(--ds-accent);
+}
+
+.pg-industry .pg-industry-workspace__insight-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+@keyframes pg-industry-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pg-industry .pg-industry-explorer__panel.is-active .pg-industry-workspace__step {
+  animation: pg-industry-rise 360ms var(--ds-ease) both;
+  animation-delay: calc(var(--i) * 50ms);
+}
+
+@media (max-width: 1180px) {
+  .pg-industry .pg-industry-explorer__tabs {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pg-industry .pg-industry-explorer__tab {
+    width: auto;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-color: var(--ds-line);
+    border-radius: var(--ds-r-pill);
+  }
+
+  .pg-industry .pg-industry-explorer__tab[aria-selected='true'] {
+    border-color: var(--ds-line-strong);
+  }
+
+  .pg-industry .pg-industry-explorer__panels {
+    grid-column: 1 / -1;
+  }
+
+  .pg-industry .pg-industry-explorer__copy {
+    grid-column: 1 / span 5;
+    padding-top: 0;
+  }
+
+  .pg-industry .pg-industry-workspace {
+    grid-column: 6 / -1;
+  }
+}
+
+@media (max-width: 800px) {
+  .pg-industry .pg-industry-explorer__tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pg-industry .pg-industry-explorer__tab {
+    width: 100%;
+    border-radius: var(--ds-r);
+  }
+
+  .pg-industry .pg-industry-explorer__copy,
+  .pg-industry .pg-industry-workspace {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-industry .pg-industry-explorer__tab {
+    padding: 8px 12px;
+    font-size: var(--ds-text-xs);
+  }
+
+  .pg-industry .pg-industry-explorer__index {
+    display: none;
+  }
+
+  .pg-industry .pg-industry-workspace__bar {
+    padding: 12px 16px;
+  }
+
+  .pg-industry .pg-industry-workspace__trace {
+    padding: 4px 16px 8px;
+  }
+
+  .pg-industry .pg-industry-workspace__step {
+    grid-template-columns: 16px minmax(0, 1fr);
+  }
+
+  .pg-industry .pg-industry-workspace__rail {
+    grid-row: 1 / span 2;
+  }
+
+  .pg-industry .pg-industry-workspace__key {
+    grid-column: 2;
+    padding-bottom: 0;
+  }
+
+  .pg-industry .pg-industry-workspace__value {
+    grid-column: 2;
+    padding-top: 2px;
+    border-top: 0;
+  }
+
+  .pg-industry .pg-industry-workspace__insight {
+    padding: 14px 16px 16px;
+  }
+}
+
+/* ---------- Why PrismShadow ---------- */
+
+.pg-industry .pg-industry-fit {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 56px;
+  align-items: start;
+}
+
+.pg-industry .pg-industry-fit__reasons {
+  grid-column: 1 / span 6;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-fit__reasons > li {
+  display: grid;
+  gap: 8px;
+  padding-block: 24px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-fit__title {
+  font-size: var(--ds-text-h4);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.4;
+  letter-spacing: -0.006em;
+}
+
+.pg-industry .pg-industry-fit__body {
+  font-size: var(--ds-text-sm);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-fit__visual {
+  grid-column: 8 / span 5;
+  position: sticky;
+  top: calc(var(--ds-header-h) + 32px);
+}
+
+@media (max-width: 900px) {
+  .pg-industry .pg-industry-fit__reasons,
+  .pg-industry .pg-industry-fit__visual {
+    grid-column: 1 / -1;
+  }
+
+  .pg-industry .pg-industry-fit__visual {
+    position: static;
+  }
+}
+
+/* Loop panel */
+
+.pg-industry .pg-industry-loop {
+  display: grid;
+}
+
+.pg-industry .pg-industry-loop__title {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-loop__schematic {
+  display: block;
+  width: calc(100% - 40px);
+  height: auto;
+  margin: 20px 20px 0;
+  overflow: visible;
+}
+
+.pg-industry .pg-industry-loop__return {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.6;
+  stroke-width: 1.25;
+  stroke-dasharray: 4 4;
+}
+
+.pg-industry .pg-industry-loop__arrow {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pg-industry .pg-industry-loop__rail {
+  stroke: var(--ds-line-strong);
+  stroke-width: 1;
+}
+
+.pg-industry .pg-industry-loop__steps {
+  padding: 8px 20px 6px;
+}
+
+.pg-industry .pg-industry-loop__steps > li {
+  display: grid;
+  gap: 4px;
+  padding-block: 14px;
+}
+
+.pg-industry .pg-industry-loop__steps > li + li {
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-loop__name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.45;
+  color: var(--ds-text);
+}
+
+.pg-industry .pg-industry-loop__dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--tone);
+}
+
+.pg-industry .pg-industry-loop__index {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  font-weight: var(--ds-weight-regular);
+  color: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry-loop__body {
+  padding-left: 17px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+/* Each listed system or scenario wraps as a unit, only at the separators. */
+.pg-industry .pg-industry-loop__item {
+  white-space: nowrap;
+}
+
+.pg-industry .pg-industry-loop__feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--ds-line);
+  background: var(--ds-panel-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.45;
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-loop__feedback svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ds-accent);
+}
+
+@media (max-width: 560px) {
+  .pg-industry .pg-industry-loop__title,
+  .pg-industry .pg-industry-loop__feedback {
+    padding-inline: 16px;
+  }
+
+  .pg-industry .pg-industry-loop__schematic {
+    width: calc(100% - 32px);
+    margin-inline: 16px;
+  }
+
+  .pg-industry .pg-industry-loop__steps {
+    padding-inline: 16px;
+  }
+}
+
+/* ---------- Resources (paper band) ---------- */
+
+.pg-industry .pg-industry-resources {
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-industry .pg-industry-resource {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 12px;
+  align-items: start;
+  padding-block: 32px;
+  border-top: 1px solid var(--ds-line);
+  color: inherit;
+}
+
+.pg-industry .pg-industry-resource:focus-visible {
+  outline-offset: 4px;
+}
+
+.pg-industry .pg-industry-resource__meta {
+  grid-column: 1 / span 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding-top: 5px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.5;
+  color: var(--ds-text-3);
+}
+
+.pg-industry .pg-industry-resource__title {
+  grid-column: 4 / span 4;
+  font-size: var(--ds-text-h3);
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  transition: color 160ms var(--ds-ease);
+}
+
+.pg-industry .pg-industry-resource__aside {
+  grid-column: 8 / span 5;
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+
+.pg-industry .pg-industry-resource__body {
+  font-size: var(--ds-text-sm);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-industry .pg-industry-resource:hover .pg-industry-resource__title {
+  color: var(--ds-accent);
+}
+
+.pg-industry .pg-industry-resource:hover .pg-industry-resource__cta svg {
+  transform: translateX(2px);
+}
+
+@media (max-width: 900px) {
+  .pg-industry .pg-industry-resource {
+    padding-block: 24px;
+  }
+
+  .pg-industry .pg-industry-resource__meta,
+  .pg-industry .pg-industry-resource__title,
+  .pg-industry .pg-industry-resource__aside {
+    grid-column: 1 / -1;
+  }
+
+  .pg-industry .pg-industry-resource__meta {
+    padding-top: 0;
+  }
+}

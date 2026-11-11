@@ -1,0 +1,942 @@
+/*
+ * /platform: the isometric stack hero, the four capabilities in alternating
+ * rows, the closed loop, the benchmark and the products. Every block sits on
+ * the 12-column grid; every rule is scoped under .pg-platform.
+ */
+
+/* ---------- Hero ---------- */
+
+.pg-platform .pf-hero .ds-page-hero__meta {
+  justify-self: stretch;
+  margin-top: 16px;
+}
+
+/* Keep the accent phrase whole, and break zh headings only between phrases. */
+.pg-platform .pf-hero .ds-accent-text {
+  display: inline-block;
+}
+
+:lang(zh) .pg-platform :is(.ds-h1, .ds-h2, .ds-cta__title) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.pg-platform .pf-hero__specs {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-platform .pf-hero__spec {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pg-platform .pf-hero__spec-value {
+  order: -1;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text);
+}
+
+.pg-platform .pf-hero__spec-label {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-stack {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pg-platform .pf-stack text {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.pg-platform .pf-stack__face {
+  fill: var(--ds-bg);
+}
+
+.pg-platform .pf-stack__edge {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.32);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.pg-platform .pf-stack__edge--dash {
+  stroke: rgba(255, 255, 255, 0.24);
+  stroke-dasharray: 3 3;
+}
+
+.pg-platform .pf-stack__edge--guide {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-dasharray: 2 4;
+}
+
+.pg-platform .pf-stack__edge--accent {
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.7;
+}
+
+.pg-platform .pf-stack__dot--faint {
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+.pg-platform .pf-stack__dot--cyan {
+  fill: var(--ds-cyan);
+  opacity: 0.85;
+}
+
+.pg-platform .pf-stack__dot--amber {
+  fill: var(--ds-amber);
+  opacity: 0.85;
+}
+
+.pg-platform .pf-stack__dot--accent {
+  fill: var(--ds-accent);
+  opacity: 0.55;
+}
+
+.pg-platform .pf-stack__dot--focus {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-stack__halo {
+  fill: none;
+  stroke: var(--ds-accent-line);
+}
+
+.pg-platform .pf-stack__leader {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+
+.pg-platform .pf-stack__label {
+  fill: var(--ds-text-3);
+}
+
+.pg-platform .pf-stack__label--top {
+  fill: var(--ds-text-2);
+}
+
+/* ---------- Capabilities ---------- */
+
+.pg-platform .pf-caps__list {
+  display: grid;
+  row-gap: clamp(96px, 10vw, 152px);
+}
+
+.pg-platform .pf-cap {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 40px;
+  align-items: center;
+}
+
+.pg-platform .pf-cap__copy {
+  grid-column: 1 / span 5;
+  grid-row: 1;
+  display: grid;
+  justify-items: start;
+  align-content: start;
+}
+
+.pg-platform .pf-cap__visual {
+  grid-column: 7 / span 6;
+  grid-row: 1;
+}
+
+.pg-platform .pf-cap--flip .pf-cap__copy {
+  grid-column: 8 / span 5;
+}
+
+.pg-platform .pf-cap--flip .pf-cap__visual {
+  grid-column: 1 / span 6;
+}
+
+.pg-platform .pf-cap__index {
+  display: flex;
+  gap: 10px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.2;
+  color: var(--ds-accent);
+}
+
+.pg-platform .pf-cap__num {
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-cap__name {
+  margin-top: 16px;
+}
+
+.pg-platform .pf-cap__lead {
+  margin-top: 12px;
+  font-size: var(--ds-text-body);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-platform .pf-cap__features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 28px;
+  width: 100%;
+  margin-top: 40px;
+}
+
+.pg-platform .pf-cap__feature {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.pg-platform .pf-cap__link {
+  margin-top: 36px;
+}
+
+/* ---------- Capability diagrams ---------- */
+
+.pg-platform .pf-dg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pg-platform .pf-dg text {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.pg-platform .pf-dg .pf-dg__chip-text {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  fill: var(--ds-text-2);
+}
+
+.pg-platform .pf-dg__label {
+  fill: var(--ds-text-3);
+}
+
+.pg-platform .pf-dg .pf-dg__label--strong {
+  fill: var(--ds-text-2);
+}
+
+.pg-platform .pf-dg .pf-dg__label--accent {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-dg .pf-dg__label--signal {
+  fill: var(--ds-signal);
+}
+
+.pg-platform .pf-dg__box {
+  fill: rgba(255, 255, 255, 0.012);
+  stroke: rgba(255, 255, 255, 0.11);
+  stroke-width: 1;
+}
+
+.pg-platform .pf-dg__box--accent {
+  stroke: var(--ds-accent-line);
+}
+
+.pg-platform .pf-dg__wire {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1;
+}
+
+.pg-platform .pf-dg__wire--accent {
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.6;
+}
+
+.pg-platform .pf-dg__wire--strong {
+  stroke: var(--ds-text-3);
+  stroke-width: 1.25;
+}
+
+.pg-platform .pf-dg__wire--dash {
+  stroke-dasharray: 3 3;
+}
+
+.pg-platform .pf-dg__head {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pg-platform .pf-dg__head--base {
+  stroke: rgba(255, 255, 255, 0.34);
+}
+
+.pg-platform .pf-dg__head--accent {
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__joint {
+  fill: var(--ds-panel);
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+}
+
+.pg-platform .pf-dg__cell {
+  stroke-width: 1;
+}
+
+.pg-platform .pf-dg__cell--off {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.pg-platform .pf-dg__cell--soft {
+  fill: var(--ds-accent-soft);
+  stroke: var(--ds-accent-line);
+}
+
+.pg-platform .pf-dg__cell--accent {
+  fill: var(--ds-accent);
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__cell--cyan {
+  fill: none;
+  stroke: var(--ds-cyan);
+  stroke-opacity: 0.7;
+}
+
+.pg-platform .pf-dg__pip--faint {
+  fill: rgba(255, 255, 255, 0.28);
+}
+
+.pg-platform .pf-dg__pip--accent {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__pip--cyan {
+  fill: var(--ds-cyan);
+}
+
+.pg-platform .pf-dg__pip--signal {
+  fill: var(--ds-signal);
+}
+
+.pg-platform .pf-dg__focus-ring {
+  fill: none;
+  stroke: var(--ds-signal);
+  stroke-opacity: 0.35;
+}
+
+.pg-platform .pf-dg__spark {
+  fill: none;
+  stroke: var(--ds-signal);
+  stroke-opacity: 0.55;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pg-platform .pf-dg__bar {
+  fill: rgba(255, 255, 255, 0.09);
+}
+
+.pg-platform .pf-dg__chip--base {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+}
+
+.pg-platform .pf-dg__chip--accent {
+  fill: var(--ds-accent-soft);
+  stroke: var(--ds-accent-line);
+}
+
+.pg-platform .pf-dg__check {
+  fill: none;
+  stroke: var(--ds-text-3);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pg-platform .pf-dg__pill {
+  fill: var(--ds-panel);
+  stroke: var(--ds-accent-line);
+}
+
+.pg-platform .pf-dg__window {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+}
+
+.pg-platform .pf-dg__boundary {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-dasharray: 4 4;
+}
+
+.pg-platform .pf-dg__lock {
+  fill: var(--ds-text-3);
+}
+
+.pg-platform .pf-dg__cyl {
+  fill: var(--ds-panel);
+  stroke: rgba(255, 255, 255, 0.24);
+}
+
+.pg-platform .pf-dg__api {
+  fill: var(--ds-panel);
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-dg__goal {
+  fill: none;
+  stroke: var(--ds-text-3);
+}
+
+.pg-platform .pf-dg__cross {
+  fill: none;
+  stroke: var(--ds-text-3);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+}
+
+/* ---------- How it works ---------- */
+
+.pg-platform .pf-loop__body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 48px;
+  align-items: center;
+}
+
+.pg-platform .pf-loop__figure {
+  grid-column: 1 / span 5;
+  display: grid;
+  gap: 20px;
+}
+
+.pg-platform .pf-loop__note {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.5;
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-loopdg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pg-platform .pf-loopdg text {
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.pg-platform .pf-loopdg__inner {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-dasharray: 2 5;
+}
+
+.pg-platform .pf-loopdg__ring,
+.pg-platform .pf-loopdg__wire {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+}
+
+.pg-platform .pf-loopdg__ring--feedback {
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.8;
+  stroke-width: 1.25;
+}
+
+.pg-platform .pf-loopdg__head {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pg-platform .pf-loopdg__head--base {
+  stroke: rgba(255, 255, 255, 0.4);
+}
+
+.pg-platform .pf-loopdg__head--accent {
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-loopdg__node {
+  fill: var(--ds-bg);
+  stroke: rgba(255, 255, 255, 0.22);
+}
+
+.pg-platform .pf-loopdg__node--focus {
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-loopdg__core {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-loopdg__entry {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.3);
+}
+
+.pg-platform .pf-loopdg__num,
+.pg-platform .pf-loopdg__index {
+  fill: var(--ds-text-3);
+}
+
+.pg-platform .pf-loopdg__label {
+  fill: var(--ds-text-2);
+}
+
+.pg-platform .pf-loopdg .pf-loopdg__label--accent {
+  fill: var(--ds-accent);
+}
+
+.pg-platform .pf-loop__steps {
+  grid-column: 7 / span 6;
+  display: grid;
+}
+
+.pg-platform .pf-loop__step {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 8px;
+  padding: 22px 0;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-platform .pf-loop__step:last-child {
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-platform .pf-loop__label {
+  grid-column: 1 / span 2;
+  display: flex;
+  gap: 10px;
+  padding-top: 3px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.3;
+  color: var(--ds-accent);
+}
+
+.pg-platform .pf-loop__num {
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-loop__text {
+  grid-column: 3 / span 4;
+  display: grid;
+  gap: 6px;
+}
+
+.pg-platform .pf-loop__body-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-platform .pf-loop__out {
+  margin-top: 2px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.5;
+  color: var(--ds-text-3);
+}
+
+/* ---------- Results ---------- */
+
+.pg-platform .pf-results__body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 48px;
+  align-items: stretch;
+}
+
+.pg-platform .pf-results__stats {
+  grid-column: 1 / span 4;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+}
+
+.pg-platform .pf-results__stat {
+  align-content: start;
+  padding: 4px 0 32px 20px;
+  border-left: 1px solid var(--ds-line-strong);
+}
+
+.pg-platform .pf-results__stat + .pf-results__stat {
+  padding-top: 32px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-platform .pf-results__stat .ds-stat__value {
+  order: -1;
+}
+
+.pg-platform .pf-results__stat .ds-stat__label {
+  max-width: 20em;
+}
+
+.pg-platform .pf-results__source {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.4;
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-cost {
+  grid-column: 5 / span 8;
+  display: grid;
+  align-content: space-between;
+  gap: 40px;
+  margin: 0;
+  padding: clamp(24px, 2.6vw, 36px);
+}
+
+.pg-platform .pf-cost__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+
+.pg-platform .pf-cost__title {
+  font-size: var(--ds-text-h4);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.4;
+  color: var(--ds-text);
+}
+
+.pg-platform .pf-cost__direction {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-cost__rows {
+  display: grid;
+  gap: 24px;
+}
+
+.pg-platform .pf-cost__row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 40px;
+  align-items: center;
+  column-gap: 20px;
+}
+
+.pg-platform .pf-cost__label {
+  font-size: var(--ds-text-sm);
+  line-height: 1.3;
+  color: var(--ds-text-2);
+}
+
+.pg-platform .pf-cost__row--ours .pf-cost__label,
+.pg-platform .pf-cost__row--ours .pf-cost__value {
+  color: var(--ds-accent);
+}
+
+.pg-platform .pf-cost__track {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pg-platform .pf-cost__cell {
+  stroke-width: 1;
+}
+
+.pg-platform .pf-cost__cell--empty {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+.pg-platform .pf-cost__cell--ref {
+  fill: rgba(255, 255, 255, 0.02);
+  stroke: rgba(255, 255, 255, 0.32);
+}
+
+.pg-platform .pf-cost__cell--ours {
+  fill: var(--ds-accent);
+  stroke: var(--ds-accent);
+}
+
+.pg-platform .pf-cost__value {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-sm);
+  text-align: right;
+  color: var(--ds-text);
+}
+
+.pg-platform .pf-cost__foot {
+  display: grid;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-platform .pf-cost__unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-cost__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ds-accent);
+}
+
+.pg-platform .pf-cost__caption {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+/* ---------- Products ---------- */
+
+.pg-platform .pf-products__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 48px;
+}
+
+.pg-platform .pf-products__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0 4px 20px;
+  border-left: 1px solid var(--ds-line-strong);
+}
+
+.pg-platform .pf-products__logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 24%;
+  overflow: hidden;
+}
+
+.pg-platform .pf-products__logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The Panofy glyph is light on transparent: give it the dark tile. */
+.pg-platform .pf-products__logo--panofy {
+  background: var(--ds-panel-2);
+  border: 1px solid var(--ds-line-strong);
+}
+
+.pg-platform .pf-products__logo--panofy img {
+  width: 62%;
+  height: 62%;
+}
+
+.pg-platform .pf-products__kicker {
+  margin-top: 28px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.3;
+  color: var(--ds-text-3);
+}
+
+.pg-platform .pf-products__name {
+  margin-top: 8px;
+}
+
+.pg-platform .pf-products__body {
+  margin-top: 12px;
+  font-size: var(--ds-text-sm);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-platform .pf-products__link {
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1100px) {
+  .pg-platform .pf-cap__copy,
+  .pg-platform .pf-cap--flip .pf-cap__visual {
+    grid-column: 1 / span 6;
+  }
+
+  .pg-platform .pf-cap__visual,
+  .pg-platform .pf-cap--flip .pf-cap__copy {
+    grid-column: 7 / span 6;
+  }
+
+  .pg-platform .pf-loop__figure {
+    grid-column: 1 / span 6;
+  }
+
+  .pg-platform .pf-loop__steps {
+    grid-column: 7 / span 6;
+  }
+
+  .pg-platform .pf-loop__step {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-platform .pf-loop__label,
+  .pg-platform .pf-loop__text {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pg-platform .pf-results__stats {
+    grid-column: 1 / -1;
+    grid-template-rows: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--ds-col-gap);
+  }
+
+  .pg-platform .pf-results__stat,
+  .pg-platform .pf-results__stat + .pf-results__stat {
+    padding: 4px 0 4px 20px;
+    border-top: 0;
+  }
+
+  .pg-platform .pf-cost {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .pg-platform .pf-cap__copy,
+  .pg-platform .pf-cap__visual,
+  .pg-platform .pf-cap--flip .pf-cap__copy,
+  .pg-platform .pf-cap--flip .pf-cap__visual {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .pg-platform .pf-loop__figure,
+  .pg-platform .pf-loop__steps {
+    grid-column: 1 / -1;
+  }
+
+  .pg-platform .pf-loop__step {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .pg-platform .pf-loop__label {
+    grid-column: 1 / span 3;
+  }
+
+  .pg-platform .pf-loop__text {
+    grid-column: 4 / span 9;
+  }
+
+  .pg-platform .pf-products__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pg-platform .pf-stack text {
+    font-size: 16px;
+    letter-spacing: 0.01em;
+  }
+
+  .pg-platform .pf-dg text {
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .pg-platform .pf-dg .pf-dg__chip-text {
+    font-size: 11px;
+  }
+
+  .pg-platform .pf-loopdg text {
+    font-size: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  .pg-platform .pf-loop__step {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-platform .pf-loop__label,
+  .pg-platform .pf-loop__text {
+    grid-column: 1 / -1;
+  }
+
+  .pg-platform .pf-results__stat,
+  .pg-platform .pf-results__stat + .pf-results__stat {
+    padding-left: 14px;
+  }
+
+  .pg-platform .pf-cost__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 10px;
+  }
+
+  .pg-platform .pf-cost__label {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .pg-platform .pf-cost__value {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .pg-platform .pf-cost__track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .pg-platform .pf-cap__features {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 22px;
+  }
+
+  .pg-platform .pf-results__stats {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+  }
+}

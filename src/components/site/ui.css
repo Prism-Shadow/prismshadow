@@ -1,0 +1,181 @@
+/* Shared composite components: PageHero, CtaBand, PixelField. */
+
+/* ---------- Page hero ---------- */
+
+.ds-page-hero {
+  position: relative;
+  padding-top: clamp(72px, 8vw, 128px);
+  padding-bottom: clamp(72px, 8vw, 128px);
+  background: var(--ds-bg);
+}
+
+.ds-page-hero__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 56px;
+  align-items: center;
+}
+
+.ds-page-hero__copy {
+  display: grid;
+  justify-items: start;
+  gap: 24px;
+}
+
+.ds-page-hero--split .ds-page-hero__copy {
+  grid-column: 1 / span 6;
+}
+
+.ds-page-hero--split .ds-page-hero__media {
+  grid-column: 7 / span 6;
+}
+
+.ds-page-hero--left .ds-page-hero__copy {
+  grid-column: 1 / span 8;
+}
+
+.ds-page-hero--center .ds-page-hero__copy {
+  grid-column: 2 / span 10;
+  justify-items: center;
+  text-align: center;
+}
+
+.ds-page-hero--center .ds-page-hero__lead {
+  margin-inline: auto;
+}
+
+.ds-page-hero--center .ds-page-hero__actions {
+  justify-content: center;
+}
+
+.ds-page-hero--center .ds-page-hero__media {
+  grid-column: 1 / -1;
+}
+
+.ds-page-hero__title {
+  max-width: 15em;
+}
+
+.ds-page-hero__lead {
+  max-width: 34em;
+}
+
+.ds-page-hero__actions {
+  margin-top: 8px;
+}
+
+.ds-page-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 8px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
+}
+
+@media (max-width: 960px) {
+  .ds-page-hero--split .ds-page-hero__copy,
+  .ds-page-hero--split .ds-page-hero__media,
+  .ds-page-hero--left .ds-page-hero__copy,
+  .ds-page-hero--center .ds-page-hero__copy {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Closing CTA ---------- */
+
+.ds-cta {
+  position: relative;
+  padding-block: clamp(96px, 11vw, 168px) clamp(80px, 9vw, 136px);
+  background: var(--ds-bg);
+  border-top: 1px solid var(--ds-line);
+  overflow: hidden;
+}
+
+.ds-cta__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 48px;
+  align-items: end;
+}
+
+.ds-cta__copy {
+  grid-column: 1 / span 6;
+  display: grid;
+  justify-items: start;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.ds-cta__title {
+  font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3.75rem);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  max-width: 13em;
+}
+
+:lang(zh) .ds-cta__title {
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+/* Keep a CJK accent phrase on one line; punctuation after it still stays attached. */
+:lang(zh) .ds-cta__title .ds-accent-text {
+  white-space: nowrap;
+}
+
+.ds-cta__copy .ds-actions {
+  margin-top: 8px;
+}
+
+.ds-cta__field {
+  --ds-pixel-off: transparent;
+  --ds-pixel-line: rgba(255, 255, 255, 0.05);
+  grid-column: 7 / span 6;
+  width: 100%;
+  height: auto;
+  align-self: end;
+}
+
+@media (max-width: 900px) {
+  .ds-cta__copy,
+  .ds-cta__field {
+    grid-column: 1 / -1;
+  }
+
+  .ds-cta__field {
+    max-width: 520px;
+  }
+}
+
+/* ---------- PixelField ---------- */
+
+.ds-pixel-field {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ds-pixel-field--fade-left {
+  mask-image: linear-gradient(90deg, transparent 0%, #000 45%);
+}
+
+.ds-pixel-field--fade-right {
+  mask-image: linear-gradient(270deg, transparent 0%, #000 45%);
+}
+
+.ds-pixel-field--fade-bottom {
+  mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
+}
+
+.ds-pixel-field--fade-radial {
+  mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+}
+
+.ds-section--paper .ds-pixel-field {
+  --ds-pixel-off: rgba(12, 13, 16, 0.04);
+  --ds-pixel-line: rgba(12, 13, 16, 0.1);
+}

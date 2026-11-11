@@ -1,0 +1,187 @@
+/*
+ * Logo strip under the hero: a small label on the left and one quiet row of
+ * marks that drifts slowly (modal style). Every mark is flattened to one light
+ * tone at low opacity and sized optically (see LogoMark).
+ */
+
+.pg-home .hp-logos {
+  --hp-logos-unit: 34px;
+  --hp-logos-gap: clamp(48px, 5.5vw, 80px);
+  --hp-logos-tone: 0.46;
+  padding-block: clamp(28px, 3vw, 40px);
+  background: var(--ds-bg);
+  border-top: 1px solid var(--ds-line);
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-home .hp-logos__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 20px;
+  align-items: center;
+}
+
+.pg-home .hp-logos__title {
+  grid-column: 1 / span 2;
+  max-width: 10em;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-regular);
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--ds-text-3);
+}
+
+/* Static by default (and under reduced motion): the real set, centred. */
+.pg-home .hp-logos__viewport {
+  grid-column: 3 / -1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--ds-r-sm);
+}
+
+.pg-home .hp-logos__viewport:focus-visible {
+  outline-offset: 4px;
+}
+
+.pg-home .hp-logos__track {
+  display: flex;
+  justify-content: center;
+}
+
+.pg-home .hp-logos__set {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  column-gap: var(--hp-logos-gap);
+  row-gap: 20px;
+}
+
+.pg-home .hp-logos__set[aria-hidden='true'] {
+  display: none;
+}
+
+.pg-home .hp-logos__item {
+  display: grid;
+  place-items: center;
+  height: 48px;
+}
+
+.pg-home .hp-logos__mark {
+  position: relative;
+  display: block;
+  width: calc(var(--hp-logos-unit) * var(--logo-w));
+  aspect-ratio: var(--logo-ratio);
+  overflow: hidden;
+}
+
+.pg-home .hp-logos__mark img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pg-home .hp-logos img {
+  filter: brightness(0) invert(1);
+  opacity: var(--hp-logos-tone);
+}
+
+/* Glyph + typeset name, in the same light tone as the image marks. */
+.pg-home .hp-logos__wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: calc(var(--hp-logos-unit) * 0.43);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.pg-home .hp-logos__wordmark img {
+  width: calc(var(--hp-logos-unit) * 0.44);
+  height: calc(var(--hp-logos-unit) * 0.44);
+}
+
+.pg-home .hp-logos__wordmark span {
+  color: #fff;
+  opacity: var(--hp-logos-tone);
+}
+
+/* Motion: an endless, slow drift that dissolves at both edges and pauses on hover/focus. */
+@media (prefers-reduced-motion: no-preference) {
+  .pg-home .hp-logos__viewport {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  }
+
+  .pg-home .hp-logos__track {
+    justify-content: flex-start;
+    width: max-content;
+    animation: hp-logos-drift 36s linear infinite;
+  }
+
+  .pg-home .hp-logos__viewport:hover .hp-logos__track,
+  .pg-home .hp-logos__viewport:focus-within .hp-logos__track {
+    animation-play-state: paused;
+  }
+
+  /* Every set carries one trailing gap, so all sets are the same width. */
+  .pg-home .hp-logos__set,
+  .pg-home .hp-logos__set[aria-hidden='true'] {
+    display: flex;
+    flex: none;
+    flex-wrap: nowrap;
+    padding-right: var(--hp-logos-gap);
+  }
+}
+
+/* One set = 1 / COPIES of the track (COPIES = 4 in LogosSection). */
+@keyframes hp-logos-drift {
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+@media (max-width: 900px) {
+  .pg-home .hp-logos__title {
+    grid-column: 1 / -1;
+    max-width: none;
+    text-align: center;
+  }
+
+  .pg-home .hp-logos__viewport {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-home .hp-logos {
+    --hp-logos-unit: 30px;
+    --hp-logos-gap: 44px;
+  }
+
+  .pg-home .hp-logos__item {
+    height: 40px;
+  }
+
+  /* Static row on a phone: three over two, never a lone orphan. */
+  .pg-home .hp-logos__set {
+    max-width: 17.5rem;
+    margin-inline: auto;
+    column-gap: 36px;
+  }
+}
+
+@media (max-width: 560px) and (prefers-reduced-motion: no-preference) {
+  .pg-home .hp-logos__set,
+  .pg-home .hp-logos__set[aria-hidden='true'] {
+    max-width: none;
+    margin-inline: 0;
+    column-gap: var(--hp-logos-gap);
+  }
+}
