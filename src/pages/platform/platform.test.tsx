@@ -154,11 +154,19 @@ describe.each(locales)('PlatformPage (%s)', (locale) => {
     expect(animated(html, 'pf-cost__track'), 'cost chart rows').toBe(2)
   })
 
-  it('carries the motion hooks: plate levels, one signal per board, four ring arcs, one glint', () => {
+  it('carries the motion hooks: plate fills, packets on every board, the ring packet, the glowing cell', () => {
     expect(count(html, 'class="pf-stack__plate" style="--i:')).toBe(4)
-    expect(count(html, 'class="pf-dg__signal"')).toBe(4)
-    expect(count(html, 'class="pf-loopdg__signal"')).toBe(4)
+    expect(count(html, 'class="pf-stack__lit')).toBe(5)
+    const boards = html.split('class="pf-dg"').slice(1)
+    expect(boards).toHaveLength(4)
+    for (const board of boards) {
+      expect(board).toContain('class="pf-dg__packet"')
+      expect(board).toContain('class="pf-dg__fill ')
+    }
+    expect(count(html, 'class="pf-loopdg__packet')).toBe(5)
+    expect(count(html, 'class="pf-loopdg__glow"')).toBe(4)
     expect(count(html, 'class="pf-cost__glint"')).toBe(1)
+    expect(count(html, 'class="pf-cost__ping"')).toBe(1)
   })
 
   it('links all three products with their marks', () => {

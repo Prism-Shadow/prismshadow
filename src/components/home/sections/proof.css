@@ -16,9 +16,25 @@
 }
 
 .pg-home .hp-proof__stat {
+  position: relative;
   grid-template-rows: auto auto 1fr;
   padding-left: 20px;
   border-left: 1px solid var(--ds-line-strong);
+}
+
+/* A meter on each column's hairline: hidden at rest, it runs in the loop (see Motion). */
+.pg-home .hp-proof__stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -1.5px;
+  width: 2px;
+  height: 100%;
+  background: var(--ds-accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .pg-home .hp-proof__stat .ds-stat__value {
@@ -38,10 +54,38 @@
   color: var(--ds-text-3);
 }
 
-/* Motion (src/components/site/motion.ts): a short stagger, no counting; the resting state is final. */
+/*
+ * Motion (src/components/site/motion.ts): the results fade up in a short
+ * stagger (the numbers never count), then a solid meter runs down each
+ * column's hairline in turn, holds and fades. The resting state is final.
+ */
 html[data-motion] .pg-home .hp-proof__stats[data-inview='enter'] .hp-proof__stat {
   animation: ds-fade-up 800ms var(--ds-ease-out) both;
   animation-delay: calc(var(--i, 0) * 110ms);
+}
+
+html[data-motion] .pg-home .hp-proof__stats[data-inview] .hp-proof__stat::before {
+  animation: hp-proof-meter 5200ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(700ms + var(--i, 0) * 1300ms);
+}
+
+@keyframes hp-proof-meter {
+  0% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+
+  34%,
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  64%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
 }
 
 /* Customers: label under the first stat column, names from the second stat column on. */

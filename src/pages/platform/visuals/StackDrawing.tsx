@@ -8,8 +8,10 @@ import type { PlatformPageCopy } from '../../../i18n/messages/platformPage'
  * cube on the top plate. The base dissolves into the canvas.
  *
  * Motion (platform.css): on an in-app visit the plates settle in from the
- * base up (`--i` is the plate's level); then, on any visit, the lit point on
- * the model cube breathes slowly.
+ * base up (`--i` is the plate's level). Then, on any visit, the stack runs
+ * live: the plates light up layer by layer, base to top (the face washes with
+ * its colour and its dots turn solid), the model cube fills solid last, and
+ * its lit point breathes. The live fills are invisible at rest.
  */
 
 const W = 600
@@ -32,7 +34,18 @@ const pt = ([x, y, z]: P3): [number, number] => [
 const p = (point: P3) => pt(point).join(' ')
 
 /** A box from `min` to `max`: filled silhouette plus its nine visible edges. */
-function Slab({ min, max, edge = 'base' }: { min: P3; max: P3; edge?: 'base' | 'dash' | 'accent' }) {
+function Slab({
+  min,
+  max,
+  edge = 'base',
+  lit,
+}: {
+  min: P3
+  max: P3
+  edge?: 'base' | 'dash' | 'accent'
+  /** The colour its top face fills with when the layer lights up (invisible at rest). */
+  lit?: 'amber' | 'cyan' | 'accent' | 'solid'
+}) {
   const [x0, y0, z0] = min
   const [x1, y1, z1] = max
   const silhouette = `M${p([x0, y0, z1])}L${p([x1, y0, z1])}L${p([x1, y0, z0])}L${p([x1, y1, z0])}L${p([x0, y1, z0])}L${p([x0, y1, z1])}Z`
@@ -40,9 +53,11 @@ function Slab({ min, max, edge = 'base' }: { min: P3; max: P3; edge?: 'base' | '
     `M${p([x0, y0, z1])}L${p([x1, y0, z1])}L${p([x1, y1, z1])}L${p([x0, y1, z1])}Z` +
     `M${p([x1, y0, z1])}L${p([x1, y0, z0])}L${p([x1, y1, z0])}L${p([x0, y1, z0])}L${p([x0, y1, z1])}` +
     `M${p([x1, y1, z1])}L${p([x1, y1, z0])}`
+  const top = `M${p([x0, y0, z1])}L${p([x1, y0, z1])}L${p([x1, y1, z1])}L${p([x0, y1, z1])}Z`
   return (
     <g>
       <path className="pf-stack__face" d={silhouette} />
+      {lit ? <path className={`pf-stack__lit pf-stack__lit--${lit}`} d={top} /> : null}
       <path className={`pf-stack__edge pf-stack__edge--${edge}`} d={edges} />
     </g>
   )
@@ -112,7 +127,7 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
       <g mask="url(#pf-stack-fade)">
         {/* Base: private deployment, drawn as a dashed perimeter. */}
         <g className="pf-stack__plate" style={level(0)}>
-          <Slab min={[-HALF, -HALF, levels[0]]} max={[HALF, HALF, levels[0] + T]} edge="dash" />
+          <Slab min={[-HALF, -HALF, levels[0]]} max={[HALF, HALF, levels[0] + T]} edge="dash" lit="amber" />
           <Dot at={[HALF, HALF, levels[0] + T]} tone="amber" />
           <Dot at={[-HALF, HALF, levels[0] + T]} tone="amber" />
           <Guides from={levels[0] + T} to={levels[1]} />
@@ -120,7 +135,7 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
 
         {/* Data & environments */}
         <g className="pf-stack__plate" style={level(1)}>
-          <Slab min={[-HALF, -HALF, levels[1]]} max={[HALF, HALF, levels[1] + T]} />
+          <Slab min={[-HALF, -HALF, levels[1]]} max={[HALF, HALF, levels[1] + T]} lit="cyan" />
           <Seam z={levels[1] + T} />
           <Dot at={[HALF, HALF, levels[1] + T]} tone="cyan" />
           <Guides from={levels[1] + T} to={levels[2]} />
@@ -128,7 +143,7 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
 
         {/* Self-evolving agents */}
         <g className="pf-stack__plate" style={level(2)}>
-          <Slab min={[-HALF, -HALF, levels[2]]} max={[HALF, HALF, levels[2] + T]} />
+          <Slab min={[-HALF, -HALF, levels[2]]} max={[HALF, HALF, levels[2] + T]} lit="accent" />
           <Seam z={levels[2] + T} />
           <Dot at={[HALF, -HALF, levels[2] + T]} tone="accent" />
           <Dot at={[-HALF, HALF, levels[2] + T]} tone="accent" />
@@ -137,7 +152,7 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
 
         {/* AutoResearch: the top plate with its dot grid and model cube. */}
         <g className="pf-stack__plate" style={level(3)}>
-          <Slab min={[-HALF, -HALF, levels[3]]} max={[HALF, HALF, top]} />
+          <Slab min={[-HALF, -HALF, levels[3]]} max={[HALF, HALF, top]} lit="accent" />
           {grid.flatMap((x) =>
             grid.map((y) =>
               Math.abs(x) <= cube + 0.2 && Math.abs(y) <= cube + 0.2 ? null : (
@@ -145,7 +160,10 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
               ),
             ),
           )}
-          <Slab min={[-cube, -cube, top]} max={[cube, cube, cubeTop]} edge="accent" />
+          {/* The model cube fills solid after the top layer (its own step, --i: 4). */}
+          <g style={level(4)}>
+            <Slab min={[-cube, -cube, top]} max={[cube, cube, cubeTop]} edge="accent" lit="solid" />
+          </g>
           <circle className="pf-stack__halo" cx={pt([cube, cube, cubeTop])[0]} cy={pt([cube, cube, cubeTop])[1]} r={8} />
           <Dot at={[cube, cube, cubeTop]} tone="focus" r={3.5} />
         </g>

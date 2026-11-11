@@ -133,16 +133,21 @@ describe.each(locales)('CustomersPage (%s)', (locale) => {
     expect(animated(html, 'cu-grid'), 'Cobo scenario cells').toBe(1)
     expect(animated(html, 'cu-life'), 'Subconscious.ai lifecycle').toBe(1)
     expect(animated(html, 'cu-enterprise__list'), 'enterprise columns').toBe(1)
+    expect(animated(html, 'cu-meter'), 'enterprise live meters').toBe(copy.enterprise.cases.length)
   })
 
-  it('orders the motion: each Cobo cell has a light-up slot, each stage a highlight slot', () => {
-    expect(count(html, 'class="cu-grid__flash"')).toBe(30)
+  it('orders the motion: each Cobo cell has a fill slot, each stage a solid slot, each case a meter', () => {
     const order = [...html.matchAll(/class="cu-grid__cell"[^>]*style="--i:(\d+)"/g)].map(([, i]) => Number(i))
     expect([...order].sort((a, b) => a - b)).toEqual(Array.from({ length: 30 }, (_, i) => i))
     expect(html.match(/class="cu-life__stage(?: is-ours)?"/g)).toHaveLength(copy.featured.subconscious.stages.length)
     for (let i = 0; i < copy.featured.subconscious.stages.length; i += 1) {
       expect(html).toMatch(new RegExp(`class="cu-life__stage[^"]*" style="--i:${i}"`))
     }
+    // The dark twin label (shown on the solid fill) is hidden from assistive tech.
+    expect(count(html, 'class="cu-life__label cu-life__label--on" aria-hidden="true"')).toBe(
+      copy.featured.subconscious.stages.length,
+    )
+    for (const pattern of ['queue', 'trials', 'scan']) expect(html).toContain(`cu-meter cu-meter--${pattern}`)
   })
 
   it('renders the four customer profiles', () => {

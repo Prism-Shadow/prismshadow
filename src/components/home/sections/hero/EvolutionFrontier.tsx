@@ -14,9 +14,11 @@ import type { HeroVisualCopy } from '../../../../i18n/messages/home'
  * identical on server and client. Geometry is computed once at module load.
  *
  * Motion (hero.css): on an in-app visit the frontier draws in and the solved
- * mass is uncovered band by band behind it (opacity only); on a first load the
- * prerendered field is already showing, so only the quiet loop runs: one ping
- * ring around the latest point.
+ * mass is uncovered band by band behind it. Then, on any visit, the field is
+ * live: waves of solid accent climb through the solved mass toward the
+ * frontier and out to gen N (where the latest point pings as each wave lands),
+ * and open tasks just above the frontier keep turning solved. The live marks
+ * are invisible or identical to the static dots at rest.
  */
 
 type LayoutId = 'wide' | 'medium' | 'compact'
@@ -47,6 +49,11 @@ const LEVELS = [0.3, 0.5, 0.64, 0.75, 0.84]
 const ENTRY = 0.22
 /** Vertical bands the solved mass is uncovered in, left to right, during the draw-in. */
 const BANDS = 8
+/** Depth layers under the frontier (0 = the ridge) that the live wave climbs through. */
+const LAYERS = 6
+/** Rows above the frontier whose open tasks may flash solved, and the share that do. */
+const SPARK_ROWS = 3
+const SPARK_SHARE = 0.13
 /**
  * The line draws with --ds-ease-in-out (hero.css). Mirroring that curve here
  * lets each band and mark wait for the moment the line's head reaches it.
@@ -98,6 +105,14 @@ function drawTimeAt(progress: number) {
   return Math.round(bezier((lo + hi) / 2, x1, x2) * 100) / 100
 }
 
+/** Deterministic 0–1 noise per grid cell (independent of the jitter sequence). */
+function cellNoise(c: number, r: number, seed: number) {
+  let h = (Math.imul(c + 1, 73856093) ^ Math.imul(r + 1, 19349663) ^ Math.imul(seed, 83492791)) >>> 0
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0
+  h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+}
+
 /** Deterministic jitter so the field reads as organic, identically on every render. */
 function jitter(seed: number) {
   let s = seed >>> 0
@@ -112,11 +127,19 @@ type Bucket = { opacity: number; d: string }
 /** Solved dots of one reveal band; `t` is when the line reaches its left edge (fraction of the draw). */
 type Band = { t: number; solved: Bucket[]; ridge: Bucket[] }
 
+/** Live wave: the solved dots of one band × depth layer, redrawn solid (invisible at rest). */
+type Wave = { band: number; layer: number; d: string }
+
+/** An open task above the frontier that keeps flashing solved; at rest it is a plain open dot. */
+type Spark = { x: number; y: number; opacity: number; delay: number; period: number }
+
 type Geometry = {
   layout: Layout
   /** Dot paths grouped by tone and opacity (a few paths instead of a thousand nodes). */
   open: Bucket[]
   bands: Band[]
+  waves: Wave[]
+  sparks: Spark[]
   line: string
   lineEnd: number
   points: Array<{ x: number; y: number; t: number }>
@@ -188,6 +211,8 @@ function buildGeometry(layout: Layout): Geometry {
   const solved = Array.from({ length: BANDS }, () => new Map<number, string[]>())
   const ridge = Array.from({ length: BANDS }, () => new Map<number, string[]>())
   const bandOf = (x: number) => Math.min(BANDS - 1, Math.floor((x / last) * BANDS))
+  const waves = new Map<string, string[]>()
+  const sparks: Spark[] = []
   const rand = jitter(layout.w + layout.pitch)
   const cols = Math.floor(w / pitch)
   const offset = (w - (cols - 1) * pitch) / 2
@@ -201,9 +226,33 @@ function buildGeometry(layout: Layout): Geometry {
     const glow = 0.2 + growth * 0.46
     for (let y = base - pitch / 2; y > 0; y -= pitch) {
       const noise = rand()
+      const row = Math.round(y / pitch)
       if (y < edge) {
-        addTo(open, 0.11 + noise * 0.04, dotPath(x, y, dot))
-      } else if (y - pitch < edge) {
+        const opacity = 0.11 + noise * 0.04
+        const above = (edge - y) / pitch
+        const spark = x <= last && above <= SPARK_ROWS && cellNoise(c, row, layout.w) < SPARK_SHARE
+        if (spark) {
+          const period = 3.4 + cellNoise(row, c, 5) * 2.8
+          sparks.push({
+            x: round(x),
+            y: round(y),
+            opacity: Math.round(opacity * 50) / 50,
+            period: Math.round(period * 100) / 100,
+            // Negative: every spark is already mid-cycle when the loop starts.
+            delay: -Math.round(cellNoise(c + 11, row + 3, 9) * period * 100) / 100,
+          })
+        } else {
+          addTo(open, opacity, dotPath(x, y, dot))
+        }
+        continue
+      }
+      const layer = Math.min(LAYERS - 1, Math.floor((y - edge) / pitch))
+      const key = `${bandOf(x)}:${layer}`
+      const live = dotPath(x, y, round(dot * 1.45))
+      const list = waves.get(key)
+      if (list) list.push(live)
+      else waves.set(key, [live])
+      if (y - pitch < edge) {
         addTo(ridge[bandOf(x)], 0.32 + growth * 0.44, dotPath(x, y, round(dot * 1.1)))
       } else {
         const depth = clamp01((y - edge) / (base - edge))
@@ -220,6 +269,11 @@ function buildGeometry(layout: Layout): Geometry {
       solved: toBuckets(buckets),
       ridge: toBuckets(ridge[i]),
     })),
+    waves: [...waves.entries()].map(([key, parts]) => {
+      const [band, layer] = key.split(':').map(Number)
+      return { band, layer, d: parts.join('') }
+    }),
+    sparks,
     line,
     lineEnd: last,
     points: gens.map((g, i) => ({ x: g * w, y: ys[i + 1], t: drawnAt(g * w) })),
@@ -243,6 +297,18 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
         {geo.open.map((b) => (
           <path key={`o${b.opacity}`} className="hp-fr__dots hp-fr__dots--open" d={b.d} opacity={b.opacity} />
         ))}
+        {/* Open tasks at the frontier that keep getting solved (plain open dots at rest). */}
+        {geo.sparks.map((spark) => (
+          <circle
+            key={`${spark.x}:${spark.y}`}
+            className="hp-fr__spark"
+            cx={spark.x}
+            cy={spark.y}
+            r={geo.layout.dot}
+            opacity={spark.opacity}
+            style={{ '--o': spark.opacity, '--d': `${spark.delay}s`, '--t': `${spark.period}s` } as CSSProperties}
+          />
+        ))}
       </svg>
 
       {/* Solved tasks: the one quiet object, fading in from the left only. */}
@@ -256,6 +322,15 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
               <path key={`r${b.opacity}`} className="hp-fr__dots hp-fr__dots--ridge" d={b.d} opacity={b.opacity} />
             ))}
           </g>
+        ))}
+        {/* The live wave: solid copies of the solved dots, one group per band × depth (invisible at rest). */}
+        {geo.waves.map((wave) => (
+          <path
+            key={`w${wave.band}:${wave.layer}`}
+            className="hp-fr__wave"
+            d={wave.d}
+            style={{ '--b': wave.band, '--l': wave.layer } as CSSProperties}
+          />
         ))}
       </svg>
 
