@@ -985,3 +985,12 @@ html[data-motion] [data-animate]:not([data-animate='custom'])[data-inview='enter
     opacity: 0;
   }
 }
+
+/* Printing: show every visual in its final state, never mid-intro or hidden. */
+@media print {
+  html[data-motion] [data-animate],
+  html[data-motion] [data-animate] * {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
