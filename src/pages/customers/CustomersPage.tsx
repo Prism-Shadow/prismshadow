@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ArrowRightIcon } from '../../components/site/icons'
 import {
   departmentOrder,
@@ -109,9 +110,10 @@ export function CustomersPage({ locale }: PageProps) {
             titleId="enterprise-title"
             lead={enterprise.lead}
           />
-          <ul className="cu-enterprise__list">
-            {enterprise.cases.map((item) => (
-              <li key={item.id} className="cu-enterprise__item">
+          {/* Motion (customers.css): the three columns fade up in turn, once. */}
+          <ul className="cu-enterprise__list" data-animate="custom">
+            {enterprise.cases.map((item, index) => (
+              <li key={item.id} className="cu-enterprise__item" style={{ '--i': index } as CSSProperties}>
                 <p className="cu-enterprise__customer">{item.customer}</p>
                 <p className="cu-enterprise__value">{item.value}</p>
                 <h3 className="ds-h4 cu-enterprise__title">{item.title}</h3>

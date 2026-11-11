@@ -64,6 +64,23 @@
   fill: var(--ds-accent);
 }
 
+/*
+ * Motion (src/components/site/motion.ts). Intro: the three drawings fade up
+ * in turn as they scroll in. Loop: their vertex dots glint slowly, one after
+ * another, each drawing offset from the last so they never flash together.
+ */
+html[data-motion] .pg-home .hp-iso[data-inview='enter'] {
+  animation: ds-fade-up 900ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--hp-iso-order, 0) * 140ms);
+}
+
+html[data-motion] .pg-home .hp-iso[data-inview] .hp-iso__dot {
+  --ds-glint-rest: 0.55;
+  animation: ds-glint 7s var(--ds-ease-in-out) infinite backwards;
+  /* Start mid-cycle (resting), so the first glint comes about a second in. */
+  animation-delay: calc(var(--hp-iso-order, 0) * 2.2s + var(--i, 0) * 260ms - 4.6s);
+}
+
 .pg-home .hp-products__ident {
   display: flex;
   align-items: center;

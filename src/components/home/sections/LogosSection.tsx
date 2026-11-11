@@ -67,7 +67,13 @@ export function LogosSection({ copy }: { copy: LogosCopy }) {
           {copy.title}
         </h2>
         {/* Focusable so keyboard users can pause the scroll (it pauses on focus). */}
-        <div className="hp-logos__viewport" role="group" aria-label={copy.logosLabel} tabIndex={0}>
+        <div
+          className="hp-logos__viewport"
+          role="group"
+          aria-label={copy.logosLabel}
+          tabIndex={0}
+          data-animate="custom"
+        >
           <div className="hp-logos__track">
             {Array.from({ length: COPIES }, (_, copyIndex) => (
               <ul

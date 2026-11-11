@@ -38,6 +38,12 @@
   color: var(--ds-text-3);
 }
 
+/* Motion (src/components/site/motion.ts): a short stagger, no counting; the resting state is final. */
+html[data-motion] .pg-home .hp-proof__stats[data-inview='enter'] .hp-proof__stat {
+  animation: ds-fade-up 800ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+
 /* Customers: label under the first stat column, names from the second stat column on. */
 .pg-home .hp-proof__customers {
   display: grid;

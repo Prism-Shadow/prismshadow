@@ -12,6 +12,11 @@ import type { HeroVisualCopy } from '../../../../i18n/messages/home'
  *
  * Three layouts (wide, medium, compact) are rendered and swapped in CSS, so the markup is
  * identical on server and client. Geometry is computed once at module load.
+ *
+ * Motion (hero.css): on an in-app visit the frontier draws in and the solved
+ * mass is uncovered band by band behind it (opacity only); on a first load the
+ * prerendered field is already showing, so only the quiet loop runs: one ping
+ * ring around the latest point.
  */
 
 type LayoutId = 'wide' | 'medium' | 'compact'
@@ -40,6 +45,13 @@ const LAYOUTS: Layout[] = [
 const LEVELS = [0.3, 0.5, 0.64, 0.75, 0.84]
 /** Where the frontier enters from the left edge. */
 const ENTRY = 0.22
+/** Vertical bands the solved mass is uncovered in, left to right, during the draw-in. */
+const BANDS = 8
+/**
+ * The line draws with --ds-ease-in-out (hero.css). Mirroring that curve here
+ * lets each band and mark wait for the moment the line's head reaches it.
+ */
+const DRAW_EASE = [0.65, 0, 0.35, 1] as const
 
 const round = (n: number) => Math.round(n * 10) / 10
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n))
@@ -71,6 +83,21 @@ function monotoneTangents(xs: number[], ys: number[]) {
   return m
 }
 
+const bezier = (t: number, a: number, b: number) => 3 * (1 - t) ** 2 * t * a + 3 * (1 - t) * t ** 2 * b + t ** 3
+
+/** The fraction of the draw's duration at which the eased draw has covered `progress` of the line. */
+function drawTimeAt(progress: number) {
+  const [x1, y1, x2, y2] = DRAW_EASE
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 24; i += 1) {
+    const mid = (lo + hi) / 2
+    if (bezier(mid, y1, y2) < progress) lo = mid
+    else hi = mid
+  }
+  return Math.round(bezier((lo + hi) / 2, x1, x2) * 100) / 100
+}
+
 /** Deterministic jitter so the field reads as organic, identically on every render. */
 function jitter(seed: number) {
   let s = seed >>> 0
@@ -82,15 +109,17 @@ function jitter(seed: number) {
 
 type Bucket = { opacity: number; d: string }
 
+/** Solved dots of one reveal band; `t` is when the line reaches its left edge (fraction of the draw). */
+type Band = { t: number; solved: Bucket[]; ridge: Bucket[] }
+
 type Geometry = {
   layout: Layout
   /** Dot paths grouped by tone and opacity (a few paths instead of a thousand nodes). */
   open: Bucket[]
-  solved: Bucket[]
-  ridge: Bucket[]
+  bands: Band[]
   line: string
   lineEnd: number
-  points: Array<{ x: number; y: number; at: number }>
+  points: Array<{ x: number; y: number; t: number }>
 }
 
 function dotPath(x: number, y: number, r: number) {
@@ -144,9 +173,21 @@ function buildGeometry(layout: Layout): Geometry {
     })
     .join('')
 
+  // Arc length along the line, sampled every few units, to time the reveal to the draw.
+  const SAMPLE = 4
+  const lengths = [0]
+  for (let x = SAMPLE; x - SAMPLE < last; x += SAMPLE) {
+    const x0 = x - SAMPLE
+    const x1 = Math.min(x, last)
+    lengths.push(lengths[lengths.length - 1] + Math.hypot(x1 - x0, frontier(x1) - frontier(x0)))
+  }
+  const drawnAt = (x: number) =>
+    drawTimeAt(lengths[Math.min(lengths.length - 1, Math.round(x / SAMPLE))] / lengths[lengths.length - 1])
+
   const open = new Map<number, string[]>()
-  const solved = new Map<number, string[]>()
-  const ridge = new Map<number, string[]>()
+  const solved = Array.from({ length: BANDS }, () => new Map<number, string[]>())
+  const ridge = Array.from({ length: BANDS }, () => new Map<number, string[]>())
+  const bandOf = (x: number) => Math.min(BANDS - 1, Math.floor((x / last) * BANDS))
   const rand = jitter(layout.w + layout.pitch)
   const cols = Math.floor(w / pitch)
   const offset = (w - (cols - 1) * pitch) / 2
@@ -163,10 +204,10 @@ function buildGeometry(layout: Layout): Geometry {
       if (y < edge) {
         addTo(open, 0.11 + noise * 0.04, dotPath(x, y, dot))
       } else if (y - pitch < edge) {
-        addTo(ridge, 0.32 + growth * 0.44, dotPath(x, y, round(dot * 1.1)))
+        addTo(ridge[bandOf(x)], 0.32 + growth * 0.44, dotPath(x, y, round(dot * 1.1)))
       } else {
         const depth = clamp01((y - edge) / (base - edge))
-        addTo(solved, glow * (1 - 0.6 * depth) + noise * 0.05, dotPath(x, y, dot))
+        addTo(solved[bandOf(x)], glow * (1 - 0.6 * depth) + noise * 0.05, dotPath(x, y, dot))
       }
     }
   }
@@ -174,11 +215,14 @@ function buildGeometry(layout: Layout): Geometry {
   return {
     layout,
     open: toBuckets(open),
-    solved: toBuckets(solved),
-    ridge: toBuckets(ridge),
+    bands: solved.map((buckets, i) => ({
+      t: drawnAt((i / BANDS) * last),
+      solved: toBuckets(buckets),
+      ridge: toBuckets(ridge[i]),
+    })),
     line,
     lineEnd: last,
-    points: gens.map((g, i) => ({ x: g * w, y: ys[i + 1], at: g })),
+    points: gens.map((g, i) => ({ x: g * w, y: ys[i + 1], t: drawnAt(g * w) })),
   }
 }
 
@@ -203,11 +247,15 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
 
       {/* Solved tasks: the one quiet object, fading in from the left only. */}
       <svg className="hp-fr__field hp-fr__field--solved" viewBox={`0 0 ${w} ${h}`} focusable="false">
-        {geo.solved.map((b) => (
-          <path key={`s${b.opacity}`} className="hp-fr__dots hp-fr__dots--solved" d={b.d} opacity={b.opacity} />
-        ))}
-        {geo.ridge.map((b) => (
-          <path key={`r${b.opacity}`} className="hp-fr__dots hp-fr__dots--ridge" d={b.d} opacity={b.opacity} />
+        {geo.bands.map((band, i) => (
+          <g key={i} className="hp-fr__band" style={{ '--hp-fr-t': band.t } as CSSProperties}>
+            {band.solved.map((b) => (
+              <path key={`s${b.opacity}`} className="hp-fr__dots hp-fr__dots--solved" d={b.d} opacity={b.opacity} />
+            ))}
+            {band.ridge.map((b) => (
+              <path key={`r${b.opacity}`} className="hp-fr__dots hp-fr__dots--ridge" d={b.d} opacity={b.opacity} />
+            ))}
+          </g>
         ))}
       </svg>
 
@@ -247,10 +295,12 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
             <g
               key={p.x}
               className={`hp-fr__mark${latest ? ' hp-fr__mark--latest' : ''}`}
-              style={{ '--hp-fr-at': p.at } as CSSProperties}
+              style={{ '--hp-fr-t': p.t } as CSSProperties}
             >
               <path className="hp-fr__stem" d={`M${round(p.x)} ${base}V${round(p.y + (latest ? 12 : 7))}`} />
               {latest ? <circle className="hp-fr__halo" cx={round(p.x)} cy={round(p.y)} r="9" /> : null}
+              {/* The one ambient loop: a faint ring that leaves the halo now and then. */}
+              {latest ? <circle className="hp-fr__ping" cx={round(p.x)} cy={round(p.y)} r="9" /> : null}
               <circle
                 className="hp-fr__point"
                 cx={round(p.x)}
@@ -275,7 +325,7 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
 
       <span
         className="hp-fr__result hp-fr__mark hp-fr__mark--latest"
-        style={{ left: pct(final.x, w), top: pct(final.y, h), '--hp-fr-at': final.at } as CSSProperties}
+        style={{ left: pct(final.x, w), top: pct(final.y, h), '--hp-fr-t': final.t } as CSSProperties}
       >
         <span className="hp-fr__value">{copy.result}</span>
         <span className="hp-fr__metric">{copy.metric}</span>
@@ -286,7 +336,7 @@ function Stage({ geo, copy }: { geo: Geometry; copy: HeroVisualCopy }) {
 
 export function EvolutionFrontier({ copy }: { copy: HeroVisualCopy }) {
   return (
-    <figure className="hp-fr" role="img" aria-label={copy.ariaLabel}>
+    <figure className="hp-fr" role="img" aria-label={copy.ariaLabel} data-animate="custom">
       {GEOMETRY.map((geo) => (
         <Stage key={geo.layout.id} geo={geo} copy={copy} />
       ))}
