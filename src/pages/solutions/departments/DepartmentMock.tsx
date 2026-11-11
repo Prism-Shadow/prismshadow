@@ -11,11 +11,12 @@ import type { DepartmentId } from '../../../i18n/messages/shared'
  * queue for support, a pipeline for sales, and so on. Illustrative only, so it
  * is exposed as a single image with a descriptive label.
  *
- * Motion (CSS only, see the Motion section of departments.css): while in view
- * each mock runs a looping story (tickets stream in, deals advance, slots
- * fill week by week, the chart redraws, risk bars rebalance, clauses are
- * reviewed, impact squares fill and clear, queues fill and drain). The markup
- * is always the resting state, which is also the first frame of every loop.
+ * Motion (CSS only, see the Motion section of departments.css). Workflow mocks
+ * loop while in view: tickets stream in, the selection steps through deals,
+ * slots fill week by week, clauses are reviewed, impact squares fill and
+ * clear, orders hop between fulfillment stages. Anything that encodes a
+ * quantity (the KPI chart, risk bars, deal scores, queue depths) grows once
+ * as the mock enters view and then rests. The markup is the resting state.
  */
 export function DepartmentMock({
   id,
@@ -220,7 +221,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
                 <span
                   className="pg-mock__fill"
                   data-tone={tone(i)}
-                  style={{ ...level(v.levels[i] ?? 0.5), ...order(i), ...rebalance(v.levels[i] ?? 0.5, i) }}
+                  style={{ ...level(v.levels[i] ?? 0.5), ...order(i) }}
                 />
               </span>
               <Tag tone={tone(i)} focal={focal(i)}>
@@ -290,17 +291,13 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
           {items.map((item, i) => (
             <li key={item.label} className="pg-mock__stage" data-tone={tone(i)} style={order(i)}>
               <span className="pg-mock__queue" aria-hidden="true">
-                {Array.from({ length: QUEUE_CELLS }, (_, k) => {
-                  const depth = Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS)
-                  return (
-                    <i
-                      key={k}
-                      data-on={k < depth || undefined}
-                      data-wave={queueWave(k, depth)}
-                      style={{ '--k': k } as CSSProperties}
-                    />
-                  )
-                })}
+                {Array.from({ length: QUEUE_CELLS }, (_, k) => (
+                  <i
+                    key={k}
+                    data-on={k < Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS) || undefined}
+                    style={{ '--k': k } as CSSProperties}
+                  />
+                ))}
               </span>
               <span className="pg-mock__label">{item.label}</span>
               <span className="pg-mock__detail">{item.detail}</span>
@@ -316,25 +313,6 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
 
 /** Queue-depth cells per fulfillment stage. */
 const QUEUE_CELLS = 6
-
-/**
- * Role of a queue cell in the fill-and-drain loop, relative to the stage's
- * resting depth: the two cells above it fill (solid) and drain, the two at
- * its top drain and refill. Other cells hold still.
- */
-function queueWave(k: number, depth: number) {
-  return ({ [depth - 2]: 'down2', [depth - 1]: 'down1', [depth]: 'up1', [depth + 1]: 'up2' } as Record<number, string>)[
-    k
-  ]
-}
-
-/** HR bars rebalance: each swings between its own low and high, out of phase. */
-const rebalance = (level: number, i: number) =>
-  ({
-    '--hi': Math.min(0.97 / level, 1.3).toFixed(3),
-    '--lo': (i % 2 ? 0.62 : 0.74).toFixed(2),
-    '--t': `${[4.2, 5, 3.8, 4.6][i % 4]}s`,
-  }) as CSSProperties
 
 /* KPI monitor series, in % of chart height from the top (0 = top). */
 const chartBase = [62, 60, 61, 57, 58, 55, 56, 53, 54, 51, 52, 50]
