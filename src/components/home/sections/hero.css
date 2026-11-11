@@ -174,9 +174,11 @@
  * Motion (src/components/site/motion.ts). The resting state above is the
  * final frame: no JS, reduced motion and the prerendered page show it as is.
  *
- * Intro, in-app visits only (`enter`): the frontier draws in, the solved mass
- * is uncovered band by band behind it and each generation mark fades in as
- * the line reaches it. A first load (`initial`) skips straight to the loop.
+ * This is a statistical chart, so it grows once on every visit (first load
+ * included) and then rests: the frontier draws in, the solved mass is
+ * uncovered band by band behind it, each generation mark fades in as the line
+ * reaches it, and one solid wave settles through the solved mass as the line
+ * lands, with a single ping at gen N. No loops.
  */
 html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__field--open {
   animation: ds-fade-in 1600ms var(--ds-ease-out) 100ms both;
@@ -205,36 +207,17 @@ html[data-motion] .pg-home .hp-fr[data-inview='enter'] :is(.hp-fr__band, .hp-fr_
   transform-origin: center;
 }
 
-/*
- * Loops, on any visit (a first load starts them at once, an in-app visit
- * after the draw-in):
- * - a wave of solid accent climbs through the solved mass, deepest rows
- *   first, sweeping left to right until it breaks on the ridge at gen N;
- * - the latest point pings as each wave lands there;
- * - open tasks just above the frontier keep flashing solved, each on its
- *   own rhythm.
- */
-html[data-motion] .pg-home .hp-fr[data-inview] {
-  --hp-fr-loop: 300ms;
-}
-
-html[data-motion] .pg-home .hp-fr[data-inview='enter'] {
-  --hp-fr-loop: 2600ms;
-}
-
+/* The closing flourish, once: a wave of solid accent climbs through the solved
+   mass (deepest rows first, left to right) and the latest point pings once. */
 html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__wave {
-  animation: hp-fr-wave 3800ms var(--ds-ease-in-out) infinite backwards;
-  animation-delay: calc(var(--hp-fr-loop) + var(--b) * 150ms + (5 - var(--l)) * 170ms);
+  animation: hp-fr-wave 3800ms var(--ds-ease-in-out) 1 backwards;
+  animation-delay: calc(2600ms + var(--b) * 150ms + (5 - var(--l)) * 170ms);
 }
 
 html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__ping {
-  animation: hp-fr-ping 3800ms var(--ds-ease-out) infinite;
+  animation: hp-fr-ping 3800ms var(--ds-ease-out) 1 backwards;
   /* The wave reaches the ridge at gen N after 7 × 150 + 5 × 170 ms, peaking 7% later. */
-  animation-delay: calc(var(--hp-fr-loop) + 2150ms);
-}
-
-html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__spark {
-  animation: hp-fr-solve var(--t, 4s) var(--ds-ease-in-out) var(--d, 0s) infinite;
+  animation-delay: calc(2600ms + 2150ms);
 }
 
 /* A short pulse per group, so the sweep reads as a band: solid at the ridge, softer deeper down. */
@@ -267,21 +250,6 @@ html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__spark {
   }
 }
 
-@keyframes hp-fr-solve {
-  0%,
-  100% {
-    fill: var(--ds-text);
-    opacity: var(--o);
-    transform: scale(1);
-  }
-
-  30%,
-  58% {
-    fill: var(--ds-accent);
-    opacity: 0.95;
-    transform: scale(1.5);
-  }
-}
 
 /* ---------- Responsive ---------- */
 

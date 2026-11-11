@@ -1058,16 +1058,15 @@ html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__wash {
   animation-delay: calc(var(--pf-loop) + 600ms + var(--i) * 1200ms);
 }
 
-/* The accuracy line keeps drawing forward; its end point lands with it. */
+/* The accuracy line is a statistic: it draws once when the diagram is shown,
+   its end point lands, and it rests while the diagram keeps working. */
 html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__spark {
   stroke-dasharray: 1;
-  animation: pf-progress 4400ms var(--ds-ease-in-out) infinite backwards;
-  animation-delay: var(--pf-loop);
+  animation: ds-draw 2400ms var(--ds-ease-out) var(--pf-loop) both;
 }
 
 html[data-motion] .pg-platform .pf-dg[data-inview] .pf-dg__spark-end {
-  animation: pf-progress-end 4400ms linear infinite backwards;
-  animation-delay: var(--pf-loop);
+  animation: ds-fade-in 500ms var(--ds-ease-out) calc(var(--pf-loop) + 2200ms) both;
 }
 
 /* The executed solution pings when the winning run completes. */
@@ -1145,20 +1144,21 @@ html[data-motion] .pg-platform .pf-cost__track[data-inview='enter'] {
   animation: ds-fade-in 700ms var(--ds-ease-out) both;
 }
 
-/* Claude Code's thirty cells fill one at a time, hold, then empty for the next run. */
+/* A statistic, so it grows once and rests: Claude Code's thirty cells fill in
+   one at a time, while PrismShadow is done after the first step (its cell
+   glows and rings once). */
 html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__cell--ref {
-  animation: pf-refill 6400ms var(--ds-ease-in-out) infinite backwards;
+  animation: ds-fade-in 320ms var(--ds-ease-out) both;
   animation-delay: calc(400ms + var(--i, 0) * 70ms);
 }
 
-/* PrismShadow is done after the first step: its cell glows, sheen and ring. */
 html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__glint {
-  animation: pf-cost-glint 6400ms var(--ds-ease-in-out) infinite backwards;
+  animation: pf-cost-glint 6400ms var(--ds-ease-in-out) 1 backwards;
   animation-delay: 470ms;
 }
 
 html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__ping {
-  animation: pf-ping 6400ms var(--ds-ease-out) infinite;
+  animation: pf-ping 6400ms var(--ds-ease-out) 1 backwards;
   animation-delay: 470ms;
 }
 
@@ -1250,42 +1250,6 @@ html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__ping {
 }
 
 /* Draws over the first 55%, holds, fades, and starts again from empty. */
-@keyframes pf-progress {
-  0% {
-    stroke-dashoffset: 1;
-    opacity: 1;
-  }
-
-  55%,
-  82% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-
-  94%,
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes pf-progress-end {
-  0%,
-  52% {
-    opacity: 0;
-  }
-
-  58%,
-  82% {
-    opacity: 1;
-  }
-
-  94%,
-  100% {
-    opacity: 0;
-  }
-}
-
 @keyframes pf-ping {
   0% {
     opacity: 0;
@@ -1341,22 +1305,6 @@ html[data-motion] .pg-platform .pf-cost__track[data-inview] .pf-cost__ping {
 
   24% {
     fill-opacity: 0;
-  }
-}
-
-@keyframes pf-refill {
-  0% {
-    fill-opacity: 0.02;
-  }
-
-  6%,
-  64% {
-    fill-opacity: 0.5;
-  }
-
-  76%,
-  100% {
-    fill-opacity: 0.02;
   }
 }
 

@@ -56,8 +56,8 @@
 
 /*
  * Motion (src/components/site/motion.ts): the results fade up in a short
- * stagger (the numbers never count), then a solid meter runs down each
- * column's hairline in turn, holds and fades. The resting state is final.
+ * stagger (the numbers never count), and a solid meter runs down each
+ * column's hairline once, in turn, then fades. Statistics grow once and rest.
  */
 html[data-motion] .pg-home .hp-proof__stats[data-inview='enter'] .hp-proof__stat {
   animation: ds-fade-up 800ms var(--ds-ease-out) both;
@@ -65,8 +65,8 @@ html[data-motion] .pg-home .hp-proof__stats[data-inview='enter'] .hp-proof__stat
 }
 
 html[data-motion] .pg-home .hp-proof__stats[data-inview] .hp-proof__stat::before {
-  animation: hp-proof-meter 5200ms var(--ds-ease-in-out) infinite backwards;
-  animation-delay: calc(700ms + var(--i, 0) * 1300ms);
+  animation: hp-proof-meter 5200ms var(--ds-ease-in-out) 1 backwards;
+  animation-delay: calc(700ms + var(--i, 0) * 450ms);
 }
 
 @keyframes hp-proof-meter {
