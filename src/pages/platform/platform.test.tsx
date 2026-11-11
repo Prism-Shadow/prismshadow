@@ -17,6 +17,12 @@ const escapeHtml = (text: string) =>
 
 const count = (html: string, needle: string) => html.split(needle).length - 1
 
+/** Opening tags that opt into the motion system, and how many carry `className`. */
+const animated = (html: string, className: string) =>
+  [...html.matchAll(/<[a-z]+\b[^>]*\bdata-animate="[^"]*"[^>]*>/g)].filter(([tag]) =>
+    new RegExp(`\\bclass="(?:[^"]* )?${className}(?: [^"]*)?"`).test(tag),
+  ).length
+
 const sectionIds = ['hero', 'capabilities', 'how-it-works', 'results', 'products', 'get-started']
 
 /** Owner-supplied platform facts that must appear in both languages. */
@@ -139,6 +145,20 @@ describe.each(locales)('PlatformPage (%s)', (locale) => {
       has(stat.value)
       has(stat.label)
     }
+  })
+
+  it('marks every visual for the motion system (data-animate)', () => {
+    expect(animated(html, 'pf-stack'), 'hero stack').toBe(1)
+    expect(animated(html, 'pf-dg'), 'capability diagrams').toBe(4)
+    expect(animated(html, 'pf-loopdg'), 'loop diagram').toBe(1)
+    expect(animated(html, 'pf-cost__track'), 'cost chart rows').toBe(2)
+  })
+
+  it('carries the motion hooks: plate levels, one signal per board, four ring arcs, one glint', () => {
+    expect(count(html, 'class="pf-stack__plate" style="--i:')).toBe(4)
+    expect(count(html, 'class="pf-dg__signal"')).toBe(4)
+    expect(count(html, 'class="pf-loopdg__signal"')).toBe(4)
+    expect(count(html, 'class="pf-cost__glint"')).toBe(1)
   })
 
   it('links all three products with their marks', () => {

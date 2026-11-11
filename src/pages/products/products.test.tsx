@@ -9,10 +9,7 @@ import { collectStrings, copyShape, expectPageBasics, renderHtml } from '../../t
 import { LlamaFactoryPage } from './LlamaFactoryPage'
 import { PanofyPage } from './PanofyPage'
 import { PenguinHarnessPage } from './PenguinHarnessPage'
-import llamaCss from './llama-factory.css?raw'
-import panofyCss from './panofy.css?raw'
-import penguinCss from './penguin-harness.css?raw'
-import kitCss from './shared/product-kit.css?raw'
+import { appScreens, buildScreen, heroScreen, screenSrc } from './penguin/data'
 
 /** Visible text of server-rendered HTML (tags stripped, entities decoded). */
 const textOf = (html: string) =>
@@ -25,6 +22,22 @@ const textOf = (html: string) =>
     .replaceAll('&amp;', '&')
 
 const count = (html: string, needle: string) => html.split(needle).length - 1
+
+/** Attribute-escape a string the way React's server renderer does. */
+const attr = (value: string) =>
+  value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll("'", '&#x27;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+
+/** The <img> tag that loads `src`, or undefined. */
+const imgTag = (html: string, src: string) => (html.match(/<img\b[^>]*>/g) ?? []).find((tag) => tag.includes(`src="${src}"`))
+
+/** True when the element with this exact class attribute is a motion visual. */
+const animated = (html: string, className: string, value = '') =>
+  new RegExp(`<[a-z]+ class="${className}"[^>]*data-animate="${value}"`).test(html)
+
+// Screenshots shipped in public/ (glob keys only; nothing is imported).
+const penguinShots = Object.keys(import.meta.glob('/public/products/penguin-harness/*.webp')).map((path) =>
+  path.replace('/public', ''),
+)
 
 const expectSections = (html: string, ids: string[]) => {
   for (const id of ids) {
@@ -67,11 +80,56 @@ describe.each(locales)('PenguinHarness page (%s)', (locale) => {
       expect(html).toContain(`href="${href}"`)
   })
 
+  it('shows the new web UI: every screenshot exists, loads in this locale and has its alt text', () => {
+    const shots = [
+      { src: screenSrc(heroScreen.file, locale), alt: t.hero.imageAlt },
+      { src: screenSrc(buildScreen.file, locale), alt: t.how.visuals.build.imageAlt },
+      ...appScreens.map((screen, i) => ({ src: screenSrc(screen.file, locale), alt: t.features.gallery.screens[i].alt })),
+    ]
+    expect(shots).toHaveLength(7)
+    for (const { src, alt } of shots) {
+      expect(penguinShots, `${src} is in public/`).toContain(src)
+      const tag = imgTag(html, src)
+      expect(tag, `<img src="${src}">`).toBeDefined()
+      expect(alt.length, `alt text for ${src}`).toBeGreaterThan(20)
+      expect(tag).toContain(`alt="${attr(alt)}"`)
+    }
+    // Only this locale's captures are loaded.
+    const other = locale === 'en' ? 'zh' : 'en'
+    expect(html).not.toContain(`-${other}.webp`)
+  })
+
+  it('renders the screen gallery as WAI-ARIA tabs', () => {
+    expect(html).toMatch(new RegExp(`role="tablist" aria-label="${attr(t.features.gallery.label)}"`))
+    for (const screen of appScreens) {
+      expect(html).toContain(`id="ph-screens-tab-${screen.file}"`)
+      expect(html).toContain(`aria-controls="ph-screens-panel-${screen.file}"`)
+    }
+    for (const s of t.features.gallery.screens) {
+      expect(text).toContain(s.label)
+      expect(text).toContain(s.caption)
+    }
+  })
+
+  it('marks every visual for the motion system', () => {
+    expect(animated(html, 'pg-product__hero-media')).toBe(true)
+    expect(animated(html, 'pg-penguin__compare')).toBe(true)
+    expect(animated(html, 'ds-panel pg-penguin__bench-panel')).toBe(true)
+    expect(animated(html, 'ds-panel pg-product__terminal pg-penguin__install-terminal')).toBe(true)
+    expect(count(html, 'class="pg-product__tab-visual" data-animate=""')).toBe(t.how.tabs.length)
+    expect(count(html, 'class="pg-penguin__gallery-figure" data-animate=""')).toBe(appScreens.length)
+    // One lit cell against a hundred (each carries its stagger order), signal overlays on the loop and the bus.
+    const compare = html.slice(html.indexOf('id="compare"'), html.indexOf('id="how-it-works"'))
+    expect(count(compare, 'data-lit=""')).toBe(101)
+    expect(compare).toContain('--i:99')
+    expect(count(html, 'class="pg-penguin__arrow-lit"')).toBe(4)
+    expect(count(html, 'class="pg-penguin__bus-signal"')).toBe(3)
+  })
+
   it('renders the hero, proof numbers, tabs and features', () => {
     expect(text).toContain(t.hero.title)
-    expect(html).toContain(`/products/penguin-harness/chat-${locale}.webp`)
     for (const stat of t.proof.stats) expect(text).toContain(stat.value)
-    expect(count(html, 'role="tabpanel"')).toBe(t.how.tabs.length + t.install.tabs.length)
+    expect(count(html, 'role="tabpanel"')).toBe(t.how.tabs.length + t.install.tabs.length + appScreens.length)
     for (const tab of t.how.tabs) {
       expect(text).toContain(tab.label)
       expect(text).toContain(tab.title)
@@ -95,6 +153,15 @@ describe.each(locales)('PenguinHarness page (%s)', (locale) => {
     expect(text).toContain('irm https://penguin.ooo/install.ps1 | iex')
     expect(text).toContain('npm install -g @prismshadow/penguin-cli')
     expect(text).toContain('hiyouga/penguinharness:latest')
+  })
+})
+
+describe('PenguinHarness screenshots', () => {
+  it('ships every capture in both locales, uses all of them, and drops the old UI', () => {
+    const pages = locales.map((locale) => renderHtml(<PenguinHarnessPage locale={locale} />)).join('\n')
+    expect(penguinShots).toHaveLength(14)
+    for (const file of penguinShots) expect(pages, file).toContain(`src="${file}"`)
+    expect(penguinShots.some((file) => /\/(chat|rag-app)-(en|zh)\.webp$/.test(file))).toBe(false)
   })
 })
 
@@ -140,6 +207,15 @@ describe.each(locales)('Panofy page (%s)', (locale) => {
     }
     for (const fit of t.departments.fits) expect(text).toContain(fit.body)
     expect(text).toContain(t.cta.title)
+  })
+
+  it('marks every visual for the motion system', () => {
+    expect(animated(html, 'pg-product__hero-media')).toBe(true)
+    expect(count(html, 'class="pg-product__tab-visual" data-animate=""')).toBe(t.modules.items.length)
+    // Only the training-loop timeline moves; its copy stays still.
+    expect(count(html, 'class="pg-panofy__step-node" aria-hidden="true" data-animate="custom"')).toBe(t.loop.steps.length)
+    // Signals: three wires in, three out, four spokes.
+    expect(count(html, 'class="pg-panofy__signal"')).toBe(10)
   })
 
   it('links to Panofy, the docs, use cases and department pages', () => {
@@ -203,6 +279,21 @@ describe.each(locales)('LlamaFactory page (%s)', (locale) => {
       expect(text).toContain(fact)
   })
 
+  it('marks every visual for the motion system', () => {
+    expect(animated(html, 'pg-product__hero-media')).toBe(true)
+    expect(count(html, 'class="pg-product__tab-visual" data-animate=""')).toBe(t.workflow.steps.length)
+    expect(animated(html, 'ds-panel pg-llama__matrix')).toBe(true)
+    expect(animated(html, 'pg-llama__families')).toBe(true)
+    expect(animated(html, 'pg-llama__open-visual')).toBe(true)
+    // The export terminal sits inside its tab visual, so it is not a second motion visual.
+    expect(html).not.toMatch(/class="ds-panel pg-product__terminal pg-llama__export" data-animate/)
+    // Static render: the first model is selected and the hero chart marks its latest step.
+    expect(count(html, 'class="pg-llama__pick is-selected"')).toBe(1)
+    expect(html).toMatch(/class="pg-llama__pick is-selected"><span class="pg-llama__pick-head"><span class="pg-llama__pick-name">Qwen3</)
+    expect(count(html, 'class="pg-llama__live"')).toBe(1)
+    expect(count(html, 'class="pg-llama__arch-signal"')).toBe(2)
+  })
+
   it('links to GitHub, the WebUI anchor and the other products', () => {
     for (const href of [
       'https://github.com/hiyouga/LlamaFactory',
@@ -261,9 +352,5 @@ describe('product page copy', () => {
     }
   })
 
-  it('never uses bold type in the product stylesheets', () => {
-    for (const css of [kitCss, penguinCss, panofyCss, llamaCss]) {
-      expect(css).not.toMatch(/font-weight:\s*(600|700|800|900|bold)/)
-    }
-  })
+  // Bold type is checked site-wide in src/components/site/styleGuard.test.ts.
 })

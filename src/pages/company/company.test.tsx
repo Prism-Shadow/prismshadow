@@ -36,6 +36,12 @@ const toText = (html: string) =>
 
 const plain = (line: string) => line.replace(/\*\*/g, '')
 
+const count = (html: string, pattern: RegExp) => html.match(pattern)?.length ?? 0
+
+/** The opening tag of the first element whose class list starts with `className`. */
+const openingTag = (html: string, className: string) =>
+  html.match(new RegExp(`<[a-z]+ [^>]*class="${className}(?: [^"]*)?"[^>]*>`))?.[0] ?? ''
+
 const copies = {
   people: peoplePageCopy,
   about: aboutPageCopy,
@@ -120,6 +126,17 @@ describe.each(locales)('people page (%s)', (locale) => {
     for (const tag of html.match(/<a\b[^>]*target="_blank"[^>]*>/g) ?? [])
       expect(tag).toContain('rel="noreferrer"')
   })
+
+  it('marks its visuals for the motion system', () => {
+    // Hero field: custom glint sweep ending on the focal mark.
+    expect(openingTag(html, 'pg-people-field')).toContain('data-animate="custom"')
+    expect(count(html, /class="pg-people-field__mark [^"]*" [^>]*style="--d:/g)).toBeGreaterThan(10)
+    expect(html).toContain('class="pg-people-field__ping"')
+    // Founder portraits rise in; the open-source numbers and logos stagger in.
+    expect(count(html, /class="ds-panel pg-people-founder__photo" data-animate=""/g)).toBe(3)
+    expect(openingTag(html, 'pg-people-repo__stats')).toContain('data-animate="custom"')
+    expect(openingTag(html, 'pg-people-backgrounds__logos')).toContain('data-animate="custom"')
+  })
 })
 
 describe.each(locales)('about page (%s)', (locale) => {
@@ -160,6 +177,17 @@ describe.each(locales)('about page (%s)', (locale) => {
       expect(text).toContain(founder.name)
       expect(html).toContain(`src="${founder.photo}"`)
     }
+  })
+
+  it('marks its visuals for the motion system', () => {
+    // Hero loop: default reveal; its travelling cell is styled in about.css.
+    expect(openingTag(html, 'pg-about-loop')).toContain('data-animate=""')
+    expect(html).toContain('class="pg-about-loop__pulse"')
+    // The three drawings draw in and glint on one vertex each.
+    expect(count(html, /class="pg-about-art" data-animate="custom"/g)).toBe(3)
+    expect(count(html, /data-draw="" pathLength="1"/g)).toBeGreaterThan(10)
+    expect(count(html, /class="pg-about-art__glint"/g)).toBe(3)
+    expect(openingTag(html, 'pg-about-team__avatars')).toContain('data-animate=""')
   })
 })
 
@@ -220,6 +248,18 @@ describe.each(locales)('security page (%s)', (locale) => {
       expect(text).toContain(policy.value)
     }
     for (const row of copy.visuals.auditLog.rows) expect(text).toContain(row.event)
+  })
+
+  it('marks its visuals for the motion system', () => {
+    // Hero check: ticks one by one on enter; every layer carries its order.
+    expect(openingTag(html, 'ds-panel pg-sec-window pg-sec-boundary')).toContain('data-animate=""')
+    expect(count(html, /class="pg-sec-boundary__layer" style="--i:\d+"/g)).toBe(copy.boundary.layers.length)
+    // Perimeter: one signal per connector (data → models → agents → systems).
+    expect(openingTag(html, 'ds-panel ds-panel--cells pg-sec-perimeter')).toContain('data-animate=""')
+    expect(count(html, /class="pg-sec-perimeter__signal"/g)).toBe(3)
+    // Every control mock replays its intro when its tab is selected.
+    for (const mock of ['pg-sec-flow', 'pg-sec-policy', 'pg-sec-memory', 'pg-sec-audit'])
+      expect(openingTag(html, `ds-panel pg-sec-window ${mock}`), mock).toContain('data-animate="custom"')
   })
 })
 

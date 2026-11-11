@@ -21,6 +21,9 @@ const LoopIcon = () => (
  * The PrismShadow platform loop applied to one industry: Ingest lists the
  * industry's own source systems and Deploy lists its scenario agents, so the
  * generic loop reads as this industry's loop.
+ *
+ * Motion (industry.css): on entering view the rail draws and the five nodes
+ * land in order; the dashed return arc then flows slowly back to Ingest.
  */
 export function IndustryLoop({
   copy,
@@ -50,10 +53,16 @@ export function IndustryLoop({
     <div className="ds-panel pg-industry-loop">
       <p className="pg-industry-loop__title">{copy.title}</p>
 
-      <svg className="pg-industry-loop__schematic" viewBox="0 0 480 76" aria-hidden="true" focusable="false">
+      <svg
+        className="pg-industry-loop__schematic"
+        viewBox="0 0 480 76"
+        aria-hidden="true"
+        focusable="false"
+        data-animate="custom"
+      >
         <path className="pg-industry-loop__return" d="M456 56 C 456 6, 24 6, 24 46" />
         <path className="pg-industry-loop__arrow" d="M19.5 41.5 L24 47 L28.5 41.5" />
-        <line className="pg-industry-loop__rail" x1="24" y1="62" x2="456" y2="62" />
+        <line className="pg-industry-loop__rail" x1="24" y1="62" x2="456" y2="62" pathLength={1} />
         {nodeX.map((x, i) => (
           <rect
             key={x}
@@ -63,7 +72,7 @@ export function IndustryLoop({
             width={10}
             height={10}
             rx={2}
-            style={{ fill: stepTones[i], stroke: stepTones[i] }}
+            style={{ fill: stepTones[i], stroke: stepTones[i], '--i': i } as CSSProperties}
           />
         ))}
       </svg>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { cx } from '../../../components/site/utils'
 import { CheckIcon, CopyIcon } from './icons'
 
@@ -6,9 +6,25 @@ export type TerminalLine = { cmd: string; comment?: string }
 
 export type TerminalTab = { id: string; label: string; lines: TerminalLine[] }
 
+/** Each tab's rows in typing order: a comment, then its command, then the caret. */
+function rowOrder(lines: TerminalLine[]) {
+  let order = 0
+  const rows = lines.map((line) => ({
+    comment: line.comment ? order++ : -1,
+    cmd: order++,
+  }))
+  return { rows, caret: order }
+}
+
+const at = (order: number) => ({ '--i': order }) as CSSProperties
+
 /**
  * Flat terminal panel. With more than one tab the title bar becomes a WAI-ARIA tab
  * list. Comments render on their own line above the command; long commands wrap.
+ *
+ * Motion: when the terminal enters view its rows appear one by one, then the caret
+ * blinks. A standalone terminal is its own motion visual (`data-animate`); pass
+ * `reveal={false}` when a parent visual already carries it.
  */
 export function Terminal({
   idBase,
@@ -17,6 +33,7 @@ export function Terminal({
   copyLabel,
   copiedLabel,
   className,
+  reveal = true,
 }: {
   idBase: string
   label: string
@@ -24,6 +41,7 @@ export function Terminal({
   copyLabel: string
   copiedLabel: string
   className?: string
+  reveal?: boolean
 }) {
   const [active, setActive] = useState(0)
   const [copied, setCopied] = useState(false)
@@ -65,7 +83,7 @@ export function Terminal({
   }
 
   return (
-    <div className={cx('ds-panel', 'pg-product__terminal', className)}>
+    <div className={cx('ds-panel', 'pg-product__terminal', className)} data-animate={reveal ? '' : undefined}>
       <div className="pg-product__terminal-bar">
         {hasTabs ? (
           <div className="pg-product__terminal-tabs" role="tablist" aria-label={label}>
@@ -102,45 +120,50 @@ export function Terminal({
           {copied ? <CheckIcon /> : <CopyIcon />}
         </button>
       </div>
-      {tabs.map((tab, index) => (
-        <div
-          key={tab.id}
-          className="pg-product__terminal-body"
-          {...(hasTabs
-            ? {
-                role: 'tabpanel',
-                id: `${idBase}-panel-${tab.id}`,
-                'aria-labelledby': `${idBase}-tab-${tab.id}`,
-                tabIndex: 0,
-              }
-            : {})}
-          hidden={index !== active}
-        >
-          <pre className="pg-product__terminal-code">
-            <code>
-              {tab.lines.map((line, i) => (
-                <span className="pg-product__terminal-line" key={i}>
-                  {line.comment ? (
-                    <span className="pg-product__terminal-comment"># {line.comment}</span>
-                  ) : null}
-                  <span className="pg-product__terminal-cmd">
-                    <span className="pg-product__terminal-prompt" aria-hidden="true">
-                      $
+      {tabs.map((tab, index) => {
+        const order = rowOrder(tab.lines)
+        return (
+          <div
+            key={tab.id}
+            className="pg-product__terminal-body"
+            {...(hasTabs
+              ? {
+                  role: 'tabpanel',
+                  id: `${idBase}-panel-${tab.id}`,
+                  'aria-labelledby': `${idBase}-tab-${tab.id}`,
+                  tabIndex: 0,
+                }
+              : {})}
+            hidden={index !== active}
+          >
+            <pre className="pg-product__terminal-code">
+              <code>
+                {tab.lines.map((line, i) => (
+                  <span className="pg-product__terminal-line" key={i}>
+                    {line.comment ? (
+                      <span className="pg-product__terminal-comment" style={at(order.rows[i].comment)}>
+                        # {line.comment}
+                      </span>
+                    ) : null}
+                    <span className="pg-product__terminal-cmd" style={at(order.rows[i].cmd)}>
+                      <span className="pg-product__terminal-prompt" aria-hidden="true">
+                        $
+                      </span>
+                      {line.cmd}
                     </span>
-                    {line.cmd}
+                  </span>
+                ))}
+                <span className="pg-product__terminal-line" aria-hidden="true">
+                  <span className="pg-product__terminal-cmd" style={at(order.caret)}>
+                    <span className="pg-product__terminal-prompt">$</span>
+                    <span className="pg-product__terminal-caret" />
                   </span>
                 </span>
-              ))}
-              <span className="pg-product__terminal-line" aria-hidden="true">
-                <span className="pg-product__terminal-cmd">
-                  <span className="pg-product__terminal-prompt">$</span>
-                  <span className="pg-product__terminal-caret" />
-                </span>
-              </span>
-            </code>
-          </pre>
-        </div>
-      ))}
+              </code>
+            </pre>
+          </div>
+        )
+      })}
     </div>
   )
 }

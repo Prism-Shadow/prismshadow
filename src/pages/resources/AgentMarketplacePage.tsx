@@ -73,15 +73,23 @@ export function AgentMarketplacePage({ locale }: PageProps) {
             title={<Phrases text={t.adoption.title} />}
             titleId="marketplace-adoption-title"
           />
-          <ol className="pg-marketplace__track">
-            {t.adoption.steps.map((step, i) => (
-              <li key={step.title} className="pg-marketplace__step" data-last={i === t.adoption.steps.length - 1 || undefined}>
-                <span className="pg-marketplace__node">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="ds-h4">{step.title}</h3>
-                <p className="ds-small">{step.body}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="pg-marketplace__track-wrap">
+            {/* The connecting line, drawn in once when it comes into view. */}
+            <span className="pg-marketplace__track-line" aria-hidden="true" data-animate="custom" />
+            <ol className="pg-marketplace__track">
+              {t.adoption.steps.map((step, i) => (
+                <li
+                  key={step.title}
+                  className="pg-marketplace__step"
+                  data-last={i === t.adoption.steps.length - 1 || undefined}
+                >
+                  <span className="pg-marketplace__node">{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="ds-h4">{step.title}</h3>
+                  <p className="ds-small">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </section>
 

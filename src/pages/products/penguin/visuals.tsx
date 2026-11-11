@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { PixelField, type PixelLit } from '../../../components/site/ui'
-import { cx } from '../../../components/site/utils'
+import { cx, scatterPixels } from '../../../components/site/utils'
 import type { Locale } from '../../../i18n/locales'
 import type { PenguinHarnessCopy } from '../../../i18n/messages/products/penguinHarness'
 import { MockWindow } from '../shared/Blocks'
@@ -14,9 +14,12 @@ import {
 } from '../shared/icons'
 import {
   benchmarkSuites,
+  buildScreen,
   costMultiple,
   formatPct,
   formatUsd,
+  heroScreen,
+  screenSrc,
   supportedModels,
   type BenchRow,
 } from './data'
@@ -24,7 +27,7 @@ import {
 type HowVisuals = PenguinHarnessCopy['how']['visuals']
 
 /* ------------------------------------------------------------------ */
-/* Hero: the genuine Web UI building an app from one sentence          */
+/* Hero: the genuine Web UI, mid self-evolution round                  */
 /* ------------------------------------------------------------------ */
 
 export function HeroShot({ locale, label, alt }: { locale: Locale; label: string; alt: string }) {
@@ -32,10 +35,10 @@ export function HeroShot({ locale, label, alt }: { locale: Locale; label: string
     <MockWindow label={label} meta="http://127.0.0.1:7364" className="pg-penguin__hero-shot">
       <img
         className="pg-penguin__hero-img"
-        src={`/products/penguin-harness/chat-${locale}.webp`}
+        src={screenSrc(heroScreen.file, locale)}
         alt={alt}
-        width={1920}
-        height={1200}
+        width={heroScreen.width}
+        height={heroScreen.height}
         fetchPriority="high"
         decoding="async"
       />
@@ -49,16 +52,23 @@ export function HeroShot({ locale, label, alt }: { locale: Locale; label: string
 
 const COMPARE_COLS = 20
 const COMPARE_ROWS = 5
+// A hundred quiet outlined cells with a few filled ones, listed in diagonal order
+// so the staggered intro (and the ambient glint) sweeps across the field.
+const filledCells = new Set(scatterPixels(COMPARE_COLS, COMPARE_ROWS, 10, 23).map((p) => `${p.c}:${p.r}`))
 const hundredCells: PixelLit[] = Array.from({ length: COMPARE_COLS * COMPARE_ROWS }, (_, i) => ({
   c: i % COMPARE_COLS,
   r: Math.floor(i / COMPARE_COLS),
-  tone: 'accent',
 }))
-const oneCell: PixelLit[] = [{ c: 0, r: 0, tone: 'text' }]
+  .sort((a, b) => a.c + a.r - (b.c + b.r) || a.r - b.r)
+  .map((p): PixelLit => {
+    const filled = filledCells.has(`${p.c}:${p.r}`)
+    return { ...p, tone: 'accent', outline: !filled, dim: !filled }
+  })
+const oneCell: PixelLit[] = [{ c: 0, r: 0, tone: 'text', dim: true }]
 
 export function CompareVisual({ sides }: { sides: PenguinHarnessCopy['compare']['sides'] }) {
   return (
-    <ul className="pg-penguin__compare">
+    <ul className="pg-penguin__compare" data-animate="">
       {sides.map((side, index) => {
         const ours = index === 1
         return (
@@ -69,7 +79,7 @@ export function CompareVisual({ sides }: { sides: PenguinHarnessCopy['compare'][
             </div>
             <p className="pg-penguin__side-speed">{side.speed}</p>
             <PixelField
-              className="pg-penguin__side-field"
+              className={cx('pg-penguin__side-field', ours && 'pg-penguin__side-field--ours')}
               cols={COMPARE_COLS}
               rows={COMPARE_ROWS}
               cell={14}
@@ -99,10 +109,10 @@ export function BuildVisual({ locale, copy }: { locale: Locale; copy: HowVisuals
       </p>
       <div className="pg-penguin__build-shot">
         <img
-          src={`/products/penguin-harness/rag-app-${locale}.webp`}
+          src={screenSrc(buildScreen.file, locale)}
           alt={copy.imageAlt}
-          width={1920}
-          height={1140}
+          width={buildScreen.width}
+          height={buildScreen.height}
           loading="lazy"
           decoding="async"
         />
@@ -136,13 +146,13 @@ export function EvaluateVisual({ copy }: { copy: HowVisuals['evaluate'] }) {
       <div className="pg-penguin__eval-body">
         <p className="pg-product__mono">{copy.suitesLabel}</p>
         <ul className="pg-penguin__suites">
-          {copy.suites.map((suite) => (
+          {copy.suites.map((suite, row) => (
             <li key={suite.id} className="pg-penguin__suite-row">
               <span className="pg-penguin__suite-id">{suite.id}</span>
               <span className="pg-penguin__suite-name">{suite.name}</span>
               <span className="pg-penguin__suite-cells" aria-hidden="true">
                 {Array.from({ length: 10 }, (_, i) => (
-                  <span key={i} className="pg-penguin__suite-cell" />
+                  <span key={i} className="pg-penguin__suite-cell" style={{ '--i': row + i } as CSSProperties} />
                 ))}
               </span>
               <span className="pg-penguin__suite-tasks">{copy.tasks}</span>
@@ -160,7 +170,13 @@ export function EvaluateVisual({ copy }: { copy: HowVisuals['evaluate'] }) {
                     <span
                       key={i}
                       className={`pg-penguin__seg pg-penguin__seg--${seg.kind}`}
-                      style={{ left: `${seg.from}%`, width: `${seg.to - seg.from}%` }}
+                      style={
+                        {
+                          left: `${seg.from}%`,
+                          width: `${seg.to - seg.from}%`,
+                          '--at': seg.from / 100,
+                        } as CSSProperties
+                      }
                     />
                   ))}
                 </span>
@@ -181,10 +197,19 @@ export function EvaluateVisual({ copy }: { copy: HowVisuals['evaluate'] }) {
   )
 }
 
-const LoopArrow = ({ dir }: { dir: 'right' | 'down' | 'left' | 'up' }) => (
-  <span className={`pg-penguin__arrow pg-penguin__arrow--${dir}`} aria-hidden="true">
+// Around the loop: optimizer → evaluators → traces → agent → optimizer.
+const loopStep = { right: 0, down: 1, left: 2, up: 3 } as const
+
+/** A loop arrow, with an accent copy on top that lights up in turn (motion only). */
+const LoopArrow = ({ dir }: { dir: keyof typeof loopStep }) => (
+  <span
+    className={`pg-penguin__arrow pg-penguin__arrow--${dir}`}
+    style={{ '--k': loopStep[dir] } as CSSProperties}
+    aria-hidden="true"
+  >
     <svg viewBox="0 0 24 24" focusable="false">
       <path d="M2 12h19M16 7l5 5-5 5" />
+      <path className="pg-penguin__arrow-lit" d="M2 12h19M16 7l5 5-5 5" />
     </svg>
   </span>
 )
@@ -237,7 +262,7 @@ export function EvolveVisual({ copy }: { copy: HowVisuals['evolve'] }) {
           <span className="pg-penguin__node-label">{traces.label}</span>
           <span className="pg-penguin__node-body">{traces.body}</span>
           <svg className="pg-penguin__spark" viewBox="0 0 120 32" aria-hidden="true" focusable="false">
-            <path d="M2 28 L20 25 L36 26 L52 19 L68 20 L84 12 L100 10 L118 4" />
+            <path pathLength={1} d="M2 28 L20 25 L36 26 L52 19 L68 20 L84 12 L100 10 L118 4" />
             <circle cx="118" cy="4" r="3" />
           </svg>
         </div>
@@ -245,6 +270,8 @@ export function EvolveVisual({ copy }: { copy: HowVisuals['evolve'] }) {
     </MockWindow>
   )
 }
+
+const busPaths = ['M50 0 C50 40 150 24 150 64', 'M150 0 V64', 'M250 0 C250 40 150 24 150 64']
 
 export function DeployVisual({ copy }: { copy: HowVisuals['deploy'] }) {
   const icons = [<MonitorIcon key="d" />, <TerminalIcon key="c" />, <CubeIcon key="k" />]
@@ -261,9 +288,19 @@ export function DeployVisual({ copy }: { copy: HowVisuals['deploy'] }) {
           ))}
         </ul>
         <svg className="pg-penguin__bus" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path d="M50 0 C50 40 150 24 150 64" />
-          <path d="M150 0 V64" />
-          <path d="M250 0 C250 40 150 24 150 64" />
+          {busPaths.map((d) => (
+            <path key={d} d={d} />
+          ))}
+          {/* Signals from each entry point down to the data root (motion only). */}
+          {busPaths.map((d, i) => (
+            <path
+              key={`s${i}`}
+              className="pg-penguin__bus-signal"
+              d={d}
+              pathLength={1}
+              style={{ '--k': i } as CSSProperties}
+            />
+          ))}
         </svg>
         <div className="pg-penguin__root">
           <DatabaseIcon />
@@ -289,6 +326,7 @@ function BarRows({
   ours,
   multiples,
   scaleMax,
+  order = 0,
 }: {
   rows: BenchRow[]
   value: (row: BenchRow) => number
@@ -297,14 +335,20 @@ function BarRows({
   multiples?: boolean
   /** Axis maximum; defaults to the largest value. */
   scaleMax?: number
+  /** Position of the first row in the chart's intro stagger. */
+  order?: number
 }) {
   const max = scaleMax ?? Math.max(...rows.map(value))
   return (
     <ul className={cx('pg-penguin__bars', multiples && 'pg-penguin__bars--tagged')}>
-      {rows.map((row) => {
+      {rows.map((row, r) => {
         const share = value(row) / max
         return (
-          <li key={row.harness} className={cx('pg-penguin__bar-row', row.ours && 'is-ours')}>
+          <li
+            key={row.harness}
+            className={cx('pg-penguin__bar-row', row.ours && 'is-ours')}
+            style={{ '--r': order + r } as CSSProperties}
+          >
             <span className="pg-penguin__bar-name">{row.harness}</span>
             <span className="pg-penguin__bar-track">
               <span className="pg-penguin__bar" style={{ '--w': share } as CSSProperties} />
@@ -325,7 +369,7 @@ function BarRows({
 export function BenchmarkChart({ copy }: { copy: BenchCopy }) {
   return (
     <div className="pg-penguin__bench">
-      <div className="ds-panel pg-penguin__bench-panel">
+      <div className="ds-panel pg-penguin__bench-panel" data-animate="">
         {benchmarkSuites.map((suite, i) => {
           const t = copy.suites[i]
           const ours = suite.rows.find((row) => row.ours) ?? suite.rows[0]
@@ -359,6 +403,7 @@ export function BenchmarkChart({ copy }: { copy: BenchCopy }) {
                   format={formatUsd}
                   ours={ours}
                   multiples
+                  order={suite.rows.length}
                 />
               </div>
               <p className="pg-penguin__bsuite-summary">{t.summary}</p>

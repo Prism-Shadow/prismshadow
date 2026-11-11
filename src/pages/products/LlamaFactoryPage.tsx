@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { CSSProperties, ReactElement } from 'react'
 import { GithubIcon } from '../../components/site/icons'
 import { ButtonLink, CtaBand, Eyebrow } from '../../components/site/ui'
 import { renderAccent } from '../../components/site/utils'
@@ -160,9 +160,9 @@ export function LlamaFactoryPage({ locale }: PageProps) {
       </ProductSection>
 
       <ProductSection id="models" head={t.models} tone="paper">
-        <ul className="pg-llama__families" aria-label={t.models.familiesLabel}>
-          {modelFamilies.map((family) => (
-            <li key={family.name} className="pg-llama__family">
+        <ul className="pg-llama__families" aria-label={t.models.familiesLabel} data-animate="">
+          {modelFamilies.map((family, i) => (
+            <li key={family.name} className="pg-llama__family" style={{ '--i': i } as CSSProperties}>
               <span className="pg-llama__family-name">{family.name}</span>
               <span className="pg-llama__family-sizes">{family.sizes}</span>
             </li>
@@ -192,7 +192,7 @@ export function LlamaFactoryPage({ locale }: PageProps) {
               items={t.open.cards.map((card, i) => ({ ...card, icon: openIcons[i] }))}
             />
           </div>
-          <div className="pg-llama__open-visual">
+          <div className="pg-llama__open-visual" data-animate="">
             <Architecture copy={t.open} />
           </div>
         </div>

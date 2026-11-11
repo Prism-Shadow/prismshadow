@@ -179,3 +179,13 @@
   --ds-pixel-off: rgba(12, 13, 16, 0.04);
   --ds-pixel-line: rgba(12, 13, 16, 0.1);
 }
+
+/* Motion: the CTA path glints step by step, slowly, toward its focal point. */
+html[data-motion] .ds-cta__field[data-inview='enter'] {
+  animation: ds-fade-in 900ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .ds-cta__field[data-inview] rect[data-lit] {
+  animation: ds-glint 5.5s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--i) * 220ms);
+}

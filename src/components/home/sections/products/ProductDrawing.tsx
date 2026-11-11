@@ -1,10 +1,13 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { ProductId } from '../../../../i18n/messages/shared'
 
 /*
  * Isometric line drawings for the three products (modal style): 1px edges,
  * faces filled with the section colour so nearer solids hide farther ones,
  * and a few coloured vertex dots.
+ *
+ * Motion (products.css): each drawing fades up once as it scrolls in, then
+ * its vertex dots glint slowly, one after another (`--i` is the dot's order).
  */
 
 const COS30 = Math.cos(Math.PI / 6)
@@ -54,9 +57,17 @@ function Solid({
   )
 }
 
-function Dot({ project, at, tone }: { project: Project; at: P3; tone: 'cyan' | 'amber' | 'accent' }) {
+function Dot({ project, at, tone, i }: { project: Project; at: P3; tone: 'cyan' | 'amber' | 'accent'; i: number }) {
   const [x, y] = project(at).split(' ').map(Number)
-  return <circle className={`hp-iso__dot hp-iso__dot--${tone}`} cx={x} cy={y} r="2.5" />
+  return (
+    <circle
+      className={`hp-iso__dot hp-iso__dot--${tone}`}
+      cx={x}
+      cy={y}
+      r="2.5"
+      style={{ '--i': i } as CSSProperties}
+    />
+  )
 }
 
 function Guide({ project, from, to }: { project: Project; from: P3; to: P3 }) {
@@ -83,10 +94,10 @@ function HarnessDrawing() {
         <Guide key={`${x}${y}`} project={project} from={[x, y, 2]} to={[x, y, 2 + lift]} />
       ))}
       <Solid project={project} min={[1, 1, 2 + lift]} max={[2, 2, top]} />
-      <Dot project={project} at={[1, 1, top]} tone="cyan" />
-      <Dot project={project} at={[2, 1, top]} tone="cyan" />
-      <Dot project={project} at={[1, 2, top]} tone="cyan" />
-      <Dot project={project} at={[2, 2, top]} tone="cyan" />
+      <Dot project={project} at={[1, 1, top]} tone="cyan" i={0} />
+      <Dot project={project} at={[2, 1, top]} tone="cyan" i={1} />
+      <Dot project={project} at={[2, 2, top]} tone="cyan" i={2} />
+      <Dot project={project} at={[1, 2, top]} tone="cyan" i={3} />
     </>
   )
 }
@@ -105,10 +116,10 @@ function PanofyDrawing() {
       <Solid project={project} min={[-1.5, -1.5, 1]} max={[1.5, 1.5, 1 + t]} />
       <Solid project={project} min={[-0.9, -0.9, 1.9]} max={[0.9, 0.9, 1.9 + t]} />
       <Solid project={project} min={[-0.4, -0.4, 1.9 + t]} max={[0.4, 0.4, 2.7 + t]} />
-      <Dot project={project} at={[-0.9, -0.9, 1.9 + t]} tone="amber" />
-      <Dot project={project} at={[0.9, -0.9, 1.9 + t]} tone="amber" />
-      <Dot project={project} at={[-0.9, 0.9, 1.9 + t]} tone="amber" />
-      <Dot project={project} at={[0.9, 0.9, 1.9 + t]} tone="amber" />
+      <Dot project={project} at={[-0.9, -0.9, 1.9 + t]} tone="amber" i={0} />
+      <Dot project={project} at={[0.9, -0.9, 1.9 + t]} tone="amber" i={1} />
+      <Dot project={project} at={[0.9, 0.9, 1.9 + t]} tone="amber" i={2} />
+      <Dot project={project} at={[-0.9, 0.9, 1.9 + t]} tone="amber" i={3} />
     </>
   )
 }
@@ -143,7 +154,7 @@ function FactoryDrawing() {
       ))}
       <Solid project={project} min={[-i, -i, -i]} max={[i, i, i]} />
       {outer.map((point, index) => (
-        <Dot key={index} project={project} at={point} tone="accent" />
+        <Dot key={index} project={project} at={point} tone="accent" i={index} />
       ))}
     </>
   )
@@ -160,9 +171,16 @@ function Drawing({ id }: { id: ProductId }): ReactNode {
   }
 }
 
-export function ProductDrawing({ id }: { id: ProductId }) {
+export function ProductDrawing({ id, order = 0 }: { id: ProductId; order?: number }) {
   return (
-    <svg className="hp-iso" viewBox="0 0 240 200" aria-hidden="true" focusable="false">
+    <svg
+      className="hp-iso"
+      viewBox="0 0 240 200"
+      aria-hidden="true"
+      focusable="false"
+      data-animate="custom"
+      style={{ '--hp-iso-order': order } as CSSProperties}
+    >
       <Drawing id={id} />
     </svg>
   )

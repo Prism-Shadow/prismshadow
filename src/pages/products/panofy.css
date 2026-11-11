@@ -86,6 +86,36 @@
   vector-effect: non-scaling-stroke;
 }
 
+/*
+ * Signal overlays (motion only). Dashes need user-space strokes, not non-scaling
+ * ones, so the width is in viewBox units, tuned per drawing.
+ */
+.pg-panofy .pg-panofy__wires .pg-panofy__signal,
+.pg-panofy .pg-panofy__spokes .pg-panofy__signal {
+  stroke: var(--ds-accent);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-dasharray: 0.14 1.2;
+  stroke-dashoffset: 0.2;
+  vector-effect: none;
+  opacity: 0;
+}
+
+.pg-panofy .pg-panofy__spokes .pg-panofy__signal {
+  stroke-width: 0.3;
+}
+
+/* Each output tile's accent outline; unlit at rest, lit in turn under motion. */
+.pg-panofy .pg-panofy__tile--out::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .pg-panofy .pg-panofy__core {
   position: relative;
   align-self: center;
@@ -289,6 +319,27 @@
   bottom: 100%;
 }
 
+/* Accent copies of the same connectors; unlit at rest, they light downward under motion. */
+.pg-panofy .pg-panofy__krow--top .pg-panofy__ktile::before,
+.pg-panofy .pg-panofy__krow--bottom .pg-panofy__ktile::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  height: 44px;
+  background: var(--ds-accent);
+  transform-origin: center top;
+  opacity: 0;
+}
+
+.pg-panofy .pg-panofy__krow--top .pg-panofy__ktile::before {
+  top: 100%;
+}
+
+.pg-panofy .pg-panofy__krow--bottom .pg-panofy__ktile::after {
+  bottom: 100%;
+}
+
 .pg-panofy .pg-panofy__kcore {
   position: relative;
   z-index: 1;
@@ -374,6 +425,7 @@
   bottom: -2px;
   border-radius: 3px;
   opacity: 0.6;
+  transform-origin: left center;
 }
 
 .pg-panofy .pg-panofy__mark--amber,
@@ -658,6 +710,7 @@
   top: 50%;
   height: 1px;
   background: var(--ds-line-strong);
+  transform-origin: left center;
 }
 
 .pg-panofy .pg-panofy__step:last-child .pg-panofy__step-node::after {
@@ -672,6 +725,16 @@
   height: 10px;
   border-radius: 2px;
   background: var(--ds-accent);
+}
+
+/* A ring around the step; unlit at rest, it pings step by step under motion. */
+.pg-panofy .pg-panofy__step-dot::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 6px;
+  opacity: 0;
 }
 
 .pg-panofy .pg-panofy__step-label {
@@ -732,5 +795,141 @@
 
   .pg-panofy .pg-panofy__step-node::after {
     display: none;
+  }
+}
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/* Workbench: signals flow from the sources into the context, out to the outputs, which then light in turn. */
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__wires .pg-panofy__signal {
+  opacity: 1;
+  animation: pg-panofy-flow 6s var(--ds-ease-in-out) infinite;
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__wires--in .pg-panofy__signal {
+  animation-delay: calc(300ms + var(--k, 0) * 140ms);
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__wires--out .pg-panofy__signal {
+  animation-delay: calc(1700ms + var(--k, 0) * 140ms);
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__tile--out::after {
+  animation: pg-panofy-lit 6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(2900ms + var(--k, 0) * 320ms);
+}
+
+@keyframes pg-panofy-flow {
+  0% {
+    stroke-dashoffset: 0.2;
+  }
+
+  20%,
+  100% {
+    stroke-dashoffset: -1.06;
+  }
+}
+
+@keyframes pg-panofy-lit {
+  0%,
+  20%,
+  100% {
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 0.85;
+  }
+}
+
+/* Knowledge: the memory cells fill in once; connectors light downward, sources then outputs. */
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__kcore-field [data-lit] {
+  animation: ds-fade-in 500ms var(--ds-ease-out) both;
+  animation-delay: calc(400ms + var(--i, 0) * 70ms);
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__krow--top .pg-panofy__ktile::before {
+  animation: pg-panofy-drop 4.2s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(700ms + var(--k, 0) * 160ms);
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__krow--bottom .pg-panofy__ktile::after {
+  animation: pg-panofy-drop 4.2s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1900ms + var(--k, 0) * 160ms);
+}
+
+@keyframes pg-panofy-drop {
+  0% {
+    opacity: 0.9;
+    transform: scaleY(0);
+  }
+
+  16% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+
+  30%,
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+/* Teaching: each highlight sweeps across its line, and its feedback note's dot follows. */
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__mark {
+  animation: ds-grow-x 700ms var(--ds-ease-out) both;
+  animation-delay: calc(400ms + var(--k, 0) * 450ms);
+}
+
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__fb-dot {
+  animation: pg-product-pop 500ms var(--ds-ease-out) both;
+  animation-delay: calc(850ms + var(--k, 0) * 450ms);
+}
+
+/* Governed output: the checks resolve one by one. */
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__control-state {
+  animation: pg-product-pop 520ms var(--ds-ease-out) both;
+  animation-delay: calc(450ms + var(--k, 0) * 380ms);
+}
+
+/* Rollout: signals run from the hub to each role; the role meters fill in once. */
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__spokes .pg-panofy__signal {
+  opacity: 1;
+  animation: pg-product-signal 4s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(500ms + var(--k, 0) * 200ms);
+}
+
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__role-cell.is-lit {
+  animation: ds-fade-in 420ms var(--ds-ease-out) both;
+  animation-delay: calc(300ms + var(--i, 0) * 70ms);
+}
+
+/* Training loop: the steps arrive along the timeline, then a ring steps from one to the next. */
+html[data-motion] .pg-panofy [data-inview='enter'] .pg-panofy__step-dot {
+  animation: pg-product-pop 500ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i, 0) * 180ms);
+}
+
+html[data-motion] .pg-panofy [data-inview='enter'].pg-panofy__step-node::after {
+  animation: ds-grow-x 700ms var(--ds-ease-out) both;
+  animation-delay: calc(350ms + var(--i, 0) * 180ms);
+}
+
+html[data-motion] .pg-panofy [data-inview] .pg-panofy__step-dot::after {
+  animation: pg-panofy-ring 4.8s var(--ds-ease-out) infinite;
+  animation-delay: calc(1200ms + var(--i, 0) * 1.2s);
+}
+
+@keyframes pg-panofy-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.45);
+  }
+
+  24%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
   }
 }

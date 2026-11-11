@@ -18,6 +18,15 @@ const esc = (text: string) =>
 const count = (html: string, pattern: RegExp) => html.match(pattern)?.length ?? 0
 const formatted = (n: number) => new Intl.NumberFormat('en-US').format(n)
 
+/** Opening tags whose class list includes `className` (exact class, not a prefix). */
+const tagsWithClass = (html: string, className: string) =>
+  (html.match(/<[a-z][^>]*>/g) ?? []).filter((tag) =>
+    (tag.match(/\sclass="([^"]*)"/)?.[1] ?? '').split(/\s+/).includes(className),
+  )
+/** How many elements with `className` opt into the motion system. */
+const animated = (html: string, className: string) =>
+  tagsWithClass(html, className).filter((tag) => /\sdata-animate="/.test(tag)).length
+
 const expectParity = (copy: Record<string, unknown>) => {
   expect(copyShape(copy.zh)).toEqual(copyShape(copy.en))
   // zh headings may carry U+200B phrase-break markers; en never needs them.
@@ -116,6 +125,18 @@ describe.each(locales)('UseCaseLibraryPage (%s)', (locale) => {
     expect(html).toContain(esc(t.featuredCase.safety))
     expect(html).toContain(esc(t.disclaimer))
   })
+
+  it('opts the atlas, the pipeline and every benchmark chart into the motion system', () => {
+    expect(animated(html, 'pg-flow'), 'atlas').toBe(1)
+    expect(animated(html, 'pg-usecases__pipeline'), 'pipeline').toBe(1)
+    expect(count(html, /class="pg-usecases__spark"/g)).toBe(t.featuredCase.pipeline.length - 1)
+    const charts = benchmarks.flatMap((b) => benchmarkCharts[b.id]).filter(Boolean).length
+    const drawn = ['pg-usecases__bar', 'pg-usecases__compare', 'pg-usecases__pass']
+      .map((name) => animated(html, name))
+      .reduce((a, b) => a + b, 0)
+    expect(drawn).toBe(charts)
+    expect(html).not.toContain('data-inview')
+  })
 })
 
 /* ------------------------------------------------------------------ */
@@ -165,5 +186,15 @@ describe.each(locales)('AgentMarketplacePage (%s)', (locale) => {
       expect(html).toContain(esc(item.title))
       expect(html).toContain(esc(item.body))
     }
+  })
+
+  it('opts the hero diagram, the catalogue and the adoption line into the motion system', () => {
+    expect(animated(html, 'pg-marketplace__layer'), 'hero').toBe(1)
+    expect(animated(html, 'pg-marketplace__skills'), 'catalogue').toBe(1)
+    expect(animated(html, 'pg-marketplace__track-line'), 'adoption line').toBe(1)
+    // One "next cell" per team row for the arrival glint; nothing filtered yet.
+    expect(count(html, /data-next="true"/g)).toBe(t.visual.signals.length)
+    expect(html).not.toContain('data-filtered')
+    expect(html).not.toContain('data-inview')
   })
 })

@@ -26,6 +26,9 @@ export function TopicTag({
  * Modal-style post card: visual on top, title, excerpt, then tag and date
  * pinned to the bottom so they line up across a row. The whole card is the
  * link (stretched from the title anchor).
+ *
+ * Motion: featured media rise in with the default reveal; grid covers fade
+ * their content in and glint (BlogCover, blog.css). Text never moves.
  */
 export function BlogCard({
   post,
@@ -40,7 +43,7 @@ export function BlogCard({
 }) {
   return (
     <article className={cx('pg-blog-card', featured && 'pg-blog-card--featured')}>
-      <div className="pg-blog-card__media">
+      <div className="pg-blog-card__media" data-animate={featured ? '' : undefined}>
         <BlogCover post={post} placement={featured ? 'featured' : 'card'} />
       </div>
       <div className="pg-blog-card__body" lang={contentLang(locale)}>

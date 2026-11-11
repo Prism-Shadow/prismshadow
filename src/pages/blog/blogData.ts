@@ -383,6 +383,30 @@ export const coverGeometry: Record<'compact' | 'wide', CoverGeometry> = {
   wide: { cols: 48, rows: 15, motif: [31, 2], clear: [[0, 7, 26, 15], [0, 0, 12, 3]] },
 }
 
+/** How many cells of a cover glint when motion is on. */
+const COVER_GLINTS = 3
+
+/**
+ * The few cells of a cover that glint in a slow stagger (motion only): dim
+ * tone cells spread along the motif and scatter. Returns `c:r` → stagger
+ * order, plus a 0–1 phase so neighbouring covers rarely glint in step.
+ * Deterministic, so server and client agree.
+ */
+export function coverGlints(post: BlogPost, cells: PixelLit[]): { order: Map<string, number>; phase: number } {
+  const h = hashString(`${post.slug}#glint`)
+  const pool = cells.filter((cell) => cell.dim && !cell.outline && cell.tone !== 'text')
+  const order = new Map<string, number>()
+  const count = Math.min(COVER_GLINTS, pool.length)
+  if (count) {
+    const offset = h % Math.max(1, Math.floor(pool.length / count))
+    for (let k = 0; k < count; k += 1) {
+      const cell = pool[(offset + Math.floor((k * pool.length) / count)) % pool.length]
+      order.set(`${cell.c}:${cell.r}`, k)
+    }
+  }
+  return { order, phase: (h % 997) / 997 }
+}
+
 /** Lit cells of a post cover: its motif plus a light seeded scatter. */
 export function coverCells(post: BlogPost, geometry: CoverGeometry): PixelLit[] {
   const tone = topicTone[post.topic]

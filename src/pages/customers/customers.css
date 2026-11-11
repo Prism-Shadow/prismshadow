@@ -213,6 +213,14 @@
   stroke-width: 1;
 }
 
+/* The light that passes over each cell as it comes on; invisible at rest. */
+.pg-customers .cu-grid__flash {
+  fill: var(--ds-accent-soft);
+  stroke: var(--ds-accent);
+  stroke-width: 1;
+  opacity: 0;
+}
+
 .pg-customers .cu-panel__key {
   display: flex;
   justify-content: space-between;
@@ -281,6 +289,21 @@
   line-height: 1.2;
   text-align: center;
   color: var(--ds-text-2);
+  /* Its own stacking context, so the highlight frame sits under the label. */
+  isolation: isolate;
+}
+
+/* The stepping highlight's frame, invisible at rest (see Motion). */
+.pg-customers .cu-life__stage::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid var(--ds-accent);
+  border-radius: inherit;
+  background: var(--ds-accent-soft);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .pg-customers .cu-life__stage.is-ours {
@@ -475,6 +498,79 @@
 
 .pg-customers .cu-explore__all {
   margin-top: 24px;
+}
+
+/* ---------- Motion ---------- */
+
+/*
+ * The motion contract (src/components/site/motion.ts): every rule below runs
+ * only under html[data-motion]; the resting styles above are the final frame
+ * that no-JS visitors, reduced motion and the prerendered page see.
+ */
+
+/* Cobo: the thirty scenario cells light up one after another, then hold. */
+html[data-motion] .pg-customers .cu-grid[data-inview='enter'] .cu-grid__cell {
+  animation: cu-light 500ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 30ms);
+}
+
+html[data-motion] .pg-customers .cu-grid[data-inview='enter'] .cu-grid__flash {
+  animation: cu-flash 800ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 30ms);
+}
+
+@keyframes cu-light {
+  from {
+    opacity: 0.25;
+  }
+}
+
+@keyframes cu-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 0.85;
+  }
+}
+
+/* Subconscious.ai: the strip fades in, then a highlight steps through the four stages. */
+html[data-motion] .pg-customers .cu-life[data-inview='enter'] {
+  animation: ds-fade-in 800ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-customers .cu-life[data-inview] .cu-life__stage::before {
+  animation: cu-step 12s var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(400ms + var(--i, 0) * 3s);
+}
+
+html[data-motion] .pg-customers .cu-life[data-inview='enter'] .cu-life__stage::before {
+  animation-delay: calc(900ms + var(--i, 0) * 3s);
+}
+
+/* Each stage holds the highlight for a quarter of the cycle, cross-fading into the next. */
+@keyframes cu-step {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  5%,
+  23% {
+    opacity: 0.9;
+  }
+
+  29% {
+    opacity: 0;
+  }
+}
+
+/* Enterprise: the three columns fade up in turn. */
+html[data-motion] .pg-customers .cu-enterprise__list[data-inview='enter'] .cu-enterprise__item {
+  animation: ds-fade-up 800ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i, 0) * 120ms);
 }
 
 /* ---------- Responsive ---------- */

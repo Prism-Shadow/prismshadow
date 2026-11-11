@@ -1,3 +1,5 @@
+import type { Locale } from '../../../i18n/locales'
+
 // Non-localized PenguinHarness facts, copied from the public README and the
 // penguin.ooo landing source (packages/landing/src/lib/benchmark-data.ts).
 
@@ -80,7 +82,29 @@ export const supportedModels: { model: string; providers: string[] }[] = [
   { model: 'Inkling', providers: ['OpenRouter', 'Fireworks AI'] },
 ]
 
-export type CommandKey = 'start' | 'firstLogin' | 'oneShot' | 'repl' | 'headless'
+/**
+ * Screens of the web app, captured from the live UI gallery (penguin.ooo/gallery)
+ * in the default theme, dark mode, once per locale (`<file>-en.webp` / `-zh.webp`).
+ * Copy for each screen lives in penguinHarness.ts, in the same order.
+ */
+export const appScreens = [
+  { file: 'agents', path: '/agents' },
+  { file: 'evaluation', path: '/benchmark' },
+  { file: 'cost-center', path: '/usage' },
+  { file: 'models', path: '/models' },
+  { file: 'plugins', path: '/plugins' },
+] as const
+
+/** The hero (a self-evolution round in chat) and the Build tab (the new-chat page). */
+export const heroScreen = { file: 'chat-rsi', width: 1920, height: 1200 } as const
+export const buildScreen = { file: 'new-chat', width: 1268, height: 760 } as const
+
+/** Every screenshot is 1920×1200 unless noted. */
+export const screenSize = { width: 1920, height: 1200 } as const
+
+export const screenSrc = (file: string, locale: Locale) => `/products/penguin-harness/${file}-${locale}.webp`
+
+export type CommandKey ='start' | 'firstLogin' | 'oneShot' | 'repl' | 'headless'
 
 /** Install snippets per terminal tab; comments are localized by key. */
 export const installSnippets: { cmd: string; comment?: CommandKey }[][] = [

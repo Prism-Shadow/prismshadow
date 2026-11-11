@@ -32,7 +32,7 @@ export function ProductsSection({ copy, locale }: { copy: ProductsCopy; locale: 
                   {index + 1}
                 </span>
                 <div className="hp-products__art">
-                  <ProductDrawing id={id} />
+                  <ProductDrawing id={id} order={index} />
                 </div>
                 <div className="hp-products__ident">
                   <span className={`hp-products__logo hp-products__logo--${id}`}>

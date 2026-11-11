@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { PlatformPageCopy } from '../../../i18n/messages/platformPage'
 
 /*
@@ -5,6 +6,10 @@ import type { PlatformPageCopy } from '../../../i18n/messages/platformPage'
  * Hairline edges, faces filled with the canvas so nearer plates hide farther
  * ones, a handful of coloured vertex dots, and one lit point: the small model
  * cube on the top plate. The base dissolves into the canvas.
+ *
+ * Motion (platform.css): on an in-app visit the plates settle in from the
+ * base up (`--i` is the plate's level); then, on any visit, the lit point on
+ * the model cube breathes slowly.
  */
 
 const W = 600
@@ -64,6 +69,9 @@ function Seam({ z }: { z: number }) {
   )
 }
 
+/** One plate's group, staggered by its level when the drawing plays its intro. */
+const level = (i: number) => ({ '--i': i }) as CSSProperties
+
 /** Dashed guides between two plates at the three visible corners. */
 function Guides({ from, to }: { from: number; to: number }) {
   const corners: Array<[number, number]> = [
@@ -90,7 +98,7 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
   const labels = [...levels].reverse().map((z) => pt([HALF, -HALF, z + T])[1])
 
   return (
-    <svg className="pf-stack" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={copy.ariaLabel}>
+    <svg className="pf-stack" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={copy.ariaLabel} data-animate="custom">
       <defs>
         <linearGradient id="pf-stack-fade-g" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0.62" stopColor="#fff" />
@@ -103,41 +111,49 @@ export function StackDrawing({ copy }: { copy: PlatformPageCopy['hero']['stack']
 
       <g mask="url(#pf-stack-fade)">
         {/* Base: private deployment, drawn as a dashed perimeter. */}
-        <Slab min={[-HALF, -HALF, levels[0]]} max={[HALF, HALF, levels[0] + T]} edge="dash" />
-        <Dot at={[HALF, HALF, levels[0] + T]} tone="amber" />
-        <Dot at={[-HALF, HALF, levels[0] + T]} tone="amber" />
-        <Guides from={levels[0] + T} to={levels[1]} />
+        <g className="pf-stack__plate" style={level(0)}>
+          <Slab min={[-HALF, -HALF, levels[0]]} max={[HALF, HALF, levels[0] + T]} edge="dash" />
+          <Dot at={[HALF, HALF, levels[0] + T]} tone="amber" />
+          <Dot at={[-HALF, HALF, levels[0] + T]} tone="amber" />
+          <Guides from={levels[0] + T} to={levels[1]} />
+        </g>
 
         {/* Data & environments */}
-        <Slab min={[-HALF, -HALF, levels[1]]} max={[HALF, HALF, levels[1] + T]} />
-        <Seam z={levels[1] + T} />
-        <Dot at={[HALF, HALF, levels[1] + T]} tone="cyan" />
-        <Guides from={levels[1] + T} to={levels[2]} />
+        <g className="pf-stack__plate" style={level(1)}>
+          <Slab min={[-HALF, -HALF, levels[1]]} max={[HALF, HALF, levels[1] + T]} />
+          <Seam z={levels[1] + T} />
+          <Dot at={[HALF, HALF, levels[1] + T]} tone="cyan" />
+          <Guides from={levels[1] + T} to={levels[2]} />
+        </g>
 
         {/* Self-evolving agents */}
-        <Slab min={[-HALF, -HALF, levels[2]]} max={[HALF, HALF, levels[2] + T]} />
-        <Seam z={levels[2] + T} />
-        <Dot at={[HALF, -HALF, levels[2] + T]} tone="accent" />
-        <Dot at={[-HALF, HALF, levels[2] + T]} tone="accent" />
-        <Guides from={levels[2] + T} to={levels[3]} />
+        <g className="pf-stack__plate" style={level(2)}>
+          <Slab min={[-HALF, -HALF, levels[2]]} max={[HALF, HALF, levels[2] + T]} />
+          <Seam z={levels[2] + T} />
+          <Dot at={[HALF, -HALF, levels[2] + T]} tone="accent" />
+          <Dot at={[-HALF, HALF, levels[2] + T]} tone="accent" />
+          <Guides from={levels[2] + T} to={levels[3]} />
+        </g>
 
         {/* AutoResearch: the top plate with its dot grid and model cube. */}
-        <Slab min={[-HALF, -HALF, levels[3]]} max={[HALF, HALF, top]} />
-        {grid.flatMap((x) =>
-          grid.map((y) =>
-            Math.abs(x) <= cube + 0.2 && Math.abs(y) <= cube + 0.2 ? null : (
-              <Dot key={`${x}:${y}`} at={[x, y, top]} tone="faint" r={1.1} />
+        <g className="pf-stack__plate" style={level(3)}>
+          <Slab min={[-HALF, -HALF, levels[3]]} max={[HALF, HALF, top]} />
+          {grid.flatMap((x) =>
+            grid.map((y) =>
+              Math.abs(x) <= cube + 0.2 && Math.abs(y) <= cube + 0.2 ? null : (
+                <Dot key={`${x}:${y}`} at={[x, y, top]} tone="faint" r={1.1} />
+              ),
             ),
-          ),
-        )}
-        <Slab min={[-cube, -cube, top]} max={[cube, cube, cubeTop]} edge="accent" />
-        <circle className="pf-stack__halo" cx={pt([cube, cube, cubeTop])[0]} cy={pt([cube, cube, cubeTop])[1]} r={8} />
-        <Dot at={[cube, cube, cubeTop]} tone="focus" r={3.5} />
+          )}
+          <Slab min={[-cube, -cube, top]} max={[cube, cube, cubeTop]} edge="accent" />
+          <circle className="pf-stack__halo" cx={pt([cube, cube, cubeTop])[0]} cy={pt([cube, cube, cubeTop])[1]} r={8} />
+          <Dot at={[cube, cube, cubeTop]} tone="focus" r={3.5} />
+        </g>
       </g>
 
       {/* Layer labels with hairline leaders from each plate's right corner. */}
       {labels.map((y, i) => (
-        <g key={copy.layers[i]}>
+        <g key={copy.layers[i]} className="pf-stack__layer" style={level(labels.length - 1 - i)}>
           <path className="pf-stack__leader" d={`M${pt([HALF, -HALF, 0])[0] + 12} ${y}H${LABEL_X - 12}`} />
           <text className={`pf-stack__label${i === 0 ? ' pf-stack__label--top' : ''}`} x={LABEL_X} y={y + 4}>
             {copy.layers[i]}

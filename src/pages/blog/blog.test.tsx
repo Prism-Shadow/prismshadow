@@ -63,6 +63,15 @@ describe.each(locales)('blog index (%s)', (locale) => {
     expect(html).toContain('aria-pressed="true"')
     expect(html).toContain(blogPageCopy[locale].index.featuredLabel)
   })
+
+  it('marks the covers for the motion system', () => {
+    // Featured media rise in; every grid cover fades its field (or image) in;
+    // code-built covers glint three cells each.
+    expect(count(html, /class="pg-blog-card__media" data-animate=""/g)).toBe(featuredPosts.length)
+    expect(count(html, /class="pg-blog-cover__(?:field|image)"[^>]*data-animate="custom"/g)).toBe(gridPosts.length)
+    const codeCovers = gridPosts.filter((post) => !post.visualImage).length
+    expect(count(html, /data-glint=""/g)).toBe(codeCovers * 3)
+  })
 })
 
 describe.each(locales)('blog posts (%s)', (locale) => {
@@ -89,6 +98,11 @@ describe.each(locales)('blog posts (%s)', (locale) => {
     }
     for (const step of post.visualSteps ?? []) expect(html).toContain(escapeHtml(step))
     if (locale === 'zh') expect(html).toContain('lang="en"')
+
+    // Only the cover moves: it carries the motion hook, the prose does not.
+    expect(html).toMatch(/class="pg-blog-cover__(?:field pg-blog-cover__field--wide|image)"[^>]*data-animate="custom"/)
+    const prose = html.slice(html.indexOf('class="pg-blog-post__main"'), html.indexOf('id="related"'))
+    expect(prose).not.toContain('data-animate')
   })
 
   it('accepts a trailing slash in the pathname', () => {

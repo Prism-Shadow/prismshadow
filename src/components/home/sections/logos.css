@@ -122,12 +122,6 @@
   .pg-home .hp-logos__track {
     justify-content: flex-start;
     width: max-content;
-    animation: hp-logos-drift 36s linear infinite;
-  }
-
-  .pg-home .hp-logos__viewport:hover .hp-logos__track,
-  .pg-home .hp-logos__viewport:focus-within .hp-logos__track {
-    animation-play-state: paused;
   }
 
   /* Every set carries one trailing gap, so all sets are the same width. */
@@ -138,6 +132,23 @@
     flex-wrap: nowrap;
     padding-right: var(--hp-logos-gap);
   }
+}
+
+/*
+ * Motion (src/components/site/motion.ts): the strip fades in once when it
+ * scrolls into view, then drifts by exactly one set per loop. It pauses while
+ * hovered or focused. No JS / reduced motion: the strip simply stands still.
+ */
+html[data-motion] .pg-home .hp-logos__viewport[data-inview='enter'] {
+  animation: ds-fade-in 900ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-home .hp-logos__viewport[data-inview] .hp-logos__track {
+  animation: hp-logos-drift 36s linear infinite;
+}
+
+html[data-motion] .pg-home .hp-logos__viewport[data-inview]:is(:hover, :focus-within) .hp-logos__track {
+  animation-play-state: paused;
 }
 
 /* One set = 1 / COPIES of the track (COPIES = 4 in LogosSection). */

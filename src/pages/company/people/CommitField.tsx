@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 /**
  * Hero visual for the People page: a quiet, year-long field of tiny dots (52
  * weeks x 7 days, like a contribution graph) where a few days are lit and the
@@ -5,6 +7,10 @@
  *
  * Purely decorative (aria-hidden); it makes no data claim. Deterministic, so
  * server and client render the same markup.
+ *
+ * Motion (people.css): a slow glint sweeps the marks from the past toward the
+ * focal mark, which answers with a soft ring. Each mark carries `--d`, its
+ * place along the sweep (0 at the left edge, 1 at the focal column).
  */
 
 const COLS = 52
@@ -44,6 +50,8 @@ function buildMarks(): Mark[] {
 
 const marks = buildMarks()
 
+const sweep = (c: number) => ({ '--d': (c / FOCAL.c).toFixed(3) }) as CSSProperties
+
 export function CommitField({ className }: { className?: string }) {
   const width = COLS * STEP
   const height = ROWS * STEP
@@ -74,6 +82,7 @@ export function CommitField({ className }: { className?: string }) {
       preserveAspectRatio="xMaxYMid slice"
       aria-hidden="true"
       focusable="false"
+      data-animate="custom"
     >
       <path className="pg-people-field__dots" d={dots.join('')} />
       {marks.map((m) => (
@@ -81,10 +90,12 @@ export function CommitField({ className }: { className?: string }) {
           key={`${m.c}:${m.r}`}
           className={`pg-people-field__mark pg-people-field__mark--${m.level}`}
           rx={1.5}
+          style={sweep(m.c)}
           {...square(m.c, m.r, MARK)}
         />
       ))}
       <rect className="pg-people-field__ring" rx={3} {...square(FOCAL.c, FOCAL.r, MARK + 6)} />
+      <rect className="pg-people-field__ping" rx={3} {...square(FOCAL.c, FOCAL.r, MARK + 6)} />
       <rect className="pg-people-field__focal" rx={1.5} {...square(FOCAL.c, FOCAL.r, MARK)} />
     </svg>
   )

@@ -23,6 +23,12 @@ const escapeHtml = (text: string) =>
 
 const count = (html: string, needle: string) => html.split(needle).length - 1
 
+/** Opening tags that opt into the motion system, and how many carry `className`. */
+const animated = (html: string, className: string) =>
+  [...html.matchAll(/<[a-z]+\b[^>]*\bdata-animate="[^"]*"[^>]*>/g)].filter(([tag]) =>
+    new RegExp(`\\bclass="(?:[^"]* )?${className}(?: [^"]*)?"`).test(tag),
+  ).length
+
 const sectionIds = ['hero', 'case-studies', 'enterprise', 'audiences', 'explore', 'get-started']
 
 /** Owner-supplied customer facts that must appear in both languages. */
@@ -120,6 +126,22 @@ describe.each(locales)('CustomersPage (%s)', (locale) => {
       has(item.title)
       has(item.body)
       expect(html).toContain(`href="${item.capability.href}"`)
+    }
+  })
+
+  it('marks every visual for the motion system (data-animate)', () => {
+    expect(animated(html, 'cu-grid'), 'Cobo scenario cells').toBe(1)
+    expect(animated(html, 'cu-life'), 'Subconscious.ai lifecycle').toBe(1)
+    expect(animated(html, 'cu-enterprise__list'), 'enterprise columns').toBe(1)
+  })
+
+  it('orders the motion: each Cobo cell has a light-up slot, each stage a highlight slot', () => {
+    expect(count(html, 'class="cu-grid__flash"')).toBe(30)
+    const order = [...html.matchAll(/class="cu-grid__cell"[^>]*style="--i:(\d+)"/g)].map(([, i]) => Number(i))
+    expect([...order].sort((a, b) => a - b)).toEqual(Array.from({ length: 30 }, (_, i) => i))
+    expect(html.match(/class="cu-life__stage(?: is-ours)?"/g)).toHaveLength(copy.featured.subconscious.stages.length)
+    for (let i = 0; i < copy.featured.subconscious.stages.length; i += 1) {
+      expect(html).toMatch(new RegExp(`class="cu-life__stage[^"]*" style="--i:${i}"`))
     }
   })
 

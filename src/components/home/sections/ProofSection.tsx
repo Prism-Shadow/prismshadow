@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { SectionHead, TextLink } from '../../site/ui'
 import type { ProofCopy } from '../../../i18n/messages/home'
 import './proof.css'
@@ -15,9 +16,10 @@ export function ProofSection({ copy }: { copy: ProofCopy }) {
           actions={<TextLink href="/customers">{copy.cta}</TextLink>}
         />
 
-        <dl className="hp-proof__stats" aria-label={copy.statsLabel}>
-          {copy.stats.map((stat) => (
-            <div key={stat.value} className="ds-stat hp-proof__stat">
+        {/* Motion (proof.css): the four results fade up in turn, once. */}
+        <dl className="hp-proof__stats" aria-label={copy.statsLabel} data-animate="custom">
+          {copy.stats.map((stat, index) => (
+            <div key={stat.value} className="ds-stat hp-proof__stat" style={{ '--i': index } as CSSProperties}>
               <dt className="ds-stat__label">{stat.label}</dt>
               <dd className="ds-stat__value">{stat.value}</dd>
               <dd className="hp-proof__source">{stat.source}</dd>

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { PixelField, type PixelLit } from '../../../components/site/ui'
 import type { SecurityDeploymentDiagramCopy } from '../../../i18n/messages/security'
 import { CloudIcon, CrossIcon, LockIcon } from '../icons'
@@ -35,10 +36,12 @@ function Node({
   )
 }
 
-function Connector({ label }: { label?: string }) {
+/** Hairline connector; `step` orders the signal that travels it (motion only). */
+function Connector({ label, step }: { label?: string; step: number }) {
   return (
-    <div className="pg-sec-perimeter__link">
+    <div className="pg-sec-perimeter__link" style={{ '--step': step } as CSSProperties}>
       {label ? <span className="pg-sec-perimeter__link-label">{label}</span> : null}
+      <span className="pg-sec-perimeter__signal" aria-hidden="true" />
     </div>
   )
 }
@@ -46,10 +49,19 @@ function Connector({ label }: { label?: string }) {
 /**
  * Private deployment schematic: everything from data to agents runs inside the
  * customer's perimeter; the path out to the public internet is blocked.
+ *
+ * Motion (security.css): the panel rises in on view; while in view a signal
+ * travels data → models → agents → systems, and the blocked egress mark
+ * answers with a gentle ring. At rest the signal is not shown.
  */
 export function PerimeterDiagram({ copy }: { copy: SecurityDeploymentDiagramCopy }) {
   return (
-    <div className="ds-panel ds-panel--cells pg-sec-perimeter" role="img" aria-label={copy.ariaLabel}>
+    <div
+      className="ds-panel ds-panel--cells pg-sec-perimeter"
+      role="img"
+      aria-label={copy.ariaLabel}
+      data-animate=""
+    >
       <div className="pg-sec-perimeter__boundary">
         <span className="pg-sec-perimeter__boundary-label">
           <LockIcon />
@@ -57,11 +69,11 @@ export function PerimeterDiagram({ copy }: { copy: SecurityDeploymentDiagramCopy
         </span>
         <div className="pg-sec-perimeter__flow">
           <Node label={copy.data} lit={dataCells} />
-          <Connector label={copy.train} />
+          <Connector label={copy.train} step={0} />
           <Node label={copy.models} note={copy.tuned} lit={modelCells} shape="diamond" />
-          <Connector label={copy.api} />
+          <Connector label={copy.api} step={1} />
           <Node label={copy.agents} lit={agentCells} />
-          <Connector />
+          <Connector step={2} />
           <div className="pg-sec-perimeter__systems">
             {copy.systems.map((system) => (
               <span key={system} className="pg-sec-perimeter__system">
