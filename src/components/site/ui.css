@@ -185,7 +185,15 @@ html[data-motion] .ds-cta__field[data-inview='enter'] {
   animation: ds-fade-in 900ms var(--ds-ease-out) both;
 }
 
+/* The CTA path climbs: each step turns solid in turn, holds, then empties in
+   the same order, and the climb starts again. */
 html[data-motion] .ds-cta__field[data-inview] rect[data-lit] {
-  animation: ds-glint 5.5s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--i) * 220ms);
+  animation: ds-climb 6.4s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--i) * 240ms);
+}
+
+/* Live fields: background cells fill and empty on their own rhythm. */
+html[data-motion] [data-inview] .ds-pixel-field [data-twinkle],
+html[data-motion] .ds-pixel-field[data-inview] [data-twinkle] {
+  animation: ds-twinkle var(--t, 4s) var(--ds-ease-in-out) var(--d, 0s) infinite;
 }
