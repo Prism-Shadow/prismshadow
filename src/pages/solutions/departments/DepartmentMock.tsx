@@ -10,6 +10,10 @@ import type { DepartmentId } from '../../../i18n/messages/shared'
  * A flat dark UI mock of each department's day-to-day work surface: a ticket
  * queue for support, a pipeline for sales, and so on. Illustrative only, so it
  * is exposed as a single image with a descriptive label.
+ *
+ * Motion (CSS only, see the Motion section of departments.css): when the mock
+ * comes into view it fades in and plays one "live" moment, then holds; the
+ * focal row's status mark breathes. The markup is always the final state.
  */
 export function DepartmentMock({
   id,
@@ -26,7 +30,12 @@ export function DepartmentMock({
   const label = t.detail.mockLabel.replace('{label}', s.label).replace('{title}', s.mock.title)
 
   return (
-    <div className={cx('ds-panel pg-mock', `pg-mock--${v.mock}`, className)} role="img" aria-label={label}>
+    <div
+      className={cx('ds-panel pg-mock', `pg-mock--${v.mock}`, className)}
+      role="img"
+      aria-label={label}
+      data-animate="custom"
+    >
       <div className="pg-mock__bar">
         <span className="pg-mock__dots" aria-hidden="true">
           <i />
@@ -36,7 +45,7 @@ export function DepartmentMock({
         <span className="pg-mock__title">{s.mock.title}</span>
         <span className="pg-mock__meta">{s.mock.meta}</span>
       </div>
-      <div className="pg-mock__body">{renderBody(v, s.mock.items)}</div>
+      <div className="pg-mock__body">{renderBody(id, v, s.mock.items)}</div>
       <div className="pg-mock__note">
         <span className="pg-mock__agent">
           <DiamondIcon />
@@ -48,18 +57,21 @@ export function DepartmentMock({
   )
 }
 
-function Tag({ tone, children }: { tone: DepartmentTone; children: ReactNode }) {
+function Tag({ tone, focal, children }: { tone: DepartmentTone; focal?: boolean; children: ReactNode }) {
   return (
-    <span className="pg-mock__tag" data-tone={tone}>
+    <span className="pg-mock__tag" data-tone={tone} data-focal={focal || undefined}>
       {children}
     </span>
   )
 }
 
 const level = (value: number) => ({ '--level': value }) as CSSProperties
+/** Order of an element in its mock's intro stagger. */
+const order = (i: number) => ({ '--i': i }) as CSSProperties
 
-function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): ReactNode {
+function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMockItemCopy[]): ReactNode {
   const tone = (i: number) => v.tones[i] ?? 'neutral'
+  const focal = (i: number) => i === v.focal
 
   switch (v.mock) {
     case 'queue':
@@ -79,7 +91,9 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
                   </span>
                 ) : null}
               </span>
-              <Tag tone={tone(i)}>{item.tag}</Tag>
+              <Tag tone={tone(i)} focal={focal(i)}>
+                {item.tag}
+              </Tag>
             </li>
           ))}
         </ul>
@@ -97,7 +111,12 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
               </span>
               {items.map((item, i) =>
                 item.detail === stage ? (
-                  <div key={item.label} className="pg-mock__card" data-active={tone(i) === 'accent' || undefined}>
+                  <div
+                    key={item.label}
+                    className="pg-mock__card"
+                    data-active={focal(i) || undefined}
+                    style={order(i)}
+                  >
                     <span className="pg-mock__label">{item.label}</span>
                     <span className="pg-mock__meter" style={level(v.levels[i] ?? 0.5)} />
                     <span className="pg-mock__detail">{item.tag}</span>
@@ -127,9 +146,17 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
                 <span className="pg-mock__detail">{item.detail}</span>
               </span>
               {(v.cells?.[r] ?? [0, 0, 0, 0]).map((on, c) => (
-                <span key={c} className="pg-mock__cal-cell" data-on={on ? true : undefined} data-tone={tone(r)} />
+                <span
+                  key={c}
+                  className="pg-mock__cal-cell"
+                  data-on={on ? true : undefined}
+                  data-tone={tone(r)}
+                  style={on ? order(c * items.length + r) : undefined}
+                />
               ))}
-              <Tag tone={tone(r)}>{item.tag}</Tag>
+              <Tag tone={tone(r)} focal={focal(r)}>
+                {item.tag}
+              </Tag>
             </div>
           ))}
         </div>
@@ -140,12 +167,21 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
         <div className="pg-mock__chart-wrap">
           <div className="pg-mock__chart">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              {/* The series draw in left to right by uncovering this mask (the stretched,
+                  non-scaling strokes rule out a pathLength dash draw). Full width at rest. */}
+              <defs>
+                <mask id={`pg-mock-reveal-${id}`} maskUnits="userSpaceOnUse" x="-5" y="-5" width="110" height="110">
+                  <rect className="pg-mock__reveal" x="-5" y="-5" width="110" height="110" fill="#fff" />
+                </mask>
+              </defs>
               <rect className="pg-mock__band" x="0" y="34" width="100" height="36" />
               {[25, 50, 75].map((y) => (
                 <line key={y} className="pg-mock__grid" x1="0" x2="100" y1={y} y2={y} />
               ))}
-              <path className="pg-mock__line pg-mock__line--dim" d={chartPath(chartBase)} />
-              <path className="pg-mock__line" d={chartPath(chartChurn)} />
+              <g mask={`url(#pg-mock-reveal-${id})`}>
+                <path className="pg-mock__line pg-mock__line--dim" d={chartPath(chartBase)} />
+                <path className="pg-mock__line" d={chartPath(chartChurn)} />
+              </g>
             </svg>
             <span className="pg-mock__spike" style={{ '--x': 1, '--y': chartChurn[chartChurn.length - 1] / 100 } as CSSProperties} />
           </div>
@@ -171,9 +207,15 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
                 <span className="pg-mock__detail">{item.detail}</span>
               </span>
               <span className="pg-mock__track">
-                <span className="pg-mock__fill" data-tone={tone(i)} style={level(v.levels[i] ?? 0.5)} />
+                <span
+                  className="pg-mock__fill"
+                  data-tone={tone(i)}
+                  style={{ ...level(v.levels[i] ?? 0.5), ...order(i) }}
+                />
               </span>
-              <Tag tone={tone(i)}>{item.tag}</Tag>
+              <Tag tone={tone(i)} focal={focal(i)}>
+                {item.tag}
+              </Tag>
             </li>
           ))}
         </ul>
@@ -189,12 +231,20 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
           </span>
           <ul className="pg-mock__clauses">
             {items.map((item, i) => (
-              <li key={item.label} className="pg-mock__clause" data-tone={tone(i)}>
+              <li
+                key={item.label}
+                className="pg-mock__clause"
+                data-tone={tone(i)}
+                data-focal={focal(i) || undefined}
+                style={order(i)}
+              >
                 <span className="pg-mock__main">
                   <span className="pg-mock__label">{item.label}</span>
                   <span className="pg-mock__detail">{item.detail}</span>
                 </span>
-                <Tag tone={tone(i)}>{item.tag}</Tag>
+                <Tag tone={tone(i)} focal={focal(i)}>
+                  {item.tag}
+                </Tag>
               </li>
             ))}
           </ul>
@@ -206,14 +256,16 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
         <ul className="pg-mock__rows">
           {items.map((item, i) => (
             <li key={item.label} className="pg-mock__row pg-mock__row--incident" data-active={i === 0 || undefined}>
-              <Tag tone={tone(i)}>{item.tag}</Tag>
+              <Tag tone={tone(i)} focal={focal(i)}>
+                {item.tag}
+              </Tag>
               <span className="pg-mock__main">
                 <span className="pg-mock__label">{item.label}</span>
                 <span className="pg-mock__detail pg-mock__detail--mono">{item.detail}</span>
               </span>
               <span className="pg-mock__deps" aria-hidden="true">
                 {[0, 1, 2].map((d) => (
-                  <i key={d} data-on={d <= 2 - i || undefined} />
+                  <i key={d} data-on={d <= 2 - i || undefined} style={d <= 2 - i ? order(i * 3 + d) : undefined} />
                 ))}
               </span>
             </li>
@@ -225,15 +277,21 @@ function renderBody(v: DepartmentVisual, items: DepartmentMockItemCopy[]): React
       return (
         <ol className="pg-mock__stages">
           {items.map((item, i) => (
-            <li key={item.label} className="pg-mock__stage" data-tone={tone(i)}>
+            <li key={item.label} className="pg-mock__stage" data-tone={tone(i)} style={order(i)}>
               <span className="pg-mock__queue" aria-hidden="true">
                 {Array.from({ length: QUEUE_CELLS }, (_, k) => (
-                  <i key={k} data-on={k < Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS) || undefined} />
+                  <i
+                    key={k}
+                    data-on={k < Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS) || undefined}
+                    style={{ '--k': k } as CSSProperties}
+                  />
                 ))}
               </span>
               <span className="pg-mock__label">{item.label}</span>
               <span className="pg-mock__detail">{item.detail}</span>
-              <Tag tone={tone(i)}>{item.tag}</Tag>
+              <Tag tone={tone(i)} focal={focal(i)}>
+                {item.tag}
+              </Tag>
             </li>
           ))}
         </ol>

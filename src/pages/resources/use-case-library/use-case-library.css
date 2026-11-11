@@ -623,14 +623,19 @@
 }
 
 .pg-usecases__pass i {
+  position: relative;
   width: 14px;
   height: 14px;
   border: 1px solid var(--ds-line-strong);
   border-radius: 3px;
 }
 
-.pg-usecases__pass i[data-on] {
-  border-color: var(--ds-signal);
+/* Passed cases fill the empty slot from above (so an intro can fade the fill alone). */
+.pg-usecases__pass i[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
   background: var(--ds-signal);
 }
 
@@ -810,6 +815,120 @@
   .pg-usecases__type-examples {
     grid-column: 1 / -1;
   }
+}
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/*
+ * All animation runs under html[data-motion]; the rules above are the complete
+ * static state. The hero atlas moves through the shared FlowSchematic
+ * (solutions/departments/flow.css): a signal runs along its wires and the
+ * results glint in turn.
+ */
+
+/* Pipeline signal: per rail segment, a dot with a short tail (clipped to the
+   segment, which ends under the nodes), parked above it at rest; the final
+   step's ring is invisible at rest. */
+.pg-usecases__spark {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 5px;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pg-usecases__spark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle 2.5px at 50% calc(100% - 3px), var(--ds-accent) 95%, transparent),
+    linear-gradient(180deg, transparent 50%, rgba(169, 156, 255, 0.5)) center / 1px 100% no-repeat;
+  transform: translateY(-100%);
+}
+
+.pg-usecases__pipeline li[data-last]::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  margin-top: -6.5px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 3px;
+  opacity: 0;
+}
+
+/* One 6s cycle: the head crosses one segment every 0.6s, so the signal reads
+   as one dot running down the rail; the final step pings when it arrives. */
+@keyframes pg-usecases-spark {
+  0% {
+    transform: translateY(-100%);
+  }
+  10% {
+    transform: translateY(0);
+  }
+  20%,
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pg-usecases-ping {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  4% {
+    opacity: 0.9;
+  }
+  26% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes pg-usecases-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+html[data-motion] .pg-usecases__pipeline[data-inview='enter'] {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-usecases__pipeline[data-inview] .pg-usecases__spark::before {
+  animation: pg-usecases-spark 6s linear infinite;
+  animation-delay: calc(0.8s + var(--k) * 0.6s);
+}
+
+html[data-motion] .pg-usecases__pipeline[data-inview] li[data-last]::after {
+  animation: pg-usecases-ping 6s var(--ds-ease-out) 3.2s infinite;
+}
+
+/* Benchmark charts grow once from their base when they come into view (and
+   again when their benchmark is selected). Labels and numbers only fade. */
+html[data-motion] .pg-usecases__bar[data-inview='enter'] > span,
+html[data-motion] .pg-usecases__compare[data-inview='enter'] .pg-usecases__compare-track > span {
+  transform-origin: left center;
+  animation: ds-grow-x 1100ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 140ms + var(--r, 0) * 160ms);
+}
+
+html[data-motion] .pg-usecases__compare[data-inview='enter'] {
+  animation: ds-fade-in 500ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 140ms);
+}
+
+html[data-motion] .pg-usecases__pass[data-inview='enter'] i[data-on]::after {
+  animation: pg-usecases-cell 500ms var(--ds-ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 140ms + var(--c) * 90ms);
 }
 
 /* Keep the accent phrase of the closing CTA on one line (zh breaks otherwise split it). */

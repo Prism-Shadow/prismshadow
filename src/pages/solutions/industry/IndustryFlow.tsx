@@ -13,6 +13,11 @@ const fill = (template: string, values: Record<string, string>) =>
  * left feed one agent team (one agent per scenario), whose output passes human
  * review before it becomes an action. The whole figure is one image for
  * assistive tech, described by `copy.label`.
+ *
+ * Motion (industry.css): every few seconds a signal travels from the source
+ * systems to the agent team, on to review, and the approved action lights up;
+ * the console caret breathes. On entering view (not on first load) the figure
+ * assembles left to right. The markup is the static final state.
  */
 export function IndustryFlow({
   signals,
@@ -35,7 +40,12 @@ export function IndustryFlow({
   })
 
   return (
-    <figure className="ds-panel ds-panel--dots pg-industry-flow" role="img" aria-label={label}>
+    <figure
+      className="ds-panel ds-panel--dots pg-industry-flow"
+      role="img"
+      aria-label={label}
+      data-animate="custom"
+    >
       <div className="pg-industry-flow__bar">
         <span className="pg-industry-flow__title">{copy.title}</span>
         <span className="ds-tag ds-tag--neutral">{fill(copy.agents, { n: String(agents.length) })}</span>
@@ -47,8 +57,8 @@ export function IndustryFlow({
         <span className="pg-industry-flow__label pg-industry-flow__label--output">{copy.output}</span>
 
         <ul className="pg-industry-flow__signals" style={{ '--n': n } as CSSProperties}>
-          {signals.map((signal) => (
-            <li key={signal}>
+          {signals.map((signal, i) => (
+            <li key={signal} style={{ '--k': i } as CSSProperties}>
               <span className="pg-industry-flow__chip">{signal}</span>
             </li>
           ))}
@@ -71,6 +81,19 @@ export function IndustryFlow({
               />
             )
           })}
+          {/* One short signal dash per wire, parked before its start at rest. */}
+          {signals.map((signal, i) => {
+            const y = ((i + 0.5) / n) * 100
+            return (
+              <path
+                key={`pulse-${signal}`}
+                className="pg-industry-flow__pulse"
+                d={`M0 ${y} C 55 ${y}, 45 50, 100 50`}
+                vectorEffect="non-scaling-stroke"
+                style={{ '--k': i } as CSSProperties}
+              />
+            )
+          })}
         </svg>
 
         <ul className="pg-industry-flow__team">
@@ -82,14 +105,18 @@ export function IndustryFlow({
           ))}
         </ul>
 
-        <span className="pg-industry-flow__link" aria-hidden="true" />
+        <span className="pg-industry-flow__link" aria-hidden="true">
+          <span className="pg-industry-flow__spark" />
+        </span>
 
         <div className="pg-industry-flow__output">
           <span className="pg-industry-flow__review">
             <CheckIcon />
             {copy.review}
           </span>
-          <span className="pg-industry-flow__step" aria-hidden="true" />
+          <span className="pg-industry-flow__step" aria-hidden="true">
+            <span className="pg-industry-flow__spark" />
+          </span>
           <span className="pg-industry-flow__act">{copy.act}</span>
         </div>
       </div>

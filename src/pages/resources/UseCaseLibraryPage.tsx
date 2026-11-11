@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ButtonLink, CtaBand, Eyebrow, PageHero, SectionHead } from '../../components/site/ui'
 import { useCaseLibraryPageCopy } from '../../i18n/messages/useCaseLibrary'
 import { FlowSchematic } from '../solutions/departments/FlowSchematic'
@@ -197,12 +198,17 @@ function FeaturedCase({ locale }: { locale: PageProps['locale'] }) {
             <span className="pg-usecases__label">{f.topline.label}</span>
             <h3 className="ds-h3">{f.topline.title}</h3>
             <p className="ds-small">{f.summary}</p>
-            <ol className="pg-usecases__pipeline" aria-label={f.pipelineLabel}>
-              {f.pipeline.map((step, i) => (
-                <li key={step} data-last={i === f.pipeline.length - 1 || undefined}>
-                  {step}
-                </li>
-              ))}
+            {/* Motion: a signal runs down the rail to the final step, which pings. */}
+            <ol className="pg-usecases__pipeline" aria-label={f.pipelineLabel} data-animate="custom">
+              {f.pipeline.map((step, i) => {
+                const last = i === f.pipeline.length - 1
+                return (
+                  <li key={step} data-last={last || undefined} style={{ '--k': i } as CSSProperties}>
+                    {step}
+                    {last ? null : <span className="pg-usecases__spark" aria-hidden="true" />}
+                  </li>
+                )
+              })}
             </ol>
           </div>
           <ul className="pg-usecases__case-metrics">

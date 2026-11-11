@@ -10,6 +10,15 @@ import { IndustryPage } from './IndustryPage'
 
 const sectionIds = ['hero', 'why-now', 'scenarios', 'how-it-fits', 'resources', 'get-started']
 
+/** Opening tags whose class list includes `className` (exact class, not a prefix). */
+const tagsWithClass = (html: string, className: string) =>
+  (html.match(/<[a-z][^>]*>/g) ?? []).filter((tag) =>
+    (tag.match(/\sclass="([^"]*)"/)?.[1] ?? '').split(/\s+/).includes(className),
+  )
+/** How many elements with `className` opt into the motion system. */
+const animated = (html: string, className: string) =>
+  tagsWithClass(html, className).filter((tag) => /\sdata-animate="/.test(tag)).length
+
 /** Match how React escapes text content in server-rendered HTML. */
 const escapeHtml = (text: string) =>
   text
@@ -123,5 +132,13 @@ describe.each(locales)('IndustryPage (%s)', (locale) => {
     expect(html).toContain(escapeHtml(page.cta.body))
     expect(html).toContain(`href="${page.hero.secondary.href}"`)
     expect(html).not.toMatch(/<img\b/)
+
+    // Motion: the hero flow (one signal dash per source system), every
+    // scenario's trace and the platform loop opt into the motion system.
+    expect(animated(html, 'pg-industry-flow'), 'hero flow').toBe(1)
+    expect(html.match(/class="pg-industry-flow__pulse"/g)?.length, 'signal dashes').toBe(page.signals.length)
+    expect(animated(html, 'pg-industry-workspace__trace'), 'traces').toBe(details.scenarios.length)
+    expect(animated(html, 'pg-industry-loop__schematic'), 'loop').toBe(1)
+    expect(html).not.toContain('data-inview')
   })
 })

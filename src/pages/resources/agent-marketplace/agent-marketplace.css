@@ -102,6 +102,7 @@
 }
 
 .pg-marketplace__cells i {
+  position: relative;
   width: 12px;
   height: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -109,8 +110,12 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-.pg-marketplace__cells i[data-on] {
-  border-color: var(--ds-accent);
+/* Lit fills sit on top of the empty slot (so an intro can fade the fill alone). */
+.pg-marketplace__cells i[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
   background: var(--ds-accent);
   opacity: 0.8;
 }
@@ -293,8 +298,12 @@
   list-style: none;
 }
 
-.pg-marketplace__track::before {
-  content: '';
+.pg-marketplace__track-wrap {
+  position: relative;
+}
+
+/* The line through the step nodes (a separate element so it can draw in). */
+.pg-marketplace__track-line {
   position: absolute;
   left: 0;
   right: 0;
@@ -339,7 +348,7 @@
     row-gap: 32px;
   }
 
-  .pg-marketplace__track::before {
+  .pg-marketplace__track-line {
     display: none;
   }
 
@@ -400,6 +409,148 @@
   .pg-marketplace__benefit-list {
     grid-column: 1 / -1;
   }
+}
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/*
+ * All animation runs under html[data-motion]; the rules above are the complete
+ * static state, and loops start from it, so nothing jumps on load.
+ */
+
+/* Wire signal: a dot on a carrier as wide (or tall) as the wire, so moving the
+   carrier by 100% walks the dot end to end. Invisible at rest. */
+.pg-marketplace__spark {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pg-marketplace__spark::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+}
+
+/* Each team's next free cell carries a ring that glints when a skill arrives. */
+.pg-marketplace__cells i[data-next]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 2px;
+  opacity: 0;
+}
+
+/* One 6s cycle: the signal crosses the wire (0–16%), then the teams' next
+   cells glint top to bottom. */
+@keyframes pg-marketplace-spark-x {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  2% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pg-marketplace-spark-y {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  2% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(100%);
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pg-marketplace-glint {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  24% {
+    opacity: 0;
+  }
+}
+
+@keyframes pg-marketplace-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__spark {
+  animation: pg-marketplace-spark-x 6s var(--ds-ease-in-out) 0.8s infinite;
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[data-next]::after {
+  animation: pg-marketplace-glint 6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1.75s + var(--r) * 0.22s);
+}
+
+@container (max-width: 480px) {
+  html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__spark {
+    animation-name: pg-marketplace-spark-y;
+  }
+}
+
+/* Intro (entering view, not first load): the boxes fade in, the lit cells fill. */
+html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__box--skills {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__wire {
+  animation: ds-fade-in 600ms var(--ds-ease-out) 200ms both;
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__box--teams {
+  animation: ds-fade-in 600ms var(--ds-ease-out) 300ms both;
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__cells i[data-on]::after {
+  animation: pg-marketplace-cell 500ms var(--ds-ease-out) both;
+  animation-delay: calc(450ms + var(--r) * 70ms + var(--c) * 40ms);
+}
+
+/* Catalogue: the cards fade up in a stagger, once (not again after filtering). */
+html[data-motion] .pg-marketplace__skills[data-inview='enter']:not([data-filtered]) .pg-marketplace__skill {
+  animation: ds-fade-up 700ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 90ms);
+}
+
+/* Adoption path: the connecting line draws in left to right. */
+html[data-motion] .pg-marketplace__track-line[data-inview='enter'] {
+  transform-origin: left center;
+  animation: ds-grow-x 1400ms var(--ds-ease-out) both;
 }
 
 /* Keep the accent phrase of the closing CTA on one line (zh breaks otherwise split it). */

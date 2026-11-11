@@ -21,6 +21,15 @@ const count = (html: string, pattern: RegExp) => html.match(pattern)?.length ?? 
 const plain = (html: string) => html.replace(/<[^>]+>/g, '')
 const unmark = (text: string) => esc(text.replaceAll('\u200B', ''))
 
+/** Opening tags whose class list includes `className` (exact class, not a prefix). */
+const tagsWithClass = (html: string, className: string) =>
+  (html.match(/<[a-z][^>]*>/g) ?? []).filter((tag) =>
+    (tag.match(/\sclass="([^"]*)"/)?.[1] ?? '').split(/\s+/).includes(className),
+  )
+/** How many elements with `className` opt into the motion system. */
+const animated = (html: string, className: string) =>
+  tagsWithClass(html, className).filter((tag) => /\sdata-animate="/.test(tag)).length
+
 describe('departments copy', () => {
   it('zh has the same shape as en and no empty strings', () => {
     expect(copyShape(departmentsPageCopy.zh)).toEqual(copyShape(departmentsPageCopy.en))
@@ -52,6 +61,8 @@ describe('departments copy', () => {
       expect(v.tones, id).toHaveLength(rows)
       expect(v.levels, id).toHaveLength(rows)
       if (v.mock === 'calendar') expect(v.cells, id).toHaveLength(rows)
+      expect(v.focal, id).toBeGreaterThanOrEqual(0)
+      expect(v.focal, id).toBeLessThan(rows)
     }
   })
 
@@ -104,6 +115,18 @@ describe.each(locales)('departments overview (%s)', (locale) => {
     expect(html).not.toMatch(/<img\b/)
     expect(html).not.toMatch(/pose-v\d|\/solutions\/[a-z-]+\.png/)
   })
+
+  it('opts every visual into the motion system and renders its final state', () => {
+    expect(animated(html, 'pg-flow'), 'hero schematic').toBe(1)
+    expect(animated(html, 'pg-mock'), 'department mocks').toBe(departmentOrder.length)
+    expect(animated(html, 'pg-glyph'), 'step glyphs').toBe(3)
+    // One signal dash per wire; the server never decides what is in view.
+    expect(count(html, /class="pg-flow__pulse"/g)).toBe(t.overview.hero.inputs.length + departmentOrder.length)
+    expect(html).not.toContain('data-inview')
+    // One breathing status dot per row-based mock; the pipeline breathes its
+    // focal deal's score and the KPI chart pings its spike instead.
+    expect(count(html, /class="pg-mock__tag"[^>]*data-focal="true"/g)).toBe(departmentOrder.length - 2)
+  })
 })
 
 describe.each(locales)('department detail pages (%s)', (locale) => {
@@ -138,5 +161,10 @@ describe.each(locales)('department detail pages (%s)', (locale) => {
     expect(html).toMatch(new RegExp(`href="/solutions/departments/${id}" aria-current="page"`))
 
     expect(html).not.toMatch(/<img\b/)
+
+    // Motion: the hero mock and the agent panel are animated visuals.
+    expect(animated(html, 'pg-mock'), 'hero mock').toBe(1)
+    expect(animated(html, 'pg-agent'), 'agent panel').toBe(1)
+    expect(html).not.toContain('data-inview')
   })
 })

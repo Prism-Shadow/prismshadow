@@ -806,13 +806,19 @@
 }
 
 .pg-mock__deps i {
+  position: relative;
   width: 6px;
   height: 6px;
   border-radius: 1px;
   background: rgba(255, 255, 255, 0.08);
 }
 
-.pg-mock__deps i[data-on] {
+/* Lit fills sit on top of the empty slot (so an intro can fade the fill alone). */
+.pg-mock__deps i[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: var(--ds-accent);
   opacity: 0.7;
 }
@@ -903,18 +909,23 @@
 }
 
 .pg-mock__cal-cell {
+  position: relative;
   height: 30px;
   border: 1px solid var(--ds-line);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.025);
 }
 
-.pg-mock__cal-cell[data-on] {
-  border-color: var(--ds-accent-line);
+.pg-mock__cal-cell[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent-line);
+  border-radius: inherit;
   background: rgba(169, 156, 255, 0.4);
 }
 
-.pg-mock__cal-cell[data-on][data-tone='amber'] {
+.pg-mock__cal-cell[data-on][data-tone='amber']::after {
   border-color: rgba(242, 180, 92, 0.5);
   background: rgba(242, 180, 92, 0.3);
 }
@@ -1150,18 +1161,23 @@
 }
 
 .pg-mock__queue i {
+  position: relative;
   height: 9px;
   border: 1px solid var(--ds-line);
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.03);
 }
 
-.pg-mock__queue i[data-on] {
-  border-color: var(--ds-accent-line);
+.pg-mock__queue i[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent-line);
+  border-radius: inherit;
   background: rgba(169, 156, 255, 0.45);
 }
 
-.pg-mock__stage[data-tone='amber'] .pg-mock__queue i[data-on] {
+.pg-mock__stage[data-tone='amber'] .pg-mock__queue i[data-on]::after {
   border-color: rgba(242, 180, 92, 0.6);
   background: rgba(242, 180, 92, 0.5);
 }
@@ -1245,4 +1261,252 @@
 /* Keep the accent phrase of the shared closing CTA on one line (zh would split 团队). */
 .pg-departments .ds-cta__title .ds-accent-text {
   display: inline-block;
+}
+
+/* ================================================================== */
+/* Motion (contract: src/components/site/motion.ts)                    */
+/* ================================================================== */
+
+/*
+ * Everything below runs only under html[data-motion]; the rules above are the
+ * complete, static final state (no JS, reduced motion, prerendered HTML).
+ * Intros play once when a visual enters view (or its tab is shown again);
+ * loops are slow and start from the resting state, so nothing jumps on load.
+ * Text never moves: mocks fade in, and only their marks (bars, cells, rows of
+ * a list being filled) travel a few pixels.
+ */
+
+/* ---------- Static helpers the motion draws on (visible at rest) ---------- */
+
+/* The flagged clause keeps a faint wash: the highlight the review lands on. */
+.pg-mock__clause[data-focal] {
+  isolation: isolate;
+}
+
+.pg-mock__clause[data-focal]::after {
+  content: '';
+  position: absolute;
+  inset: 0 -16px;
+  z-index: -1;
+  background: rgba(255, 127, 110, 0.06);
+}
+
+/* Ring around the KPI spike; invisible at rest, it pings when motion is on. */
+.pg-mock__spike::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 1px solid var(--ds-coral);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+@keyframes pg-mock-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pg-mock-advance {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes pg-mock-settle {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes pg-mock-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes pg-mock-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes pg-mock-ping {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  12% {
+    opacity: 0.8;
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* ---------- Department mocks ---------- */
+
+/* The panel fades in (no movement), then one live moment plays and holds. */
+html[data-motion] .pg-mock[data-inview='enter'] {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+}
+
+/* Loop: the focal row's status dot breathes. */
+html[data-motion] .pg-mock[data-inview] .pg-mock__tag[data-focal]::before {
+  animation: ds-pulse 3.6s var(--ds-ease-in-out) 1.8s infinite;
+}
+
+/* Ticket queue: a new ticket arrives on top, the agent drafts, the chip settles. */
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__row[data-active] {
+  animation: pg-mock-arrive 800ms var(--ds-ease-out) 200ms both;
+}
+
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__draft i {
+  transform-origin: left center;
+  animation: ds-grow-x 700ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__draft i:nth-child(1) {
+  animation-delay: 650ms;
+}
+
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__draft i:nth-child(2) {
+  animation-delay: 780ms;
+}
+
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__draft i:nth-child(3) {
+  animation-delay: 910ms;
+}
+
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__row[data-active] .pg-mock__check,
+html[data-motion] .pg-mock--queue[data-inview='enter'] .pg-mock__row[data-active] > .pg-mock__tag {
+  animation: pg-mock-settle 600ms var(--ds-ease-out) 1150ms both;
+}
+
+/* Pipeline: deal scores fill; the focal deal arrives in its new stage. */
+html[data-motion] .pg-mock--pipeline[data-inview='enter'] .pg-mock__card[data-active] {
+  animation: pg-mock-advance 900ms var(--ds-ease-out) 250ms both;
+}
+
+html[data-motion] .pg-mock--pipeline[data-inview='enter'] .pg-mock__meter::after {
+  transform-origin: left center;
+  animation: ds-grow-x 900ms var(--ds-ease-out) both;
+  animation-delay: calc(350ms + var(--i) * 90ms);
+}
+
+/* Loop (instead of a status dot): the focal deal's score breathes. */
+html[data-motion] .pg-mock--pipeline[data-inview] .pg-mock__card[data-active] .pg-mock__meter::after {
+  animation: pg-mock-breathe 4s var(--ds-ease-in-out) 2s infinite;
+}
+
+html[data-motion] .pg-mock--pipeline[data-inview='enter'] .pg-mock__card[data-active] .pg-mock__meter::after {
+  animation:
+    ds-grow-x 900ms var(--ds-ease-out) calc(350ms + var(--i) * 90ms) both,
+    pg-mock-breathe 4s var(--ds-ease-in-out) 2s infinite;
+}
+
+/* Content plan: the planned slots fill in, week by week (the empty grid stays). */
+html[data-motion] .pg-mock--calendar[data-inview='enter'] .pg-mock__cal-cell[data-on]::after {
+  animation: pg-mock-cell 600ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i) * 45ms);
+}
+
+/* KPI monitor: the series draw in left to right, then the spike lands and pings. */
+html[data-motion] .pg-mock--chart[data-inview='enter'] .pg-mock__reveal {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: ds-grow-x 1500ms var(--ds-ease-out) 250ms both;
+}
+
+html[data-motion] .pg-mock--chart[data-inview='enter'] .pg-mock__spike {
+  animation: pg-mock-settle 600ms var(--ds-ease-out) 1400ms both;
+}
+
+html[data-motion] .pg-mock--chart[data-inview] .pg-mock__spike::after {
+  animation: pg-mock-ping 3.6s var(--ds-ease-out) 2s infinite;
+}
+
+/* Attrition risk: the bars grow from their base, one after another. */
+html[data-motion] .pg-mock--bars[data-inview='enter'] .pg-mock__fill {
+  transform-origin: left center;
+  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i) * 120ms);
+}
+
+/* Clause review: each clause is marked in turn, then the flagged one highlights. */
+html[data-motion] .pg-mock--document[data-inview='enter'] .pg-mock__clause::before {
+  transform-origin: center top;
+  animation: ds-grow-y 600ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i) * 140ms);
+}
+
+html[data-motion] .pg-mock--document[data-inview='enter'] .pg-mock__clause[data-focal]::after {
+  transform-origin: left center;
+  animation: ds-grow-x 900ms var(--ds-ease-out) 850ms both;
+}
+
+/* Sprint blockers: the blast-radius checks complete, row by row. */
+html[data-motion] .pg-mock--incidents[data-inview='enter'] .pg-mock__deps i[data-on]::after {
+  animation: pg-mock-cell 500ms var(--ds-ease-out) both;
+  animation-delay: calc(300ms + var(--i) * 110ms);
+}
+
+/* Fulfillment: each stage's queue fills from the bottom, then hands off to the next. */
+html[data-motion] .pg-mock--flow[data-inview='enter'] .pg-mock__queue i[data-on]::after {
+  animation: pg-mock-cell 450ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i) * 220ms + var(--k) * 60ms);
+}
+
+html[data-motion] .pg-mock--flow[data-inview='enter'] .pg-mock__stage:not(:last-child)::after {
+  transform-origin: left center;
+  animation: ds-grow-x 500ms var(--ds-ease-out) both;
+  animation-delay: calc(500ms + var(--i) * 220ms);
+}
+
+/* ---------- Example agent panel (detail) ---------- */
+
+/* Training files load one by one, then the plan's steps light up in order. */
+html[data-motion] .pg-agent[data-inview='enter'] {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-agent[data-inview='enter'] .pg-agent__files li {
+  animation: ds-fade-in 500ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i) * 90ms);
+}
+
+html[data-motion] .pg-agent[data-inview='enter'] .pg-agent__num {
+  animation: pg-mock-cell 600ms var(--ds-ease-out) both;
+  animation-delay: calc(600ms + var(--i) * 140ms);
+}
+
+/* ---------- How it works glyphs (overview) ---------- */
+
+/* The isometric lines draw in, then their vertex dots land. */
+html[data-motion] .pg-glyph[data-inview='enter'] .pg-glyph__line:not(.pg-glyph__line--dashed) {
+  stroke-dasharray: 1;
+  animation: ds-draw 1200ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 160ms);
+}
+
+html[data-motion] .pg-glyph[data-inview='enter'] .pg-glyph__line--dashed {
+  animation: ds-fade-in 900ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 160ms);
+}
+
+html[data-motion] .pg-glyph[data-inview='enter'] .pg-glyph__dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pg-mock-cell 600ms var(--ds-ease-out) both;
+  animation-delay: calc(var(--i) * 160ms + 800ms + var(--k) * 90ms);
 }

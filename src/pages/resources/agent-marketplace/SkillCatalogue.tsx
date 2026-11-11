@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import type { Locale } from '../../../i18n'
 import { agentMarketplacePageCopy } from '../../../i18n/messages/agentMarketplace'
 import type { DepartmentId } from '../../../i18n/messages/shared'
@@ -10,11 +10,20 @@ const teamIcons: DepartmentId[] = ['customer-support', 'sales', 'operations', 'd
 /**
  * The skill catalogue: a hairline grid with a team filter. Every listing is in
  * the server HTML; filtering only hides cells.
+ *
+ * Motion: the cards fade up in a stagger once, when the grid comes into view.
+ * After the first filter click the grid is marked `data-filtered`, so cards
+ * that reappear do not replay it (agent-marketplace.css).
  */
 export function SkillCatalogue({ locale }: { locale: Locale }) {
   const t = agentMarketplacePageCopy[locale]
   const teams = t.visual.signals
   const [team, setTeam] = useState<number | null>(null)
+  const [filtered, setFiltered] = useState(false)
+  const choose = (next: number | null) => {
+    setTeam(next)
+    setFiltered(true)
+  }
 
   return (
     <>
@@ -23,7 +32,7 @@ export function SkillCatalogue({ locale }: { locale: Locale }) {
           type="button"
           className="pg-marketplace__filter"
           aria-pressed={team === null}
-          onClick={() => setTeam(null)}
+          onClick={() => choose(null)}
         >
           {t.skills.all}
         </button>
@@ -33,16 +42,26 @@ export function SkillCatalogue({ locale }: { locale: Locale }) {
             type="button"
             className="pg-marketplace__filter"
             aria-pressed={team === i}
-            onClick={() => setTeam(i)}
+            onClick={() => choose(i)}
           >
             {name}
           </button>
         ))}
       </div>
 
-      <ul className="pg-marketplace__skills" aria-live="polite">
+      <ul
+        className="pg-marketplace__skills"
+        aria-live="polite"
+        data-animate="custom"
+        data-filtered={filtered || undefined}
+      >
         {t.skills.items.map((skill, i) => (
-          <li key={skill.title} className="pg-marketplace__skill" hidden={team !== null && team !== i}>
+          <li
+            key={skill.title}
+            className="pg-marketplace__skill"
+            hidden={team !== null && team !== i}
+            style={{ '--i': i } as CSSProperties}
+          >
             <span className="pg-marketplace__skill-meta">
               <span className="pg-marketplace__skill-team">
                 <DepartmentIcon id={teamIcons[i] ?? 'operations'} />
