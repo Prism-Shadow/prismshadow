@@ -5,10 +5,12 @@ import { CheckIcon, ShieldIcon } from '../icons'
 /**
  * Hero mock: the runtime check an agent request passes before any action runs.
  *
- * Motion (security.css): when it enters view, the checks tick to "pass" one by
- * one and the policy result follows, then everything holds; the status dot
- * breathes while in view. On screen at first load, it simply shows the
- * finished check.
+ * Motion (security.css): while in view the check re-runs on a loop. Each row
+ * goes back to pending (its box empties, "pass" fades), then the rows pass
+ * one by one: the box fills solid and the tick draws in. The policy result
+ * dims while the check runs and returns when every row has passed. The loop
+ * starts from the finished check, which is also the resting state, so the
+ * first paint never changes.
  */
 export function BoundaryMock({ copy }: { copy: SecurityBoundaryCopy }) {
   return (
@@ -42,8 +44,10 @@ export function BoundaryMock({ copy }: { copy: SecurityBoundaryCopy }) {
             <span className="pg-sec-mono">{String(index + 1).padStart(2, '0')}</span>
             <span className="pg-sec-boundary__layer-name">{layer}</span>
             <span className="pg-sec-boundary__pass">
-              <CheckIcon />
-              {copy.pass}
+              <span className="pg-sec-boundary__box">
+                <CheckIcon />
+              </span>
+              <span className="pg-sec-boundary__pass-label">{copy.pass}</span>
             </span>
           </li>
         ))}

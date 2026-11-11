@@ -128,9 +128,12 @@ describe.each(locales)('people page (%s)', (locale) => {
   })
 
   it('marks its visuals for the motion system', () => {
-    // Hero field: custom glint sweep ending on the focal mark.
+    // Hero field: a live contribution graph. Marks ride the wave (--wd), and
+    // live days (empty at rest) fill as waves pass or flicker on their own.
     expect(openingTag(html, 'pg-people-field')).toContain('data-animate="custom"')
-    expect(count(html, /class="pg-people-field__mark [^"]*" [^>]*style="--d:/g)).toBeGreaterThan(10)
+    expect(count(html, /class="pg-people-field__mark [^"]*" [^>]*style="--wd:/g)).toBeGreaterThan(10)
+    expect(count(html, /class="pg-people-field__live pg-people-field__live--wave"/g)).toBeGreaterThan(30)
+    expect(count(html, /class="pg-people-field__live pg-people-field__live--flicker"/g)).toBeGreaterThan(5)
     expect(html).toContain('class="pg-people-field__ping"')
     // Founder portraits rise in; the open-source numbers and logos stagger in.
     expect(count(html, /class="ds-panel pg-people-founder__photo" data-animate=""/g)).toBe(3)
@@ -180,13 +183,17 @@ describe.each(locales)('about page (%s)', (locale) => {
   })
 
   it('marks its visuals for the motion system', () => {
-    // Hero loop: default reveal; its travelling cell is styled in about.css.
+    // Hero loop: a packet laps the track and each stage's four-cell meter fills as it passes.
     expect(openingTag(html, 'pg-about-loop')).toContain('data-animate=""')
     expect(html).toContain('class="pg-about-loop__pulse"')
-    // The three drawings draw in and glint on one vertex each.
+    expect(count(html, /class="pg-about-loop__meter-cell"/g)).toBe(copy.loop.stages.length * 4)
+    // The drawings draw in, then keep working: plate cells, cube faces, spoke packets, a generation ring.
     expect(count(html, /class="pg-about-art" data-animate="custom"/g)).toBe(3)
     expect(count(html, /data-draw="" pathLength="1"/g)).toBeGreaterThan(10)
-    expect(count(html, /class="pg-about-art__glint"/g)).toBe(3)
+    expect(count(html, /class="pg-about-art__live"/g)).toBe(8)
+    expect(count(html, /class="pg-about-art__face"/g)).toBe(6)
+    expect(count(html, /class="pg-about-art__packet"/g)).toBe(6)
+    expect(count(html, /class="pg-about-art__wave"/g)).toBe(1)
     expect(openingTag(html, 'pg-about-team__avatars')).toContain('data-animate=""')
   })
 })
@@ -251,15 +258,29 @@ describe.each(locales)('security page (%s)', (locale) => {
   })
 
   it('marks its visuals for the motion system', () => {
-    // Hero check: ticks one by one on enter; every layer carries its order.
+    // Hero check: re-runs on a loop; every layer carries its order and a checkbox.
     expect(openingTag(html, 'ds-panel pg-sec-window pg-sec-boundary')).toContain('data-animate=""')
     expect(count(html, /class="pg-sec-boundary__layer" style="--i:\d+"/g)).toBe(copy.boundary.layers.length)
-    // Perimeter: one signal per connector (data → models → agents → systems).
+    expect(count(html, /class="pg-sec-boundary__box"/g)).toBe(copy.boundary.layers.length)
+    // Perimeter: two packets per connector, live node cells, and a probe stopped at the egress block.
     expect(openingTag(html, 'ds-panel ds-panel--cells pg-sec-perimeter')).toContain('data-animate=""')
-    expect(count(html, /class="pg-sec-perimeter__signal"/g)).toBe(3)
-    // Every control mock replays its intro when its tab is selected.
+    expect(count(html, /class="pg-sec-perimeter__signal"/g)).toBe(6)
+    expect(count(html, /class="pg-sec-perimeter__probe"/g)).toBe(1)
+    expect(count(html, /data-twinkle=""/g)).toBeGreaterThan(3)
+    // Every control mock replays its intro when its tab is selected, then stays live.
     for (const mock of ['pg-sec-flow', 'pg-sec-policy', 'pg-sec-memory', 'pg-sec-audit'])
       expect(openingTag(html, `ds-panel pg-sec-window ${mock}`), mock).toContain('data-animate="custom"')
+    expect(count(html, /class="pg-sec-policy__mark"/g)).toBeGreaterThan(5)
+  })
+
+  it('renders the live mocks in their static resting state', () => {
+    // No decision is highlighted and the log shows exactly the authored rows.
+    expect(html).not.toContain('is-deciding')
+    expect(html).not.toContain('pg-sec-audit__row--leaving')
+    expect(html).not.toContain('data-tick=')
+    const log = html.slice(html.indexOf('class="pg-sec-audit__rows"'))
+    expect(count(log, /class="pg-sec-audit__row"/g)).toBe(copy.visuals.auditLog.rows.length)
+    for (const time of ['09:41:12', '09:41:18', '09:52:03', '09:52:05', '09:52:06']) expect(log).toContain(time)
   })
 })
 

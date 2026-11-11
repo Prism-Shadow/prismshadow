@@ -7,17 +7,25 @@ import type { CSSProperties } from 'react'
  *
  * Motion (about.css): when a drawing enters view its solid lines draw in
  * (`data-draw` + pathLength 1), then the dashed parts, lit cell and vertex
- * dots fade in; while in view, one vertex glints now and then.
+ * dots fade in. While in view each drawing keeps working:
+ * - data production: the cells of the top plate fill solid in a wave;
+ * - model training: signals run in along the spokes and the model's faces
+ *   fill in turn;
+ * - agent self-evolution: the agent's faces fill in turn while a new
+ *   generation ring expands outward.
+ * Every moving part is invisible at rest (zero fill or zero opacity), so the
+ * static drawing is exactly the resting picture.
  */
 
 /** A solid line that draws in on view. */
 const draw = { 'data-draw': '', pathLength: 1 } as const
 
 type Pt = [number, number]
+type Tone = 'cyan' | 'amber' | 'accent'
 
 const pts = (list: Pt[]) => list.map(([x, y]) => `${x} ${y}`).join(' ')
 
-/** Vertices of a pointy-top hexagon. */
+/** Vertices of a pointy-top hexagon (top, upper right, lower right, bottom, lower left, upper left). */
 const hexagon = (cx: number, cy: number, r: number): Pt[] =>
   [-90, -30, 30, 90, 150, 210].map((deg): Pt => {
     const a = (deg * Math.PI) / 180
@@ -26,23 +34,33 @@ const hexagon = (cx: number, cy: number, r: number): Pt[] =>
 
 const round = (n: number) => Math.round(n * 100) / 100
 
-/** A wireframe cube seen from above: its hexagon outline plus the three inner edges. */
-function Cube({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+const order = (values: Record<string, number | string>) => values as CSSProperties
+
+/**
+ * A wireframe cube seen from above: its hexagon outline plus the three inner
+ * edges. Its three faces sit under the edges with zero fill; motion fills
+ * them in turn (top, right, left).
+ */
+function Cube({ cx, cy, r, tone }: { cx: number; cy: number; r: number; tone: Tone }) {
   const h = hexagon(cx, cy, r)
+  const c: Pt = [cx, cy]
+  const faces: Pt[][] = [
+    [c, h[5], h[0], h[1]],
+    [c, h[1], h[2], h[3]],
+    [c, h[3], h[4], h[5]],
+  ]
   return (
-    <g>
+    <g data-tone={tone}>
       <polygon className="pg-about-art__fill" points={pts(h)} {...draw} />
+      {faces.map((face, i) => (
+        <polygon key={i} className="pg-about-art__face" points={pts(face)} style={order({ '--i': i })} />
+      ))}
       <path
         d={`M${cx} ${cy}L${h[5][0]} ${h[5][1]}M${cx} ${cy}L${h[1][0]} ${h[1][1]}M${cx} ${cy}L${h[3][0]} ${h[3][1]}`}
         {...draw}
       />
     </g>
   )
-}
-
-/** A ring around one vertex dot that glints now and then (motion only; invisible at rest). */
-function Glint({ cx, cy, tone }: { cx: number; cy: number; tone: 'cyan' | 'amber' | 'accent' }) {
-  return <circle className="pg-about-art__glint" data-tone={tone} cx={cx} cy={cy} r="6" />
 }
 
 /* ---------- 1 · Data production: stacked data plates ---------- */
@@ -72,24 +90,50 @@ function Plate({ cy, ghost = false }: { cy: number; ghost?: boolean }) {
   )
 }
 
+/** The top plate's 3 × 3 cells: P(u, v) = T + u·(R − T) + v·(L − T), from the top vertex. */
+const plateTop: Pt = [120, 16.5]
+const plateU: Pt = [W, H]
+const plateV: Pt = [-W, H]
+const platePoint = (u: number, v: number): Pt => [
+  round(plateTop[0] + u * plateU[0] + v * plateV[0]),
+  round(plateTop[1] + u * plateU[1] + v * plateV[1]),
+]
+const plateCells = Array.from({ length: 9 }, (_, k) => {
+  const i = k % 3
+  const j = Math.floor(k / 3)
+  const corners = [platePoint(i / 3, j / 3), platePoint((i + 1) / 3, j / 3), platePoint((i + 1) / 3, (j + 1) / 3), platePoint(i / 3, (j + 1) / 3)]
+  return { i, j, points: pts(corners) }
+})
+
 function DataArt() {
-  // Top plate face P(u, v) = T + u·(R − T) + v·(L − T); grid lines at thirds.
   return (
     <svg viewBox="0 0 240 180" aria-hidden="true" focusable="false">
       <Plate cy={114} ghost />
       <Plate cy={86} />
       <Plate cy={58} />
+      {/* Live cells sit under the grid lines; the lit cell (1, 0), the resting highlight, sits on top. */}
+      <g data-tone="cyan">
+        {plateCells
+          .filter(({ i, j }) => !(i === 1 && j === 0))
+          .map(({ i, j, points }) => (
+            <polygon key={`${i}:${j}`} className="pg-about-art__live" points={points} style={order({ '--w': i + j })} />
+          ))}
+      </g>
       <g className="pg-about-art__faint">
         <path d="M144 30.33L72 71.83M168 44.17L96 85.67M96 30.33L168 71.83M72 44.17L144 85.67" {...draw} />
       </g>
-      <polygon className="pg-about-art__cell" data-tone="cyan" points="144 30.33 168 44.17 144 58 120 44.17" />
+      <polygon
+        className="pg-about-art__cell"
+        data-tone="cyan"
+        points={plateCells[1].points}
+        style={order({ '--w': 1 })}
+      />
       <g className="pg-about-art__dots" data-tone="cyan">
         <circle cx="120" cy="16.5" r="3" />
         <circle cx="192" cy="58" r="3" />
         <circle cx="48" cy="58" r="3" />
         <circle cx="120" cy="127.5" r="3" />
       </g>
-      <Glint cx={192} cy={58} tone="cyan" />
     </svg>
   )
 }
@@ -109,13 +153,25 @@ function TrainingArt() {
         ))}
         <circle cx="120" cy="90" r="48" />
       </g>
-      <Cube cx={120} cy={90} r={30} />
+      {/* Signals: one packet per spoke, running from the ring into the model. */}
+      <g data-tone="amber">
+        {ring.map(([x, y], i) => (
+          <circle
+            key={i}
+            className="pg-about-art__packet"
+            cx={x}
+            cy={y}
+            r="2.2"
+            style={order({ '--i': i, '--dx': `${round(core[i][0] - x)}px`, '--dy': `${round(core[i][1] - y)}px` })}
+          />
+        ))}
+      </g>
+      <Cube cx={120} cy={90} r={30} tone="amber" />
       <g className="pg-about-art__dots" data-tone="amber">
         {ring.map(([x, y], i) => (
           <circle key={i} cx={x} cy={y} r="3" />
         ))}
       </g>
-      <Glint cx={ring[0][0]} cy={ring[0][1]} tone="amber" />
     </svg>
   )
 }
@@ -134,13 +190,14 @@ function EvolutionArt() {
         ))}
       </g>
       <polygon className="pg-about-art__faint pg-about-art__dashed" points={pts(mid)} />
-      <Cube cx={120} cy={90} r={22} />
+      {/* A new generation: a ring that grows from the middle hexagon toward the outer one. */}
+      <polygon className="pg-about-art__wave" data-tone="accent" points={pts(mid)} />
+      <Cube cx={120} cy={90} r={22} tone="accent" />
       <g className="pg-about-art__dots" data-tone="accent">
         {outer.map(([x, y], i) => (
           <circle key={i} cx={x} cy={y} r="3" />
         ))}
       </g>
-      <Glint cx={outer[1][0]} cy={outer[1][1]} tone="accent" />
     </svg>
   )
 }
@@ -150,7 +207,7 @@ const arts = [DataArt, TrainingArt, EvolutionArt]
 export function PillarArt({ index }: { index: number }) {
   const Art = arts[index] ?? DataArt
   return (
-    <div className="pg-about-art" data-animate="custom" style={{ '--art-i': index } as CSSProperties}>
+    <div className="pg-about-art" data-animate="custom" style={order({ '--art-i': index })}>
       <Art />
     </div>
   )

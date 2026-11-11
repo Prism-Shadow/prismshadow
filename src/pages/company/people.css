@@ -40,17 +40,28 @@
 
 .pg-people .pg-people-field__mark--1 {
   --rest: 0.16;
-  --peak: 0.5;
+  --peak: 0.6;
 }
 
 .pg-people .pg-people-field__mark--2 {
   --rest: 0.3;
-  --peak: 0.7;
+  --peak: 0.8;
 }
 
 .pg-people .pg-people-field__mark--3 {
   --rest: 0.52;
-  --peak: 0.9;
+  --peak: 0.95;
+}
+
+/* Live days: accent squares with zero fill at rest (motion fills them). */
+.pg-people .pg-people-field__live {
+  fill: var(--ds-accent);
+  fill-opacity: 0;
+}
+
+.pg-people .pg-people-field__focal {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .pg-people .pg-people-field__ring,
@@ -417,33 +428,80 @@
 /* ---------- Motion (only under html[data-motion]; resting CSS is the final state) ---------- */
 
 /*
- * Hero field: a slow glint sweeps the marks from the past toward "now"
- * (delay from each mark's --d), and the focal mark answers with one soft
- * ring. 9s cycle: about 4s of sweep, then rest. The field is on screen at
- * first load, so it only fades in when it enters later (in-app navigation).
+ * Hero field, a live contribution graph (6s cycle). A wave of activity sweeps
+ * from the past toward "now" in about 3s: live days fill solid as it passes,
+ * each to its own intensity (--k), and the existing marks brighten with it
+ * (--wd is when the wave reaches each day). Between waves a few days flicker
+ * on their own rhythm (--fd, --ft). When the wave arrives, the focal mark
+ * pops and answers with a ring. The field is on screen at first load, so it
+ * only fades in when it enters later (in-app navigation).
  */
 html[data-motion] .pg-people .pg-people-field[data-inview='enter'] {
   animation: ds-fade-in 1000ms var(--ds-ease-out) both;
 }
 
+html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__live--wave {
+  animation: pg-people-wave 6s var(--ds-ease-in-out) var(--wd) infinite;
+}
+
+html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__live--flicker {
+  animation: pg-people-flicker var(--ft) var(--ds-ease-in-out) var(--fd) infinite;
+}
+
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__mark {
-  animation: pg-people-glint 9s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(400ms + var(--d) * 3.4s);
+  animation: pg-people-glint 6s var(--ds-ease-in-out) var(--wd) infinite;
+}
+
+html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__focal {
+  animation: pg-people-pop 6s var(--ds-ease-out) 3.75s infinite;
 }
 
 html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__ping {
-  animation: pg-people-answer 9s var(--ds-ease-out) infinite;
-  animation-delay: 4.3s;
+  animation: pg-people-answer 6s var(--ds-ease-out) 3.75s infinite;
+}
+
+@keyframes pg-people-wave {
+  0%,
+  19%,
+  100% {
+    fill-opacity: 0;
+  }
+  6% {
+    fill-opacity: var(--k);
+  }
+}
+
+@keyframes pg-people-flicker {
+  0%,
+  30%,
+  70%,
+  100% {
+    fill-opacity: 0;
+  }
+  50% {
+    fill-opacity: var(--k);
+  }
 }
 
 @keyframes pg-people-glint {
   0%,
-  22%,
+  19%,
   100% {
     opacity: var(--rest);
   }
-  8% {
+  6% {
     opacity: var(--peak);
+  }
+}
+
+@keyframes pg-people-pop {
+  0%,
+  16%,
+  100% {
+    transform: scale(1);
+  }
+  5% {
+    transform: scale(1.15);
   }
 }
 
@@ -452,13 +510,13 @@ html[data-motion] .pg-people .pg-people-field[data-inview] .pg-people-field__pin
     opacity: 0;
     transform: scale(1);
   }
-  6% {
-    opacity: 0.85;
+  5% {
+    opacity: 0.9;
   }
-  32%,
+  34%,
   100% {
     opacity: 0;
-    transform: scale(1.4);
+    transform: scale(1.8);
   }
 }
 
