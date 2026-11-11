@@ -10,9 +10,11 @@ const CELLS = 8
  * Hero visual: a box of approved skills wired into the team workflow layer,
  * one row per team. Modal-style diagram boxes with mono labels and lit cells.
  *
- * Motion (agent-marketplace.css): every few seconds a signal crosses the wire
- * and each team's next cell glints in turn, as if a skill had just reached it.
- * On entering view (not on first load) the boxes fade in and the cells fill.
+ * Motion (agent-marketplace.css): skills deploy team by team on a loop: the
+ * team's skill lights, a packet crosses the wire, and the team's next two
+ * cells fill solid, hold, and clear. Adopted cells rest as faint fills so the
+ * deploying ones stand out. On entering view (not on first load) the boxes
+ * fade in and the cells fill.
  */
 export function SkillsLayer({ locale }: { locale: Locale }) {
   const v = agentMarketplacePageCopy[locale].visual
@@ -28,8 +30,8 @@ export function SkillsLayer({ locale }: { locale: Locale }) {
         <div className="pg-marketplace__box pg-marketplace__box--skills">
           <span className="pg-marketplace__box-label">{v.coreLabel}</span>
           <span className="pg-marketplace__diamonds">
-            {v.signals.map((team) => (
-              <i key={team} />
+            {v.signals.map((team, i) => (
+              <i key={team} style={{ '--r': i } as CSSProperties} />
             ))}
           </span>
         </div>
@@ -49,7 +51,7 @@ export function SkillsLayer({ locale }: { locale: Locale }) {
                     <i
                       key={c}
                       data-on={c < adoption[i] || undefined}
-                      data-next={c === adoption[i] || undefined}
+                      data-next={c === adoption[i] ? '1' : c === adoption[i] + 1 ? '2' : undefined}
                       style={{ '--c': c } as CSSProperties}
                     />
                   ))}

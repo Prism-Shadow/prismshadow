@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ButtonLink, CtaBand, Eyebrow, PageHero, SectionHead } from '../../components/site/ui'
 import { agentMarketplacePageCopy } from '../../i18n/messages/agentMarketplace'
 import { Phrases } from '../solutions/departments/Phrases'
@@ -74,14 +75,17 @@ export function AgentMarketplacePage({ locale }: PageProps) {
             titleId="marketplace-adoption-title"
           />
           <div className="pg-marketplace__track-wrap">
-            {/* The connecting line, drawn in once when it comes into view. */}
-            <span className="pg-marketplace__track-line" aria-hidden="true" data-animate="custom" />
+            {/* The connecting line: drawn in once, then a packet runs along it. */}
+            <span className="pg-marketplace__track-line" aria-hidden="true" data-animate="custom">
+              <i className="pg-marketplace__track-spark" />
+            </span>
             <ol className="pg-marketplace__track">
               {t.adoption.steps.map((step, i) => (
                 <li
                   key={step.title}
                   className="pg-marketplace__step"
                   data-last={i === t.adoption.steps.length - 1 || undefined}
+                  style={{ '--i': i } as CSSProperties}
                 >
                   <span className="pg-marketplace__node">{String(i + 1).padStart(2, '0')}</span>
                   <h3 className="ds-h4">{step.title}</h3>

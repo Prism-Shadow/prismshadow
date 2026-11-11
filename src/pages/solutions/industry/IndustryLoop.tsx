@@ -23,7 +23,9 @@ const LoopIcon = () => (
  * generic loop reads as this industry's loop.
  *
  * Motion (industry.css): on entering view the rail draws and the five nodes
- * land in order; the dashed return arc then flows slowly back to Ingest.
+ * land in order. Loop: a solid packet runs along the rail, each stage lights
+ * as it passes, then the packet rides the return arc back to Ingest while the
+ * arc's dashes flow.
  */
 export function IndustryLoop({
   copy,
@@ -63,6 +65,26 @@ export function IndustryLoop({
         <path className="pg-industry-loop__return" d="M456 56 C 456 6, 24 6, 24 46" />
         <path className="pg-industry-loop__arrow" d="M19.5 41.5 L24 47 L28.5 41.5" />
         <line className="pg-industry-loop__rail" x1="24" y1="62" x2="456" y2="62" pathLength={1} />
+        {/* Loop packets (one dash each), parked off their paths at rest. */}
+        <line className="pg-industry-loop__packet" x1="24" y1="62" x2="456" y2="62" pathLength={1} />
+        <path
+          className="pg-industry-loop__packet pg-industry-loop__packet--return"
+          d="M456 56 C 456 6, 24 6, 24 46"
+          pathLength={1}
+        />
+        {/* Rings that ping as the packet passes each stage (invisible at rest). */}
+        {nodeX.map((x, i) => (
+          <rect
+            key={`ring-${x}`}
+            className="pg-industry-loop__ring"
+            x={x - 5}
+            y={57}
+            width={10}
+            height={10}
+            rx={2}
+            style={{ stroke: stepTones[i], '--i': i } as CSSProperties}
+          />
+        ))}
         {nodeX.map((x, i) => (
           <rect
             key={x}
@@ -79,7 +101,7 @@ export function IndustryLoop({
 
       <ol className="pg-industry-loop__steps" aria-label={copy.title}>
         {steps.map((step, i) => (
-          <li key={step.label} style={{ '--tone': stepTones[i] } as CSSProperties}>
+          <li key={step.label} style={{ '--tone': stepTones[i], '--i': i } as CSSProperties}>
             <span className="pg-industry-loop__name">
               <span className="pg-industry-loop__dot" aria-hidden="true" />
               <span className="pg-industry-loop__index">{String(i + 1).padStart(2, '0')}</span>

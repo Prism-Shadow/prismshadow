@@ -954,23 +954,49 @@
 /* ================================================================== */
 
 /*
- * Every animation runs only under html[data-motion]; the rules above are the
- * complete static state (no JS, reduced motion, prerendered HTML). Loops start
- * from that resting state, so nothing jumps when the page hydrates. Text never
- * moves: it only fades in; signals, rails and nodes do the travelling.
+ * Every animation runs only under html[data-motion]; the rules above plus the
+ * static pieces below are the complete resting state (no JS, reduced motion,
+ * prerendered HTML), and every loop's first frame equals it, so nothing jumps
+ * when the page hydrates. Text never moves: only fills, packets and marks do.
  */
 
 /* ---------- Static pieces the motion uses (invisible at rest) ---------- */
 
-/* One short signal dash per wire, parked before the wire's start. Dash
-   lengths are screen pixels because the strokes do not scale. */
+/* One solid packet per wire, parked before its start (screen-pixel dashes:
+   the strokes do not scale). */
 .pg-industry .pg-industry-flow__wires .pg-industry-flow__pulse {
   stroke: var(--ds-accent);
-  stroke-width: 1.5;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 10 1200;
-  stroke-dashoffset: 10;
+  stroke-dasharray: 4 1200;
+  stroke-dashoffset: 6;
   opacity: 0;
+}
+
+/* Source chips fill as they send; agent rows fill in their tone as they work. */
+.pg-industry .pg-industry-flow__chip::before,
+.pg-industry .pg-industry-flow__team > li::before {
+  content: '';
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pg-industry .pg-industry-flow__chip::before {
+  inset: -1px;
+  border: 1px solid var(--ds-accent);
+  border-radius: inherit;
+  background: rgba(169, 156, 255, 0.2);
+}
+
+.pg-industry .pg-industry-flow__team > li {
+  position: relative;
+}
+
+.pg-industry .pg-industry-flow__team > li::before {
+  inset: 0;
+  border-left: 2px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
 }
 
 .pg-industry .pg-industry-flow__spark {
@@ -998,44 +1024,142 @@
   inset: -1px;
   border: 1px solid var(--ds-accent);
   border-radius: inherit;
+  background: rgba(169, 156, 255, 0.28);
   opacity: 0;
   pointer-events: none;
 }
 
-/* ---------- Hero flow ---------- */
+/* Trace run: a solid node over each step's node and a wash over its row. */
+.pg-industry .pg-industry-workspace__step {
+  position: relative;
+  isolation: isolate;
+}
 
-/*
- * One shared 7s cycle (all parts start together, 0.6s after the figure is in
- * view): the signals cross the wires into the agent team (0–20%), a spark
- * crosses to review (12–21%), steps down to the action (23–31%) and the
- * approved action lights up (30–60%). Then it rests.
- */
-@keyframes pg-industry-pulse {
-  0% {
-    stroke-dashoffset: 10;
-    opacity: 0.9;
-  }
-  20%,
-  100% {
-    stroke-dashoffset: -190;
-    opacity: 0.9;
+.pg-industry .pg-industry-workspace__step::before {
+  content: '';
+  position: absolute;
+  inset: 0 -20px;
+  z-index: -1;
+  background: rgba(169, 156, 255, 0.07);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pg-industry .pg-industry-workspace__run {
+  position: absolute;
+  left: 4.5px;
+  top: 17.5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--ds-accent);
+  opacity: 0;
+}
+
+@media (max-width: 560px) {
+  .pg-industry .pg-industry-workspace__step::before {
+    inset: 0 -16px;
   }
 }
 
-@keyframes pg-industry-spark-x {
+/* Platform loop: packets and stage rings. */
+.pg-industry .pg-industry-loop__packet {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 0.02 2;
+  stroke-dashoffset: 0.03;
+  opacity: 0;
+}
+
+.pg-industry .pg-industry-loop__ring {
+  fill: none;
+  stroke-width: 1;
+  opacity: 0;
+}
+
+/* ---------- Hero flow ---------- */
+
+/* Sources: a packet every 0.7s, cycling down the chips (3.5s each). */
+@keyframes pg-industry-pulse {
+  0% {
+    stroke-dashoffset: 6;
+    opacity: 1;
+  }
+  40%,
+  100% {
+    stroke-dashoffset: -190;
+    opacity: 1;
+  }
+}
+
+@keyframes pg-industry-send {
   0%,
-  11% {
+  32%,
+  100% {
+    opacity: 0;
+  }
+  8%,
+  18% {
+    opacity: 1;
+  }
+}
+
+@keyframes pg-industry-send-dot {
+  0%,
+  32%,
+  100% {
+    background-color: var(--ds-text-3);
+  }
+  8%,
+  18% {
+    background-color: var(--ds-accent);
+  }
+}
+
+/* Agents: each row works for ~1.2s in turn (4.8s round). */
+@keyframes pg-industry-work {
+  0%,
+  27%,
+  100% {
+    opacity: 0;
+  }
+  5%,
+  20% {
+    opacity: 1;
+  }
+}
+
+@keyframes pg-industry-agent-dot {
+  0%,
+  27%,
+  100% {
+    transform: rotate(45deg) scale(1);
+  }
+  6% {
+    transform: rotate(45deg) scale(1.4);
+  }
+  20% {
+    transform: rotate(45deg) scale(1.15);
+  }
+}
+
+/* Output chain (3.6s): spark to review (0–20%), down to the action (24–40%),
+   the approved action fills (40–80%). */
+@keyframes pg-industry-spark-x {
+  0% {
     opacity: 0;
     transform: translateX(0);
   }
-  13% {
+  3% {
     opacity: 1;
   }
-  19% {
+  18% {
     opacity: 1;
     transform: translateX(22px);
   }
-  21%,
+  22%,
   100% {
     opacity: 0;
     transform: translateX(22px);
@@ -1044,18 +1168,18 @@
 
 @keyframes pg-industry-spark-y {
   0%,
-  22% {
+  23% {
     opacity: 0;
     transform: translateY(0);
   }
-  24% {
+  26% {
     opacity: 1;
   }
-  29% {
+  38% {
     opacity: 1;
     transform: translateY(13px);
   }
-  31%,
+  42%,
   100% {
     opacity: 0;
     transform: translateY(13px);
@@ -1064,16 +1188,26 @@
 
 @keyframes pg-industry-act {
   0%,
-  30%,
+  38%,
+  86%,
   100% {
     opacity: 0;
   }
-  36%,
-  44% {
+  46%,
+  72% {
     opacity: 1;
   }
-  60% {
-    opacity: 0;
+}
+
+@keyframes pg-industry-review {
+  0%,
+  22%,
+  36%,
+  100% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(1.15);
   }
 }
 
@@ -1088,20 +1222,44 @@
 }
 
 html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__pulse {
-  animation: pg-industry-pulse 7s linear infinite;
-  animation-delay: calc(0.6s + var(--k) * 60ms);
+  animation: pg-industry-pulse 3.5s linear infinite;
+  animation-delay: calc(0.3s + var(--k) * 0.7s);
+}
+
+html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__signals > li .pg-industry-flow__chip::before {
+  animation: pg-industry-send 3.5s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.05s + var(--k) * 0.7s);
+}
+
+html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__signals > li .pg-industry-flow__chip::after {
+  animation: pg-industry-send-dot 3.5s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.05s + var(--k) * 0.7s);
+}
+
+html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__team > li::before {
+  animation: pg-industry-work 4.8s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.9s + var(--k) * 1.2s);
+}
+
+html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__agent-dot {
+  animation: pg-industry-agent-dot 4.8s var(--ds-ease-out) infinite;
+  animation-delay: calc(0.9s + var(--k) * 1.2s);
 }
 
 html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__link .pg-industry-flow__spark {
-  animation: pg-industry-spark-x 7s linear 0.6s infinite;
+  animation: pg-industry-spark-x 3.6s linear 1.2s infinite;
 }
 
 html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__step .pg-industry-flow__spark {
-  animation: pg-industry-spark-y 7s linear 0.6s infinite;
+  animation: pg-industry-spark-y 3.6s linear 1.2s infinite;
+}
+
+html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__review svg {
+  animation: pg-industry-review 3.6s var(--ds-ease-out) 1.2s infinite;
 }
 
 html[data-motion] .pg-industry .pg-industry-flow[data-inview] .pg-industry-flow__act::after {
-  animation: pg-industry-act 7s var(--ds-ease-in-out) 0.6s infinite;
+  animation: pg-industry-act 3.6s var(--ds-ease-in-out) 1.2s infinite;
 }
 
 /* The console caret breathes rather than blinks. */
@@ -1131,12 +1289,55 @@ html[data-motion] .pg-industry .pg-industry-flow[data-inview='enter'] .pg-indust
 
 /* ---------- Scenario workspace ---------- */
 
-/* The selected scenario's trace builds one row at a time: the rail draws down
-   to each step's node, then the row's text fades in. */
+/* Intro (entering view or selecting a tab): the trace builds one row at a
+   time. Loop (6.4s): the agent re-runs it, each step's node filling solid and
+   its rail segment lighting in turn, then everything resets. */
 @keyframes pg-industry-node {
   from {
     opacity: 0;
     transform: scale(0.4);
+  }
+}
+
+@keyframes pg-industry-run {
+  0%,
+  76%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  4% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  8%,
+  66% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pg-industry-rail {
+  0%,
+  76%,
+  100% {
+    background-color: var(--ds-line-strong);
+  }
+  4%,
+  66% {
+    background-color: var(--ds-accent);
+  }
+}
+
+@keyframes pg-industry-row {
+  0%,
+  18%,
+  100% {
+    opacity: 0;
+  }
+  3%,
+  10% {
+    opacity: 1;
   }
 }
 
@@ -1145,21 +1346,99 @@ html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview='enter'
   animation-delay: calc(var(--i) * 160ms);
 }
 
-html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview='enter'] .pg-industry-workspace__rail::before {
-  transform-origin: center top;
-  animation: ds-grow-y 500ms var(--ds-ease-out) both;
-  animation-delay: calc(var(--i) * 160ms);
-}
-
 html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview='enter'] .pg-industry-workspace__rail::after {
   animation: pg-industry-node 500ms var(--ds-ease-out) both;
   animation-delay: calc(var(--i) * 160ms + 60ms);
 }
 
+html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview] .pg-industry-workspace__run {
+  animation: pg-industry-run 6.4s var(--ds-ease-out) infinite;
+  animation-delay: calc(1s + var(--i) * 0.55s);
+}
+
+html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview] .pg-industry-workspace__step::before {
+  animation: pg-industry-row 6.4s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1s + var(--i) * 0.55s);
+}
+
+html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview] .pg-industry-workspace__rail::before {
+  animation: pg-industry-rail 6.4s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1s + var(--i) * 0.55s);
+}
+
+html[data-motion] .pg-industry .pg-industry-workspace__trace[data-inview='enter'] .pg-industry-workspace__rail::before {
+  transform-origin: center top;
+  animation:
+    ds-grow-y 500ms var(--ds-ease-out) calc(var(--i) * 160ms) both,
+    pg-industry-rail 6.4s var(--ds-ease-in-out) calc(1s + var(--i) * 0.55s) infinite;
+}
+
 /* ---------- Platform loop ---------- */
 
 /* Intro: the rail draws, the five nodes land in order, the return arc appears.
-   Loop: the dashed return arc flows slowly back towards Ingest. */
+   Loop (6s): a solid packet runs along the rail and each stage pings as it
+   passes (its list marker pulses with it), then the packet rides the return
+   arc back to Ingest while the arc's dashes keep flowing. */
+@keyframes pg-industry-packet {
+  0% {
+    stroke-dashoffset: 0.03;
+    opacity: 1;
+  }
+  45% {
+    stroke-dashoffset: -1;
+    opacity: 1;
+  }
+  46%,
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+@keyframes pg-industry-return-packet {
+  0%,
+  49% {
+    stroke-dashoffset: 0.03;
+    opacity: 0;
+  }
+  50% {
+    stroke-dashoffset: 0.03;
+    opacity: 1;
+  }
+  88% {
+    stroke-dashoffset: -1;
+    opacity: 1;
+  }
+  89%,
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+@keyframes pg-industry-stage-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@keyframes pg-industry-stage {
+  0%,
+  14%,
+  100% {
+    transform: scale(1);
+  }
+  4% {
+    transform: scale(1.15);
+  }
+}
+
 html[data-motion] .pg-industry .pg-industry-loop__schematic[data-inview='enter'] .pg-industry-loop__rail {
   stroke-dasharray: 1;
   animation: ds-draw 1000ms var(--ds-ease-out) both;
@@ -1184,4 +1463,24 @@ html[data-motion] .pg-industry .pg-industry-loop__schematic[data-inview='enter']
   animation:
     ds-fade-in 600ms var(--ds-ease-out) 900ms both,
     ds-flow 4s linear infinite;
+}
+
+html[data-motion] .pg-industry .pg-industry-loop__schematic[data-inview] .pg-industry-loop__packet {
+  animation: pg-industry-packet 6s linear 1.2s infinite;
+}
+
+html[data-motion] .pg-industry .pg-industry-loop__schematic[data-inview] .pg-industry-loop__packet--return {
+  animation: pg-industry-return-packet 6s linear 1.2s infinite;
+}
+
+html[data-motion] .pg-industry .pg-industry-loop__schematic[data-inview] .pg-industry-loop__ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pg-industry-stage-ping 6s var(--ds-ease-out) infinite;
+  animation-delay: calc(1.2s + var(--i) * 0.675s);
+}
+
+html[data-motion] .pg-industry .pg-industry-loop:has(.pg-industry-loop__schematic[data-inview]) .pg-industry-loop__dot {
+  animation: pg-industry-stage 6s var(--ds-ease-out) infinite;
+  animation-delay: calc(1.2s + var(--i) * 0.675s);
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { cx } from '../../../components/site/utils'
 import type { Locale } from '../../../i18n'
 import { useCaseLibraryPageCopy, type BenchmarkCopy } from '../../../i18n/messages/useCaseLibrary'
@@ -112,8 +112,10 @@ export function BenchmarkExplorer({ locale }: { locale: Locale }) {
             <div className="ds-panel pg-usecases__results">
               {entry.visualSteps ? (
                 <ol className="pg-usecases__steps">
-                  {entry.visualSteps.map((step) => (
-                    <li key={step}>{step}</li>
+                  {entry.visualSteps.map((step, i) => (
+                    <li key={step} style={{ '--i': i } as CSSProperties}>
+                      {step}
+                    </li>
                   ))}
                 </ol>
               ) : null}
