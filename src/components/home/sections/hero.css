@@ -159,55 +159,63 @@
   color: var(--ds-text-3);
 }
 
-/* One-time draw-in. Without motion (or before JS) the final state is what renders. */
-@media (prefers-reduced-motion: no-preference) {
-  html[data-motion] .pg-home .hp-fr__field--open {
-    animation: hp-fr-fade 1600ms var(--ds-ease) 100ms both;
-  }
-
-  /* The solved mass is uncovered in step with the frontier line. */
-  html[data-motion] .pg-home .hp-fr__field--solved {
-    animation: hp-fr-reveal 2000ms var(--ds-ease) 300ms backwards;
-  }
-
-  .pg-home .hp-fr__line {
-    stroke-dasharray: 1;
-  }
-
-  html[data-motion] .pg-home .hp-fr__line {
-    animation: hp-fr-draw 2000ms var(--ds-ease) 300ms both;
-  }
-
-  html[data-motion] .pg-home .hp-fr__mark {
-    animation: hp-fr-fade 700ms var(--ds-ease) both;
-    animation-delay: calc(300ms + var(--hp-fr-at, 0) * 1700ms);
-  }
+.pg-home .hp-fr__ping {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-width: 1;
+  /* Stays a hairline while it expands. */
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-@keyframes hp-fr-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-
-  to {
-    stroke-dashoffset: 0;
-  }
+/*
+ * Motion (src/components/site/motion.ts). The resting state above is the
+ * final frame: no JS, reduced motion and the prerendered page show it as is.
+ *
+ * Intro, in-app visits only (`enter`): the frontier draws in, the solved mass
+ * is uncovered band by band behind it and each generation mark fades in as
+ * the line reaches it. A first load (`initial`) skips straight to the loop.
+ */
+html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__field--open {
+  animation: ds-fade-in 1600ms var(--ds-ease-out) 100ms both;
 }
 
-/* Ends at gen N (86% across); the layer is empty beyond it, so releasing the clip is invisible. */
-@keyframes hp-fr-reveal {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-
-  to {
-    clip-path: inset(0 12% 0 0);
-  }
+html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__line {
+  stroke-dasharray: 1;
+  animation: ds-draw 2000ms var(--ds-ease-in-out) 300ms both;
 }
 
-@keyframes hp-fr-fade {
-  from {
+/* --hp-fr-t: when the line's head reaches the band or mark (fraction of the 2000ms draw). */
+html[data-motion] .pg-home .hp-fr[data-inview='enter'] :is(.hp-fr__band, .hp-fr__mark) {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+  animation-delay: calc(300ms + var(--hp-fr-t, 0) * 2000ms);
+}
+
+/* Loop: one faint ring leaves the latest point's halo every few seconds. */
+html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__ping {
+  animation: hp-fr-ping 4800ms var(--ds-ease-out) 900ms infinite;
+}
+
+html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__ping {
+  animation-delay: 3000ms;
+}
+
+@keyframes hp-fr-ping {
+  0% {
     opacity: 0;
+    transform: scale(1);
+  }
+
+  12% {
+    opacity: 0.5;
+  }
+
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(2);
   }
 }
 

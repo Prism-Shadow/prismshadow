@@ -95,7 +95,8 @@ export function PlatformSection({ copy }: { copy: PlatformCopy }) {
                 </ul>
               </div>
               <div className="ds-panel hp-platform__visual">
-                <PlatformDiagram id={module.id} copy={copy.diagrams} />
+                {/* Remounted on selection, so the newly shown diagram plays its draw-in. */}
+                <PlatformDiagram key={index === active ? 'shown' : 'idle'} id={module.id} copy={copy.diagrams} />
               </div>
             </div>
           ))}

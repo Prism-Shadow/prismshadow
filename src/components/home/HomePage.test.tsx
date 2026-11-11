@@ -17,6 +17,12 @@ const escapeHtml = (text: string) =>
 
 const count = (html: string, needle: string) => html.split(needle).length - 1
 
+/** Opening tags that opt into the motion system, and how many carry `className`. */
+const animated = (html: string, className: string) =>
+  [...html.matchAll(/<[a-z]+\b[^>]*\bdata-animate="[^"]*"[^>]*>/g)].filter(([tag]) =>
+    new RegExp(`\\bclass="(?:[^"]* )?${className}(?: [^"]*)?"`).test(tag),
+  ).length
+
 /** The short homepage, in order. */
 const sectionIds = ['hero', 'partners', 'platform', 'products', 'proof', 'team', 'get-started']
 
@@ -146,6 +152,25 @@ describe.each(locales)('HomePage (%s)', (locale) => {
     }
     has(copy.team.title)
     has(copy.team.stat)
+  })
+
+  it('marks every visual for the motion system (data-animate)', () => {
+    expect(animated(html, 'hp-fr'), 'hero frontier').toBe(1)
+    expect(animated(html, 'hp-logos__viewport'), 'logo marquee').toBe(1)
+    expect(animated(html, 'hp-dg'), 'platform tab diagrams').toBe(copy.platform.modules.length)
+    expect(animated(html, 'hp-iso'), 'product drawings').toBe(3)
+    expect(animated(html, 'hp-proof__stats'), 'proof numbers').toBe(1)
+  })
+
+  it('renders each visual complete at rest, with its loop marks hidden until motion runs', () => {
+    // One ping ring per frontier layout, one signal per tab diagram.
+    expect(count(html, 'class="hp-fr__ping"')).toBe(3)
+    expect(count(html, 'class="hp-dg__signal"')).toBe(copy.platform.modules.length)
+    // The solved mass is grouped into reveal bands, but every band is in the markup.
+    expect(count(html, 'class="hp-fr__band"')).toBeGreaterThanOrEqual(3 * 8)
+    // Product vertex dots and proof stats carry their stagger order.
+    expect(html).toMatch(/class="hp-iso__dot[^"]*"[^>]*style="--i:0"/)
+    expect(count(html, 'class="ds-stat hp-proof__stat" style="--i:')).toBe(4)
   })
 
   it('links to contact, platform, customers, people and every product page', () => {

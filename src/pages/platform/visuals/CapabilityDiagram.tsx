@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type {
   PlatformCapabilityId,
   PlatformDiagramsCopy,
@@ -9,6 +9,10 @@ import type {
  * hairlines, cells are empty outlines, and only a few marks are lit, with one
  * focal point per diagram. Each board is one role="img" with a full text
  * alternative.
+ *
+ * Motion (platform.css): as a board scrolls into view its frame fades in,
+ * the wires draw and the result lands last; then one accent signal travels
+ * its key connector every few seconds.
  */
 
 const W = 600
@@ -26,7 +30,7 @@ const textWidth = (text: string, size = LABEL) => {
 
 function Board({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <svg className="pf-dg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+    <svg className="pf-dg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} data-animate="custom">
       {children}
     </svg>
   )
@@ -100,8 +104,33 @@ function Pip({ x, y, r = 2, tone = 'faint' }: { x: number; y: number; r?: number
   return <circle className={`pf-dg__pip pf-dg__pip--${tone}`} cx={x} cy={y} r={r} />
 }
 
+/** A connector. Solid wires draw in (pathLength 1); dashed ones keep their dash pattern and fade. */
 function Wire({ d, tone = 'base', dashed = false }: { d: string; tone?: 'base' | 'accent'; dashed?: boolean }) {
-  return <path className={`pf-dg__wire pf-dg__wire--${tone}${dashed ? ' pf-dg__wire--dash' : ''}`} d={d} />
+  return dashed ? (
+    <path className={`pf-dg__wire pf-dg__wire--${tone} pf-dg__wire--dash`} d={d} />
+  ) : (
+    <path className={`pf-dg__wire pf-dg__wire--${tone} pf-dg__wire--draw`} d={d} pathLength={1} />
+  )
+}
+
+/**
+ * The board's one ambient loop: a short accent dash that travels `points` now
+ * and then. Invisible at rest (no JS, reduced motion, prerender). Drawn under
+ * the shapes it passes, so it slips behind cells, pills and boxes.
+ */
+function Signal({ points }: { points: Array<[number, number]> }) {
+  let length = 0
+  for (let i = 1; i < points.length; i += 1) {
+    length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1])
+  }
+  return (
+    <path
+      className="pf-dg__signal"
+      d={`M${points.map((point) => point.join(' ')).join('L')}`}
+      style={{ '--pf-sig-len': Math.round(length) } as CSSProperties}
+      aria-hidden="true"
+    />
+  )
 }
 
 /** Open chevron arrowhead whose tip sits on (x, y). */
@@ -212,12 +241,13 @@ function AgentsDiagram({ copy }: { copy: PlatformDiagramsCopy['agents'] }) {
       ))}
 
       <Box x={360} y={334} w={200} h={80} label={copy.accuracy} value={copy.accuracyValue} />
-      <path className="pf-dg__spark" d={`M${spark.map((pt) => pt.join(' ')).join('L')}`} />
+      <path className="pf-dg__spark" d={`M${spark.map((pt) => pt.join(' ')).join('L')}`} pathLength={1} />
       <circle className="pf-dg__focus-ring" cx={end[0]} cy={end[1]} r="7" />
       <Pip x={end[0]} y={end[1]} r={3} tone="signal" />
 
       {/* RSI feedback into the team */}
       <Wire d="M40 374H22V98H34" tone="accent" />
+      <Signal points={[[40, 374], [22, 374], [22, 98], [35, 98]]} />
       <Head x={40} y={98} dir="right" tone="accent" />
       <rect className="pf-dg__pill" x="4.5" y="226.5" width="35" height="19" rx="9.5" />
       <text className="pf-dg__chip-text pf-dg__label--accent" x="22" y="240" textAnchor="middle">
@@ -254,12 +284,17 @@ function DataDiagram({ copy }: { copy: PlatformDiagramsCopy['data'] }) {
         </g>
       ))}
 
+      {/* The signal runs docs → engine → tasks; the engine box hides its middle. */}
+      <Signal
+        points={[[190, 114], [210, 114], [210, 190], [300, 190], [300, 206], [390, 206], [390, 78], [405, 78]]}
+      />
       <Wire d="M190 114H210V190H224" />
       <Head x={230} y={190} dir="right" />
       <Wire d="M190 286H210V222H224" />
       <Head x={230} y={222} dir="right" />
 
       {/* Engine: the focal point */}
+      <rect className="pf-dg__mask" x="230" y="138" width="140" height="136" rx="8" />
       <Box x={230} y={138} w={140} h={136} label={copy.engine} tone="accent" />
       {Array.from({ length: 16 }, (_, i) => (
         <Cell
@@ -348,6 +383,7 @@ function DeployDiagram({ copy }: { copy: PlatformDiagramsCopy['deployment'] }) {
       </text>
 
       <Wire d="M144 108V80H370M245 80V90M370 80V90" tone="accent" />
+      <Signal points={[[144, 108], [144, 80], [370, 80], [370, 91]]} />
       <Head x={245} y={96} dir="down" tone="accent" />
       <Head x={370} y={96} dir="down" tone="accent" />
       <text className="pf-dg__label pf-dg__label--accent" x={307.5} y={73} textAnchor="middle">
@@ -447,6 +483,7 @@ function ResearchDiagram({ copy }: { copy: PlatformDiagramsCopy['autoresearch'] 
               {`H${i + 1}`}
             </text>
             <Wire d={`M234 ${y}H${branch.pruned ? cellsEnd + 10 : cellsEnd}`} tone={branch.pruned ? 'base' : 'accent'} dashed={branch.pruned} />
+            {branch.pruned ? null : <Signal points={[[234, y], [415, y]]} />}
             {Array.from({ length: branch.cells }, (_, c) => (
               <Cell
                 key={c}

@@ -308,6 +308,94 @@
   stroke-linecap: round;
 }
 
+/* Hides whatever runs behind the engine box (the signal passes through it). */
+.pg-home .hp-dg__mask {
+  fill: var(--ds-panel);
+}
+
+.pg-home .hp-dg__signal {
+  fill: none;
+  /* A lighter tint of the accent, so it still reads where it runs on an accent wire. */
+  stroke: color-mix(in srgb, var(--ds-accent) 55%, #fff);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 18 2000;
+  stroke-dashoffset: 18;
+  opacity: 0;
+}
+
+/*
+ * Motion (src/components/site/motion.ts). The resting styles above are the
+ * final frame. Intro, when a diagram enters (scrolled to, or its tab newly
+ * selected): the frame fades in, solid wires draw, then heads and joints and
+ * last the result. Loop: one signal travels the key connector.
+ */
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(
+    text,
+    .hp-dg__box,
+    .hp-dg__cell,
+    .hp-dg__core,
+    .hp-dg__rule,
+    .hp-dg__tick,
+    .hp-dg__chip,
+    .hp-dg__pill,
+    .hp-dg__window,
+    .hp-dg__boundary,
+    .hp-dg__glyph,
+    .hp-dg__cyl,
+    .hp-dg__api,
+    .hp-dg__cross,
+    .hp-dg__wire:not(.hp-dg__wire--draw)
+  ) {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__wire--draw {
+  stroke-dasharray: 1;
+  animation: ds-draw 1100ms var(--ds-ease-out) 150ms both;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__head, .hp-dg__joint) {
+  animation: ds-fade-in 500ms var(--ds-ease-out) 650ms both;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__score, .hp-dg__spark) {
+  stroke-dasharray: 1;
+  animation: ds-draw 900ms var(--ds-ease-out) 500ms both;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] :is(.hp-dg__dot, .hp-dg__check, .hp-dg__ring) {
+  animation: ds-fade-in 500ms var(--ds-ease-out) 900ms both;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview] .hp-dg__signal {
+  animation: hp-dg-signal 4800ms linear 600ms infinite;
+}
+
+html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__signal {
+  animation-delay: 1600ms;
+}
+
+/* Travels in the first 70% of the period, fading in and out at the ends, then rests. */
+@keyframes hp-dg-signal {
+  0% {
+    stroke-dashoffset: 18;
+    opacity: 0;
+    animation-timing-function: var(--ds-ease-in-out);
+  }
+
+  8%,
+  60% {
+    opacity: 1;
+  }
+
+  70%,
+  100% {
+    stroke-dashoffset: calc(var(--hp-sig-len) * -1px);
+    opacity: 0;
+  }
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1100px) {

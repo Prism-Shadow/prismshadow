@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { PlatformDiagramsCopy, PlatformModuleId } from '../../../../i18n/messages/home'
 
 /*
@@ -7,6 +7,10 @@ import type { PlatformDiagramsCopy, PlatformModuleId } from '../../../../i18n/me
  * diagram are lit (accent, or a spectrum dot), and only the result carries
  * colour at full strength. Each diagram is one role="img" with a full text
  * alternative.
+ *
+ * Motion (platform.css): when a diagram enters (scrolled to, or its tab
+ * selected) the frame fades in, the wires draw and the result lands last;
+ * then one accent signal travels its key connector every few seconds.
  */
 
 const W = 600
@@ -24,7 +28,7 @@ const textWidth = (text: string, size = LABEL) => {
 
 function Board({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <svg className="hp-dg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+    <svg className="hp-dg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} data-animate="custom">
       {children}
     </svg>
   )
@@ -112,8 +116,33 @@ function Cell({
   )
 }
 
+/** A connector. Solid wires draw in (pathLength 1); dashed ones keep their dash pattern and fade. */
 function Wire({ d, tone = 'base', dashed = false }: { d: string; tone?: 'base' | 'accent'; dashed?: boolean }) {
-  return <path className={`hp-dg__wire hp-dg__wire--${tone}${dashed ? ' hp-dg__wire--dash' : ''}`} d={d} />
+  return dashed ? (
+    <path className={`hp-dg__wire hp-dg__wire--${tone} hp-dg__wire--dash`} d={d} />
+  ) : (
+    <path className={`hp-dg__wire hp-dg__wire--${tone} hp-dg__wire--draw`} d={d} pathLength={1} />
+  )
+}
+
+/**
+ * The diagram's one ambient loop: a short accent dash that travels `points`
+ * now and then. Invisible at rest (no JS, reduced motion, prerender). Drawn
+ * under the shapes it passes, so it slips behind cells, pills and boxes.
+ */
+function Signal({ points }: { points: Array<[number, number]> }) {
+  let length = 0
+  for (let i = 1; i < points.length; i += 1) {
+    length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1])
+  }
+  return (
+    <path
+      className="hp-dg__signal"
+      d={`M${points.map((point) => point.join(' ')).join('L')}`}
+      style={{ '--hp-sig-len': Math.round(length) } as CSSProperties}
+      aria-hidden="true"
+    />
+  )
 }
 
 /** Small filled arrowhead whose tip sits on (x, y). */
@@ -210,7 +239,7 @@ function AgentsDiagram({ copy }: { copy: PlatformDiagramsCopy['agents'] }) {
         return <path key={i} className="hp-dg__tick" d={`M${x} 244V252`} />
       })}
       <path className="hp-dg__rule" d={`M${trackX} 268.5h${trackW}`} />
-      <path className="hp-dg__score" d={`M${trackX} 268.5H${scoreX}`} />
+      <path className="hp-dg__score" d={`M${trackX} 268.5H${scoreX}`} pathLength={1} />
       <circle className="hp-dg__dot hp-dg__dot--signal" cx={scoreX} cy={268.5} r="2.75" />
       <Wire d="M185 300V335" />
       <Head x={185} y={340} dir="down" />
@@ -231,11 +260,12 @@ function AgentsDiagram({ copy }: { copy: PlatformDiagramsCopy['agents'] }) {
       ))}
 
       <Box x={360} y={340} w={200} h={80} label={copy.accuracy} value={copy.accuracyValue} />
-      <path className="hp-dg__spark" d={`M${spark.map((p) => p.join(' ')).join('L')}`} />
+      <path className="hp-dg__spark" d={`M${spark.map((p) => p.join(' ')).join('L')}`} pathLength={1} />
       <circle className="hp-dg__dot hp-dg__dot--signal" cx={end[0]} cy={end[1]} r="2.5" />
 
       {/* RSI feedback into the team */}
       <Wire d="M40 380H22V112H35" tone="accent" />
+      <Signal points={[[40, 380], [22, 380], [22, 112], [36, 112]]} />
       <Head x={40} y={112} dir="right" tone="accent" />
       <rect className="hp-dg__pill" x="4.5" y="236.5" width="35" height="19" rx="9.5" />
       <text className="hp-dg__chip-text hp-dg__label--accent" x="22" y="250" textAnchor="middle">
@@ -275,12 +305,17 @@ function DataDiagram({ copy }: { copy: PlatformDiagramsCopy['data'] }) {
         </g>
       ))}
 
+      {/* The signal runs docs → engine → tasks; the engine box hides its middle. */}
+      <Signal
+        points={[[190, 118], [210, 118], [210, 196], [300, 196], [300, 212], [390, 212], [390, 82], [406, 82]]}
+      />
       <Wire d="M190 118H210V196H225" />
       <Head x={230} y={196} dir="right" />
       <Wire d="M190 294H210V228H225" />
       <Head x={230} y={228} dir="right" />
 
       {/* Engine */}
+      <rect className="hp-dg__mask" x="230" y="146" width="140" height="136" rx="8" />
       <Box x={230} y={146} w={140} h={136} label={copy.engine} tone="accent" />
       {Array.from({ length: 16 }, (_, i) => (
         <Cell
@@ -372,6 +407,7 @@ function DeployDiagram({ copy }: { copy: PlatformDiagramsCopy['deploy'] }) {
       </text>
 
       <Wire d="M144 112V84H370M245 84V95M370 84V95" tone="accent" />
+      <Signal points={[[144, 112], [144, 84], [370, 84], [370, 96]]} />
       <Head x={245} y={100} dir="down" tone="accent" />
       <Head x={370} y={100} dir="down" tone="accent" />
       <text className="hp-dg__label hp-dg__label--accent" x={307.5} y={77} textAnchor="middle">
@@ -480,6 +516,7 @@ function ResearchDiagram({ copy }: { copy: PlatformDiagramsCopy['research'] }) {
               tone={branch.pruned ? 'base' : 'accent'}
               dashed={branch.pruned}
             />
+            {branch.pruned ? null : <Signal points={[[234, y], [416, y]]} />}
             {Array.from({ length: branch.cells }, (_, c) => (
               <Cell
                 key={c}
