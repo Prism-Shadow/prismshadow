@@ -193,13 +193,61 @@ html[data-motion] .pg-home .hp-fr[data-inview='enter'] :is(.hp-fr__band, .hp-fr_
   animation-delay: calc(300ms + var(--hp-fr-t, 0) * 2000ms);
 }
 
-/* Loop: one faint ring leaves the latest point's halo every few seconds. */
-html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__ping {
-  animation: hp-fr-ping 4800ms var(--ds-ease-out) 900ms infinite;
+/* Live marks: the wave is invisible at rest; a spark at rest is just an open dot. */
+.pg-home .hp-fr__wave {
+  fill: var(--ds-accent);
+  opacity: 0;
 }
 
-html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__ping {
-  animation-delay: 3000ms;
+.pg-home .hp-fr__spark {
+  fill: var(--ds-text);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/*
+ * Loops, on any visit (a first load starts them at once, an in-app visit
+ * after the draw-in):
+ * - a wave of solid accent climbs through the solved mass, deepest rows
+ *   first, sweeping left to right until it breaks on the ridge at gen N;
+ * - the latest point pings as each wave lands there;
+ * - open tasks just above the frontier keep flashing solved, each on its
+ *   own rhythm.
+ */
+html[data-motion] .pg-home .hp-fr[data-inview] {
+  --hp-fr-loop: 300ms;
+}
+
+html[data-motion] .pg-home .hp-fr[data-inview='enter'] {
+  --hp-fr-loop: 2600ms;
+}
+
+html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__wave {
+  animation: hp-fr-wave 3800ms var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(var(--hp-fr-loop) + var(--b) * 150ms + (5 - var(--l)) * 170ms);
+}
+
+html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__ping {
+  animation: hp-fr-ping 3800ms var(--ds-ease-out) infinite;
+  /* The wave reaches the ridge at gen N after 7 × 150 + 5 × 170 ms, peaking 7% later. */
+  animation-delay: calc(var(--hp-fr-loop) + 2150ms);
+}
+
+html[data-motion] .pg-home .hp-fr[data-inview] .hp-fr__spark {
+  animation: hp-fr-solve var(--t, 4s) var(--ds-ease-in-out) var(--d, 0s) infinite;
+}
+
+/* A short pulse per group, so the sweep reads as a band: solid at the ridge, softer deeper down. */
+@keyframes hp-fr-wave {
+  0%,
+  22%,
+  100% {
+    opacity: 0;
+  }
+
+  7% {
+    opacity: calc(0.92 - var(--l, 0) * 0.09);
+  }
 }
 
 @keyframes hp-fr-ping {
@@ -209,13 +257,29 @@ html[data-motion] .pg-home .hp-fr[data-inview='enter'] .hp-fr__ping {
   }
 
   12% {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 
   60%,
   100% {
     opacity: 0;
     transform: scale(2);
+  }
+}
+
+@keyframes hp-fr-solve {
+  0%,
+  100% {
+    fill: var(--ds-text);
+    opacity: var(--o);
+    transform: scale(1);
+  }
+
+  30%,
+  58% {
+    fill: var(--ds-accent);
+    opacity: 0.95;
+    transform: scale(1.5);
   }
 }
 

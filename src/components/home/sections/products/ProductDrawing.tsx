@@ -7,8 +7,14 @@ import type { ProductId } from '../../../../i18n/messages/shared'
  * and a few coloured vertex dots.
  *
  * Motion (products.css): each drawing fades up once as it scrolls in, then
- * its vertex dots glint slowly, one after another (`--i` is the dot's order).
+ * runs live: top faces fill solid in turn (`--i` is a face's order) and small
+ * solid packets climb the dashed guides. Both are invisible at rest.
  */
+
+type Tone = 'cyan' | 'amber' | 'accent'
+
+/** A top face that fills solid in the loop: its order, colour and peak opacity. */
+type Lit = { i: number; tone: Tone; peak?: number }
 
 const COS30 = Math.cos(Math.PI / 6)
 type P3 = [number, number, number]
@@ -31,6 +37,7 @@ function Solid({
   dashed = false,
   faint = false,
   fill = true,
+  lit,
 }: {
   project: Project
   min: P3
@@ -38,6 +45,7 @@ function Solid({
   dashed?: boolean
   faint?: boolean
   fill?: boolean
+  lit?: Lit
 }) {
   const [x0, y0, z0] = min
   const [x1, y1, z1] = max
@@ -48,30 +56,53 @@ function Solid({
     `M${p(x1, y0, z1)}L${p(x1, y0, z0)}L${p(x1, y1, z0)}L${p(x0, y1, z0)}L${p(x0, y1, z1)}`,
     `M${p(x1, y1, z1)}L${p(x1, y1, z0)}`,
   ].join('')
+  const top = `M${p(x0, y0, z1)}L${p(x1, y0, z1)}L${p(x1, y1, z1)}L${p(x0, y1, z1)}Z`
   const edgeClass = `hp-iso__edge${dashed ? ' hp-iso__edge--dash' : ''}${faint ? ' hp-iso__edge--faint' : ''}`
   return (
     <g>
       {fill ? <path className="hp-iso__face" d={silhouette} /> : null}
+      {lit ? (
+        <path
+          className={`hp-iso__lit hp-iso__lit--${lit.tone}`}
+          d={top}
+          style={{ '--i': lit.i, '--hp-iso-peak': lit.peak ?? 0.8 } as CSSProperties}
+        />
+      ) : null}
       <path className={edgeClass} d={edges} />
     </g>
   )
 }
 
-function Dot({ project, at, tone, i }: { project: Project; at: P3; tone: 'cyan' | 'amber' | 'accent'; i: number }) {
+function Dot({ project, at, tone }: { project: Project; at: P3; tone: Tone }) {
   const [x, y] = project(at).split(' ').map(Number)
-  return (
-    <circle
-      className={`hp-iso__dot hp-iso__dot--${tone}`}
-      cx={x}
-      cy={y}
-      r="2.5"
-      style={{ '--i': i } as CSSProperties}
-    />
-  )
+  return <circle className={`hp-iso__dot hp-iso__dot--${tone}`} cx={x} cy={y} r="2.5" />
 }
 
-function Guide({ project, from, to }: { project: Project; from: P3; to: P3 }) {
-  return <path className="hp-iso__edge hp-iso__edge--dash hp-iso__edge--faint" d={`M${project(from)}L${project(to)}`} />
+/** A dashed guide; with `packets`, small solid dots run along it in the loop (invisible at rest). */
+function Guide({
+  project,
+  from,
+  to,
+  packets,
+}: {
+  project: Project
+  from: P3
+  to: P3
+  packets?: { tone: Tone; phase: number }
+}) {
+  const d = `M${project(from)}L${project(to)}`
+  return (
+    <>
+      <path className="hp-iso__edge hp-iso__edge--dash hp-iso__edge--faint" d={d} />
+      {packets ? (
+        <path
+          className={`hp-iso__packet hp-iso__packet--${packets.tone}`}
+          d={d}
+          style={{ '--phase': packets.phase } as CSSProperties}
+        />
+      ) : null}
+    </>
+  )
 }
 
 /** PenguinHarness: an agent assembly with one agent being placed by agents. */
@@ -87,17 +118,29 @@ function HarnessDrawing() {
 
   return (
     <>
-      {cubes.map(([x, y, z]) => (
-        <Solid key={`${x}${y}${z}`} project={project} min={[x, y, z]} max={[x + 1, y + 1, z + 1]} />
+      {cubes.map(([x, y, z], i) => (
+        <Solid
+          key={`${x}${y}${z}`}
+          project={project}
+          min={[x, y, z]}
+          max={[x + 1, y + 1, z + 1]}
+          lit={{ i, tone: 'cyan', peak: 0.55 }}
+        />
       ))}
-      {([[1, 2], [2, 1], [2, 2]] as const).map(([x, y]) => (
-        <Guide key={`${x}${y}`} project={project} from={[x, y, 2]} to={[x, y, 2 + lift]} />
+      {([[1, 2], [2, 1], [2, 2]] as const).map(([x, y], i) => (
+        <Guide
+          key={`${x}${y}`}
+          project={project}
+          from={[x, y, 2]}
+          to={[x, y, 2 + lift]}
+          packets={{ tone: 'cyan', phase: i / 3 }}
+        />
       ))}
-      <Solid project={project} min={[1, 1, 2 + lift]} max={[2, 2, top]} />
-      <Dot project={project} at={[1, 1, top]} tone="cyan" i={0} />
-      <Dot project={project} at={[2, 1, top]} tone="cyan" i={1} />
-      <Dot project={project} at={[2, 2, top]} tone="cyan" i={2} />
-      <Dot project={project} at={[1, 2, top]} tone="cyan" i={3} />
+      <Solid project={project} min={[1, 1, 2 + lift]} max={[2, 2, top]} lit={{ i: cubes.length, tone: 'cyan', peak: 0.85 }} />
+      <Dot project={project} at={[1, 1, top]} tone="cyan" />
+      <Dot project={project} at={[2, 1, top]} tone="cyan" />
+      <Dot project={project} at={[2, 2, top]} tone="cyan" />
+      <Dot project={project} at={[1, 2, top]} tone="cyan" />
     </>
   )
 }
@@ -110,16 +153,17 @@ function PanofyDrawing() {
   return (
     <>
       <Solid project={project} min={[-1.5, -1.5, 0]} max={[1.5, 1.5, t]} dashed fill={false} />
-      <Guide project={project} from={[1.5, 1.5, t]} to={[1.5, 1.5, 1]} />
-      <Guide project={project} from={[-1.5, 1.5, t]} to={[-1.5, 1.5, 1]} />
-      <Guide project={project} from={[1.5, -1.5, t]} to={[1.5, -1.5, 1]} />
-      <Solid project={project} min={[-1.5, -1.5, 1]} max={[1.5, 1.5, 1 + t]} />
-      <Solid project={project} min={[-0.9, -0.9, 1.9]} max={[0.9, 0.9, 1.9 + t]} />
-      <Solid project={project} min={[-0.4, -0.4, 1.9 + t]} max={[0.4, 0.4, 2.7 + t]} />
-      <Dot project={project} at={[-0.9, -0.9, 1.9 + t]} tone="amber" i={0} />
-      <Dot project={project} at={[0.9, -0.9, 1.9 + t]} tone="amber" i={1} />
-      <Dot project={project} at={[0.9, 0.9, 1.9 + t]} tone="amber" i={2} />
-      <Dot project={project} at={[-0.9, 0.9, 1.9 + t]} tone="amber" i={3} />
+      <Guide project={project} from={[1.5, 1.5, t]} to={[1.5, 1.5, 1]} packets={{ tone: 'amber', phase: 0 }} />
+      <Guide project={project} from={[-1.5, 1.5, t]} to={[-1.5, 1.5, 1]} packets={{ tone: 'amber', phase: 0.33 }} />
+      <Guide project={project} from={[1.5, -1.5, t]} to={[1.5, -1.5, 1]} packets={{ tone: 'amber', phase: 0.66 }} />
+      {/* A team's work distilled upward: each layer fills in turn, the expert agent last and solid. */}
+      <Solid project={project} min={[-1.5, -1.5, 1]} max={[1.5, 1.5, 1 + t]} lit={{ i: 0, tone: 'amber', peak: 0.22 }} />
+      <Solid project={project} min={[-0.9, -0.9, 1.9]} max={[0.9, 0.9, 1.9 + t]} lit={{ i: 1, tone: 'amber', peak: 0.4 }} />
+      <Solid project={project} min={[-0.4, -0.4, 1.9 + t]} max={[0.4, 0.4, 2.7 + t]} lit={{ i: 2, tone: 'amber', peak: 0.88 }} />
+      <Dot project={project} at={[-0.9, -0.9, 1.9 + t]} tone="amber" />
+      <Dot project={project} at={[0.9, -0.9, 1.9 + t]} tone="amber" />
+      <Dot project={project} at={[0.9, 0.9, 1.9 + t]} tone="amber" />
+      <Dot project={project} at={[-0.9, 0.9, 1.9 + t]} tone="amber" />
     </>
   )
 }
@@ -149,16 +193,26 @@ function FactoryDrawing() {
   return (
     <>
       <Solid project={project} min={[-o, -o, -o]} max={[o, o, o]} faint fill={false} />
+      {/* The frame shapes the model: packets flow in from every vertex and the model fills solid. */}
       {outer.map((point, index) => (
-        <Guide key={index} project={project} from={point} to={inner[index]} />
+        <Guide
+          key={index}
+          project={project}
+          from={point}
+          to={inner[index]}
+          packets={{ tone: 'accent', phase: index / 6 }}
+        />
       ))}
-      <Solid project={project} min={[-i, -i, -i]} max={[i, i, i]} />
+      <Solid project={project} min={[-i, -i, -i]} max={[i, i, i]} lit={{ i: 0, tone: 'accent', peak: 0.85 }} />
       {outer.map((point, index) => (
-        <Dot key={index} project={project} at={point} tone="accent" i={index} />
+        <Dot key={index} project={project} at={point} tone="accent" />
       ))}
     </>
   )
 }
+
+/** How many faces each drawing steps through (sets its loop period). */
+const FACES: Record<ProductId, number> = { 'penguin-harness': 8, panofy: 3, 'llama-factory': 1 }
 
 function Drawing({ id }: { id: ProductId }): ReactNode {
   switch (id) {
@@ -179,7 +233,7 @@ export function ProductDrawing({ id, order = 0 }: { id: ProductId; order?: numbe
       aria-hidden="true"
       focusable="false"
       data-animate="custom"
-      style={{ '--hp-iso-order': order } as CSSProperties}
+      style={{ '--hp-iso-order': order, '--hp-iso-faces': FACES[id] } as CSSProperties}
     >
       <Drawing id={id} />
     </svg>

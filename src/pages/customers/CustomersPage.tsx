@@ -12,9 +12,16 @@ import { cx, renderAccent } from '../../components/site/utils'
 import { customersPageCopy } from '../../i18n/messages/customersPage'
 import { siteText } from '../../i18n/messages/shared'
 import type { PageProps } from '../types'
-import { CoboPanel, LifecyclePanel } from './CasePanels'
+import { CoboPanel, LifecyclePanel, LiveMeter, type MeterPattern } from './CasePanels'
 import { AudienceIcon } from './icons'
 import './customers.css'
+
+/** Each enterprise case's live strip: a test queue, parallel experiments, a screening sweep. */
+const meterPatterns: Record<string, MeterPattern> = {
+  semiconductor: 'queue',
+  pharma: 'trials',
+  'health-screening': 'scan',
+}
 
 export function CustomersPage({ locale }: PageProps) {
   const copy = customersPageCopy[locale]
@@ -116,6 +123,7 @@ export function CustomersPage({ locale }: PageProps) {
               <li key={item.id} className="cu-enterprise__item" style={{ '--i': index } as CSSProperties}>
                 <p className="cu-enterprise__customer">{item.customer}</p>
                 <p className="cu-enterprise__value">{item.value}</p>
+                <LiveMeter pattern={meterPatterns[item.id] ?? 'queue'} />
                 <h3 className="ds-h4 cu-enterprise__title">{item.title}</h3>
                 <p className="cu-enterprise__body">{item.body}</p>
                 <TextLink href={item.capability.href} className="cu-enterprise__link">

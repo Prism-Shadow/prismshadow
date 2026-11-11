@@ -64,21 +64,82 @@
   fill: var(--ds-accent);
 }
 
+/* Live marks, invisible at rest: face fills and guide packets. */
+.pg-home .hp-iso__lit {
+  fill-opacity: 0;
+}
+
+.pg-home .hp-iso__lit--cyan {
+  fill: var(--ds-cyan);
+}
+
+.pg-home .hp-iso__lit--amber {
+  fill: var(--ds-amber);
+}
+
+.pg-home .hp-iso__lit--accent {
+  fill: var(--ds-accent);
+}
+
+.pg-home .hp-iso__packet {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 23.5;
+  opacity: 0;
+}
+
+.pg-home .hp-iso__packet--cyan {
+  stroke: var(--ds-cyan);
+}
+
+.pg-home .hp-iso__packet--amber {
+  stroke: var(--ds-amber);
+}
+
+.pg-home .hp-iso__packet--accent {
+  stroke: var(--ds-accent);
+}
+
 /*
  * Motion (src/components/site/motion.ts). Intro: the three drawings fade up
- * in turn as they scroll in. Loop: their vertex dots glint slowly, one after
- * another, each drawing offset from the last so they never flash together.
+ * in turn as they scroll in. Loop: top faces fill solid one after another
+ * (one step every 550ms, so a drawing's period follows its face count) while
+ * packets climb the guides; each drawing starts offset from the last.
  */
 html[data-motion] .pg-home .hp-iso[data-inview='enter'] {
   animation: ds-fade-up 900ms var(--ds-ease-out) both;
   animation-delay: calc(var(--hp-iso-order, 0) * 140ms);
 }
 
-html[data-motion] .pg-home .hp-iso[data-inview] .hp-iso__dot {
-  --ds-glint-rest: 0.55;
-  animation: ds-glint 7s var(--ds-ease-in-out) infinite backwards;
-  /* Start mid-cycle (resting), so the first glint comes about a second in. */
-  animation-delay: calc(var(--hp-iso-order, 0) * 2.2s + var(--i, 0) * 260ms - 4.6s);
+html[data-motion] .pg-home .hp-iso[data-inview] .hp-iso__lit {
+  animation: hp-iso-step calc(max(var(--hp-iso-faces, 1), 5) * 550ms) var(--ds-ease-in-out) infinite backwards;
+  animation-delay: calc(400ms + var(--hp-iso-order, 0) * 900ms + var(--i, 0) * 550ms);
+}
+
+html[data-motion] .pg-home .hp-iso[data-inview] .hp-iso__packet {
+  opacity: 0.95;
+  animation: hp-iso-packet 1400ms linear infinite;
+  animation-delay: calc(var(--phase, 0) * -1400ms);
+}
+
+@keyframes hp-iso-step {
+  0%,
+  36%,
+  100% {
+    fill-opacity: 0;
+  }
+
+  10%,
+  24% {
+    fill-opacity: var(--hp-iso-peak, 0.8);
+  }
+}
+
+@keyframes hp-iso-packet {
+  to {
+    stroke-dashoffset: -24;
+  }
 }
 
 .pg-home .hp-products__ident {
