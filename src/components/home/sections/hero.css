@@ -161,21 +161,24 @@
 
 /* One-time draw-in. Without motion (or before JS) the final state is what renders. */
 @media (prefers-reduced-motion: no-preference) {
-  .pg-home .hp-fr__field--open {
+  html[data-motion] .pg-home .hp-fr__field--open {
     animation: hp-fr-fade 1600ms var(--ds-ease) 100ms both;
   }
 
   /* The solved mass is uncovered in step with the frontier line. */
-  .pg-home .hp-fr__field--solved {
+  html[data-motion] .pg-home .hp-fr__field--solved {
     animation: hp-fr-reveal 2000ms var(--ds-ease) 300ms backwards;
   }
 
   .pg-home .hp-fr__line {
     stroke-dasharray: 1;
+  }
+
+  html[data-motion] .pg-home .hp-fr__line {
     animation: hp-fr-draw 2000ms var(--ds-ease) 300ms both;
   }
 
-  .pg-home .hp-fr__mark {
+  html[data-motion] .pg-home .hp-fr__mark {
     animation: hp-fr-fade 700ms var(--ds-ease) both;
     animation-delay: calc(300ms + var(--hp-fr-at, 0) * 1700ms);
   }

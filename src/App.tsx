@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import { initMotion, scanAnimations } from './components/site/motion'
 import { SiteFooter } from './components/site/SiteFooter'
 import { SiteHeader } from './components/site/SiteHeader'
 import { defaultLocale, localeStorageKey, locales, siteText, type Locale } from './i18n'
@@ -9,6 +10,9 @@ import { hasDynamicSeo, normalizePathname, resolveRoute } from './routes'
 import { applyDocumentMetadata, getRouteSeo } from './seo'
 
 type Location = { pathname: string; hash: string }
+
+// useLayoutEffect warns during server prerendering; it is a no-op there anyway.
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 type HistoryState = { scrollY?: number } | null
 
 const readLocation = (): Location =>
@@ -106,6 +110,12 @@ function App({ initialPathname }: AppProps = {}) {
     }
   }, [Page, routeKey])
 
+  // Start the motion system once the first page is in the DOM, before paint,
+  // so visuals already on screen never flash out and back in.
+  useIsomorphicLayoutEffect(() => {
+    if (Page) initMotion()
+  }, [Page])
+
   // After the first page renders: honour a #hash or a saved scroll position.
   useEffect(() => {
     if (!Page || restoredInitialScroll.current) return
@@ -145,6 +155,8 @@ function App({ initialPathname }: AppProps = {}) {
         })
         if (mode === 'push') window.history.pushState({ scrollY: 0 }, '', href)
         applyScroll(target.hash, scrollY)
+        // The new page's visuals play their intros as part of the transition.
+        scanAnimations('enter')
       })
 
       document.getElementById('main')?.focus({ preventScroll: true })

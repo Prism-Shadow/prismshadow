@@ -239,6 +239,7 @@ export function CtaBand({
         </div>
         <PixelField
           className="ds-cta__field"
+          animate
           cols={22}
           rows={9}
           shape="square"
@@ -284,6 +285,7 @@ export function PixelField({
   lit = [],
   fade = 'none',
   fit = 'meet',
+  animate = false,
   className,
   style,
 }: {
@@ -296,13 +298,15 @@ export function PixelField({
   /** Mask the field so it dissolves toward an edge. */
   fade?: 'none' | 'left' | 'right' | 'bottom' | 'radial'
   fit?: 'meet' | 'slice'
+  /** Opt into the motion system (data-animate="custom"); style the motion in CSS. */
+  animate?: boolean
   className?: string
   style?: CSSProperties
 }) {
   const step = cell + gap
   const width = cols * step - gap
   const height = rows * step - gap
-  const litMap = new Map(lit.map((p) => [`${p.c}:${p.r}`, p]))
+  const litMap = new Map(lit.map((p, index) => [`${p.c}:${p.r}`, { ...p, index }]))
   const cells: ReactNode[] = []
 
   for (let r = 0; r < rows; r += 1) {
@@ -315,12 +319,20 @@ export function PixelField({
       const stroke = p ? color : 'var(--ds-pixel-line, rgba(255,255,255,0.07))'
       const opacity = p?.dim ? 0.45 : 1
       const key = `${c}:${r}`
+      // Lit cells carry their order (--i) and resting opacity so CSS can
+      // animate them (e.g. a staggered glint) without knowing the layout.
       const common = {
         fill,
         stroke,
         strokeWidth: 1,
         opacity,
         fillOpacity: p && p.outline ? 0 : undefined,
+        ...(p
+          ? {
+              'data-lit': '',
+              style: { '--i': p.index, '--ds-glint-rest': opacity } as CSSProperties,
+            }
+          : {}),
       }
       if (shape === 'circle') {
         cells.push(<circle key={key} {...common} cx={x + cell / 2} cy={y + cell / 2} r={cell / 2 - 0.5} />)
@@ -348,6 +360,7 @@ export function PixelField({
       preserveAspectRatio={fit === 'slice' ? 'xMidYMid slice' : 'xMidYMid meet'}
       aria-hidden="true"
       focusable="false"
+      data-animate={animate ? 'custom' : undefined}
       style={style}
     >
       {cells}

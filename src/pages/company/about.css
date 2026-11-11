@@ -87,6 +87,9 @@
   border-radius: 1.5px;
   background: var(--ds-accent);
   transform: translate(-50%, -50%);
+}
+
+html[data-motion] .pg-about .pg-about-loop__pulse {
   animation: pg-about-loop 12s linear infinite;
 }
 

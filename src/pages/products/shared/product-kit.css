@@ -360,7 +360,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .pg-product .pg-product__tabpanel:not([hidden]) .pg-product__tab-visual {
+  html[data-motion] .pg-product .pg-product__tabpanel:not([hidden]) .pg-product__tab-visual {
     animation: pg-product-rise 380ms var(--ds-ease) both;
   }
 }
@@ -669,7 +669,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .pg-product .pg-product__terminal-caret {
+  html[data-motion] .pg-product .pg-product__terminal-caret {
     animation: pg-product-caret 1.1s steps(1, end) infinite;
   }
 }

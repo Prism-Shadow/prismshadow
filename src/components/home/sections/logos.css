@@ -122,6 +122,9 @@
   .pg-home .hp-logos__track {
     justify-content: flex-start;
     width: max-content;
+  }
+
+  html[data-motion] .pg-home .hp-logos__track {
     animation: hp-logos-drift 36s linear infinite;
   }
 

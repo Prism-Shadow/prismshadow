@@ -280,6 +280,9 @@
   margin-left: 4px;
   vertical-align: -2px;
   background: var(--ds-accent);
+}
+
+html[data-motion] .pg-industry .pg-industry-flow__caret {
   animation: pg-industry-blink 1.1s steps(1) infinite;
 }
 
@@ -617,7 +620,7 @@
   }
 }
 
-.pg-industry .pg-industry-explorer__panel.is-active .pg-industry-workspace__step {
+html[data-motion] .pg-industry .pg-industry-explorer__panel.is-active .pg-industry-workspace__step {
   animation: pg-industry-rise 360ms var(--ds-ease) both;
   animation-delay: calc(var(--i) * 50ms);
 }

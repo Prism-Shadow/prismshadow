@@ -860,3 +860,128 @@ a.ds-card:hover {
     transform: scaleX(0.86);
   }
 }
+
+/* ---------- Motion ---------- */
+
+/*
+ * Contract (see src/components/site/motion.ts):
+ * - `html[data-motion]` exists only when JS runs and motion is allowed.
+ *   Write EVERY animation under it; the resting CSS is the final state.
+ * - `[data-animate]` visuals stay hidden until in view, then get
+ *   `data-inview="enter"` (intro plays once) or, if on screen at first load,
+ *   `data-inview="initial"` (no intro).
+ * - Intros:   html[data-motion] [data-inview='enter'] .x { animation: … both }
+ * - Loops:    html[data-motion] [data-inview] .x { animation: … infinite }
+ * Keep it quiet: slow eases, small distances, one or two effects per visual.
+ */
+:root {
+  --ds-motion-fast: 200ms;
+  --ds-motion: 480ms;
+  --ds-motion-slow: 900ms;
+  --ds-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ds-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html[data-motion] [data-animate]:not([data-inview]) {
+  opacity: 0;
+}
+
+html[data-motion] [data-animate]:not([data-animate='custom'])[data-inview='enter'] {
+  animation: ds-reveal 800ms var(--ds-ease-out) both;
+}
+
+/* Reusable keyframes. Delay with `animation-delay` or a --d custom property. */
+@keyframes ds-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Line draw: give the path pathLength="1" and stroke-dasharray: 1. */
+@keyframes ds-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Bars/columns growing from their base (set transform-origin). */
+@keyframes ds-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes ds-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* Focal point breathing (loop). Use transform-box: fill-box on SVG. */
+@keyframes ds-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.35);
+  }
+}
+
+/* Expanding ring around a focal point (loop). */
+@keyframes ds-ping {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* Signal travelling along a connector: stroke-dasharray: 4 12 (loop). */
+@keyframes ds-flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+/* A cell/mark lighting up briefly, then resting (loop with a stagger). */
+@keyframes ds-glint {
+  0%,
+  70%,
+  100% {
+    opacity: var(--ds-glint-rest, 0.35);
+  }
+  80% {
+    opacity: 1;
+  }
+}
+
+/* Terminal caret. */
+@keyframes ds-caret {
+  50% {
+    opacity: 0;
+  }
+}
