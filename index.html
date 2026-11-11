@@ -2,6 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Motion boot: when JS runs and motion is allowed, mark <html> before first
+      paint so animated visuals start in their pre-intro state and grow in once
+      the app mounts (no flash of the finished visual first). If the app never
+      starts, the mark is removed and every visual shows complete.
+    -->
+    <script>
+      (function () {
+        try {
+          if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+          var root = document.documentElement
+          root.setAttribute('data-motion', '')
+          setTimeout(function () {
+            if (!window.__psMotion) root.removeAttribute('data-motion')
+          }, 5000)
+        } catch (e) {}
+      })()
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#08090b" />
