@@ -27,6 +27,10 @@ export type ContactPageCopy = {
       label: string
       body: string
     }
+    email: {
+      label: string
+      body: string
+    }
     /** What each community channel is for; labels come from the shared social links. */
     social: Record<ContactSocialId, string>
   }
@@ -52,6 +56,11 @@ export type ContactPageCopy = {
     submitting: string
     success: string
     error: string
+    /** Shown with a delivery error: send the same message from the visitor's mail app. */
+    fallbackLead: string
+    fallbackCta: string
+    /** Label of the hidden anti-spam field (never shown to people). */
+    honeypotLabel: string
     errors: {
       invalidEmail: string
       missingFields: string
@@ -92,6 +101,10 @@ export const contactPageCopy = {
         label: 'Security',
         body: 'Private deployment and agent controls',
       },
+      email: {
+        label: 'Email',
+        body: 'contact@prismshadow.com',
+      },
       docs: {
         label: 'Documentation',
         body: 'Get started with Panofy',
@@ -125,6 +138,9 @@ export const contactPageCopy = {
       submitting: 'Sending...',
       success: 'Message sent. We will get back to you soon.',
       error: 'Unable to send your message right now. Please try again.',
+      fallbackLead: 'You can also send it from your own email app:',
+      fallbackCta: 'Email contact@prismshadow.com',
+      honeypotLabel: 'Leave this field empty',
       errors: {
         invalidEmail: 'Please enter a valid email address.',
         missingFields: 'Please fill in your name, email, and message.',
@@ -163,6 +179,10 @@ export const contactPageCopy = {
         label: '安全',
         body: '私有化部署与 Agent 安全控制',
       },
+      email: {
+        label: '邮箱',
+        body: 'contact@prismshadow.com',
+      },
       docs: {
         label: '文档',
         body: 'Panofy 快速上手',
@@ -196,6 +216,9 @@ export const contactPageCopy = {
       submitting: '发送中...',
       success: '消息已发送，我们会尽快回复。',
       error: '暂时无法发送消息，请稍后重试。',
+      fallbackLead: '也可以用你自己的邮箱发送这条留言：',
+      fallbackCta: '发邮件到 contact@prismshadow.com',
+      honeypotLabel: '请勿填写此项',
       errors: {
         invalidEmail: '请输入有效的邮箱地址。',
         missingFields: '请填写姓名、邮箱和留言。',

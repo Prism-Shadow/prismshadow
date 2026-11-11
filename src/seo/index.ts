@@ -1,5 +1,6 @@
-export { applyDocumentMetadata } from './applyMeta'
-export { usePageMetadata } from './usePageMetadata'
+export { applyDocumentMetadata, buildHeadMetadata } from './applyMeta'
+export type { HeadMetadata } from './applyMeta'
+export { prerenderMetadata, usePageMetadata } from './usePageMetadata'
 export {
   createBlogSeo,
   createDepartmentSeo,

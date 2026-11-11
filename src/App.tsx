@@ -64,9 +64,16 @@ function saveScrollPosition() {
   window.history.replaceState({ ...state, scrollY: window.scrollY }, '')
 }
 
-function App() {
+type AppProps = {
+  /** Prerendering only: the route to render (there is no window.location). */
+  initialPathname?: string
+}
+
+function App({ initialPathname }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(getInitialLocale)
-  const [location, setLocation] = useState<Location>(readLocation)
+  const [location, setLocation] = useState<Location>(() =>
+    initialPathname ? { pathname: normalizePathname(initialPathname), hash: '' } : readLocation(),
+  )
   const [loading, setLoading] = useState(false)
   const [navCount, setNavCount] = useState(0)
   const [announcement, setAnnouncement] = useState('')

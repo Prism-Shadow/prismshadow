@@ -185,3 +185,10 @@ export const CrossIcon = (props: IconProps) => (
     <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
   </svg>
 )
+
+export const MailIcon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <rect x="2" y="3.5" width="12" height="9" rx="1.5" />
+    <path d="M2.5 4.5L8 8.8l5.5-4.3" />
+  </svg>
+)

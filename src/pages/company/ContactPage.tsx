@@ -12,13 +12,16 @@ import { Eyebrow } from '../../components/site/ui'
 import { contactPageCopy, type ContactSocialId } from '../../i18n/messages/contact'
 import type { PageProps } from '../types'
 import {
+  buildMailtoHref,
+  contactEmail,
   contactFieldLimits,
   initialFormData,
+  renderContactEmail,
   submitContactForm,
   type ContactFormData,
   type ContactSubmitState,
 } from './contact/contactForm'
-import { AlertIcon, BookIcon, CheckIcon, ShieldIcon } from './icons'
+import { AlertIcon, BookIcon, CheckIcon, MailIcon, ShieldIcon } from './icons'
 import './contact.css'
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
@@ -46,6 +49,8 @@ export function ContactPage({ locale }: PageProps) {
   const [formData, setFormData] = useState<ContactFormData>(initialFormData)
   const [submitState, setSubmitState] = useState<ContactSubmitState>('idle')
   const [errorMessage, setErrorMessage] = useState<string>(copy.form.error)
+  const [fallbackHref, setFallbackHref] = useState<string | null>(null)
+  const [honeypot, setHoneypot] = useState('')
   const isSubmitting = submitState === 'submitting'
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -57,18 +62,37 @@ export function ContactPage({ locale }: PageProps) {
     event.preventDefault()
     setSubmitState('submitting')
     setErrorMessage(copy.form.error)
+    setFallbackHref(null)
+
+    const context = {
+      locale,
+      pageUrl: window.location.origin + window.location.pathname,
+      sentAt: new Date(),
+    }
 
     try {
-      await submitContactForm(formData, copy)
+      await submitContactForm(formData, copy, context, honeypot)
       setFormData(initialFormData)
       setSubmitState('success')
     } catch (error) {
       setErrorMessage(error instanceof Error && error.message ? error.message : copy.form.error)
+      // Delivery failed (not a validation error): offer the same email via mailto.
+      if (error instanceof Error && error.message === copy.form.error) {
+        setFallbackHref(buildMailtoHref(renderContactEmail(formData, context)))
+      }
       setSubmitState('error')
     }
   }
 
   const channels: Channel[] = [
+    {
+      key: 'email',
+      label: copy.alternatives.email.label,
+      body: copy.alternatives.email.body,
+      href: `mailto:${contactEmail}`,
+      icon: MailIcon,
+      external: false,
+    },
     {
       key: 'security',
       label: copy.alternatives.security.label,
@@ -138,11 +162,33 @@ export function ContactPage({ locale }: PageProps) {
               </div>
               <div className="pg-contact-form__status" role="alert" aria-live="assertive">
                 {submitState === 'error' ? (
-                  <p className="pg-contact-form__feedback pg-contact-form__feedback--error">
+                  <div className="pg-contact-form__feedback pg-contact-form__feedback--error">
                     <AlertIcon />
-                    {errorMessage}
-                  </p>
+                    <div>
+                      <p>{errorMessage}</p>
+                      {fallbackHref ? (
+                        <p className="pg-contact-form__fallback">
+                          {copy.form.fallbackLead}{' '}
+                          <a href={fallbackHref}>{copy.form.fallbackCta}</a>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
                 ) : null}
+              </div>
+
+              {/* Anti-spam honeypot: hidden from people and assistive tech; bots fill it. */}
+              <div className="pg-contact-form__honeypot" aria-hidden="true">
+                <label htmlFor="contact-company-site">{copy.form.honeypotLabel}</label>
+                <input
+                  autoComplete="off"
+                  id="contact-company-site"
+                  name="_honey"
+                  onChange={(event) => setHoneypot(event.target.value)}
+                  tabIndex={-1}
+                  type="text"
+                  value={honeypot}
+                />
               </div>
 
               <div className="pg-contact-form__field">

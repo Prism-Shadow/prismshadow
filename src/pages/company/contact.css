@@ -326,3 +326,33 @@
     padding: 20px;
   }
 }
+
+/* Delivery failed: the same message, ready to send from the visitor's mail app. */
+.pg-contact .pg-contact-form__feedback--error > div {
+  display: grid;
+  gap: 6px;
+}
+
+.pg-contact .pg-contact-form__fallback {
+  color: var(--ds-text-2);
+}
+
+.pg-contact .pg-contact-form__fallback a {
+  color: var(--ds-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ds-line-strong);
+}
+
+.pg-contact .pg-contact-form__fallback a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Anti-spam honeypot: kept out of view and out of the tab order. */
+.pg-contact .pg-contact-form__honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
