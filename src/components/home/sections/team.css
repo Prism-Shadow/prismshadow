@@ -1,0 +1,88 @@
+/* Team line: one quiet row; founders and their story live on /people. */
+
+.pg-home .hp-team__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 24px;
+  align-items: center;
+}
+
+.pg-home .hp-team__lead {
+  grid-column: 1 / span 8;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pg-home .hp-team__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pg-home .hp-team__mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pg-home .hp-team__copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pg-home .hp-team__body {
+  font-size: var(--ds-text-sm);
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+.pg-home .hp-team__meta {
+  grid-column: 9 / span 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px 28px;
+}
+
+.pg-home .hp-team__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1;
+  color: var(--ds-text-3);
+  white-space: nowrap;
+}
+
+.pg-home .hp-team__stat svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+@media (max-width: 900px) {
+  .pg-home .hp-team__lead,
+  .pg-home .hp-team__meta {
+    grid-column: 1 / -1;
+  }
+
+  .pg-home .hp-team__lead {
+    align-items: flex-start;
+  }
+
+  /* Line the meta row up with the title text, past the mark. */
+  .pg-home .hp-team__meta {
+    justify-content: flex-start;
+    padding-left: 58px;
+  }
+}

@@ -1,0 +1,133 @@
+/*
+ * Proof: four headline numbers in hairline columns, then the five customers as
+ * one quiet row of names. Pure type on the paper band, no imagery.
+ */
+
+/* The aside (lead + link) is taller than a one-line title: align both tops. */
+.pg-home .hp-proof .ds-section-head {
+  align-items: start;
+}
+
+.pg-home .hp-proof__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 48px;
+}
+
+.pg-home .hp-proof__stat {
+  grid-template-rows: auto auto 1fr;
+  padding-left: 20px;
+  border-left: 1px solid var(--ds-line-strong);
+}
+
+.pg-home .hp-proof__stat .ds-stat__value {
+  order: -1;
+}
+
+.pg-home .hp-proof__stat .ds-stat__label {
+  max-width: 19em;
+}
+
+.pg-home .hp-proof__source {
+  align-self: end;
+  padding-top: 6px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.4;
+  color: var(--ds-text-3);
+}
+
+/* Customers: label under the first stat column, names from the second stat column on. */
+.pg-home .hp-proof__customers {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 24px;
+  margin-top: clamp(56px, 6vw, 88px);
+  padding-top: 28px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-home .hp-proof__label {
+  grid-column: 1 / span 3;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  font-weight: var(--ds-weight-regular);
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--ds-text-3);
+}
+
+.pg-home .hp-proof__list {
+  grid-column: 4 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 20px;
+}
+
+.pg-home .hp-proof__customer {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.pg-home .hp-proof__name {
+  font-size: var(--ds-text-sm);
+  line-height: 1.4;
+  color: var(--ds-text);
+}
+
+.pg-home .hp-proof__detail {
+  font-size: var(--ds-text-xs);
+  line-height: 1.5;
+  color: var(--ds-text-3);
+}
+
+@media (max-width: 1100px) {
+  .pg-home .hp-proof__label {
+    grid-column: 1 / -1;
+  }
+
+  .pg-home .hp-proof__list {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pg-home .hp-proof__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .pg-home .hp-proof__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-home .hp-proof__stats {
+    column-gap: 16px;
+    row-gap: 36px;
+  }
+
+  .pg-home .hp-proof__stat {
+    padding-left: 14px;
+  }
+
+  .pg-home .hp-proof__list {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .pg-home .hp-proof__customer {
+    padding-block: 12px;
+    border-bottom: 1px solid var(--ds-line);
+  }
+
+  .pg-home .hp-proof__customer:first-child {
+    padding-top: 0;
+  }
+}

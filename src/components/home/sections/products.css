@@ -1,0 +1,138 @@
+/* Products: three hairline columns, each with an isometric drawing. */
+
+.pg-home .hp-products__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 56px;
+}
+
+.pg-home .hp-products__item {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 4px 20px;
+  border-left: 1px solid var(--ds-line-strong);
+}
+
+.pg-home .hp-products__index {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1;
+  color: var(--ds-text-3);
+}
+
+.pg-home .hp-products__art {
+  display: grid;
+  place-items: center;
+  height: clamp(180px, 15vw, 216px);
+  margin: 12px 0 24px;
+}
+
+.pg-home .hp-iso {
+  width: min(100%, 240px);
+  height: 100%;
+}
+
+.pg-home .hp-iso__face {
+  fill: var(--ds-bg-raised);
+}
+
+.pg-home .hp-iso__edge {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.32);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.pg-home .hp-iso__edge--faint {
+  stroke: rgba(255, 255, 255, 0.13);
+}
+
+.pg-home .hp-iso__edge--dash {
+  stroke-dasharray: 3 3;
+}
+
+.pg-home .hp-iso__dot--cyan {
+  fill: var(--ds-cyan);
+}
+
+.pg-home .hp-iso__dot--amber {
+  fill: var(--ds-amber);
+}
+
+.pg-home .hp-iso__dot--accent {
+  fill: var(--ds-accent);
+}
+
+.pg-home .hp-products__ident {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* App-icon tiles: every product mark sits on the same light 36px tile. */
+.pg-home .hp-products__logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #f4f4f1;
+  overflow: hidden;
+}
+
+.pg-home .hp-products__logo img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.pg-home .hp-products__logo--penguin-harness img {
+  width: 100%;
+  height: 100%;
+}
+
+/* The shared Panofy mark is the light version; invert it onto the tile. */
+.pg-home .hp-products__logo--panofy img {
+  filter: invert(1) brightness(0.9);
+}
+
+/* The LlamaFactory mark is a full rounded tile; let it fill the frame. */
+.pg-home .hp-products__logo--llama-factory img {
+  width: 100%;
+  height: 100%;
+}
+
+.pg-home .hp-products__kicker {
+  margin-bottom: 4px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.3;
+  color: var(--ds-text-3);
+}
+
+.pg-home .hp-products__body {
+  margin-top: 18px;
+  font-size: var(--ds-text-sm);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+.pg-home .hp-products__link {
+  margin-top: auto;
+  padding-top: 24px;
+  align-self: flex-start;
+}
+
+@media (max-width: 900px) {
+  .pg-home .hp-products__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-home .hp-products__art {
+    height: 180px;
+    margin-bottom: 20px;
+  }
+}

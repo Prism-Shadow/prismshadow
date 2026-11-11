@@ -1,0 +1,245 @@
+/* Hero: centered display heading, then the evolution frontier, borderless on the canvas. */
+
+.pg-home .hp-hero {
+  position: relative;
+  padding-top: clamp(64px, 7vw, 104px);
+  padding-bottom: clamp(40px, 4vw, 56px);
+  background: var(--ds-bg);
+}
+
+.pg-home .hp-hero__copy {
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.pg-home .hp-hero__title {
+  max-width: 12em;
+}
+
+.pg-home .hp-hero__title .ds-accent-text {
+  white-space: nowrap;
+}
+
+.pg-home .hp-hero__lead {
+  max-width: 38em;
+  text-wrap: balance;
+}
+
+.pg-home .hp-hero__actions {
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* ---------- Evolution frontier ---------- */
+
+.pg-home .hp-fr {
+  margin: clamp(48px, 5vw, 72px) 0 0;
+}
+
+.pg-home .hp-fr__stage {
+  position: relative;
+  width: 100%;
+}
+
+.pg-home .hp-fr__stage--medium,
+.pg-home .hp-fr__stage--compact {
+  display: none;
+}
+
+.pg-home .hp-fr__field,
+.pg-home .hp-fr__plot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The open field dissolves toward every edge; the frontier and labels stay crisp. */
+.pg-home .hp-fr__field--open {
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 26%, #000 84%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 55%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 26%, #000 84%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 55%);
+  mask-composite: intersect;
+}
+
+/* The solved mass only fades in from the left, so it is brightest at gen N. */
+.pg-home .hp-fr__field--solved {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+}
+
+.pg-home .hp-fr__dots--open {
+  fill: var(--ds-text);
+}
+
+.pg-home .hp-fr__dots--solved,
+.pg-home .hp-fr__dots--ridge {
+  fill: var(--ds-accent);
+}
+
+.pg-home .hp-fr__stop {
+  stop-color: var(--ds-text);
+}
+
+.pg-home .hp-fr__stop--accent {
+  stop-color: var(--ds-accent);
+}
+
+.pg-home .hp-fr__line {
+  fill: none;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.pg-home .hp-fr__stem {
+  fill: none;
+  stroke: var(--ds-text);
+  stroke-opacity: 0.12;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.pg-home .hp-fr__mark--latest .hp-fr__stem {
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.4;
+}
+
+.pg-home .hp-fr__point {
+  fill: var(--ds-accent);
+}
+
+.pg-home .hp-fr__halo {
+  fill: none;
+  stroke: var(--ds-accent);
+  stroke-opacity: 0.32;
+  stroke-width: 1;
+}
+
+.pg-home .hp-fr__gen,
+.pg-home .hp-fr__result {
+  position: absolute;
+  font-family: var(--ds-font-mono);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pg-home .hp-fr__gen {
+  transform: translateX(-50%);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+.pg-home .hp-fr__gen.is-latest {
+  color: var(--ds-text-2);
+}
+
+/* Stacked above the final point: the number, then what it measures. */
+.pg-home .hp-fr__result {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  transform: translate(-50%, calc(-100% - 18px));
+}
+
+.pg-home .hp-fr__value {
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  color: var(--ds-accent);
+}
+
+.pg-home .hp-fr__metric {
+  font-size: 0.6875rem;
+  color: var(--ds-text-3);
+}
+
+/* One-time draw-in. Without motion (or before JS) the final state is what renders. */
+@media (prefers-reduced-motion: no-preference) {
+  .pg-home .hp-fr__field--open {
+    animation: hp-fr-fade 1600ms var(--ds-ease) 100ms both;
+  }
+
+  /* The solved mass is uncovered in step with the frontier line. */
+  .pg-home .hp-fr__field--solved {
+    animation: hp-fr-reveal 2000ms var(--ds-ease) 300ms backwards;
+  }
+
+  .pg-home .hp-fr__line {
+    stroke-dasharray: 1;
+    animation: hp-fr-draw 2000ms var(--ds-ease) 300ms both;
+  }
+
+  .pg-home .hp-fr__mark {
+    animation: hp-fr-fade 700ms var(--ds-ease) both;
+    animation-delay: calc(300ms + var(--hp-fr-at, 0) * 1700ms);
+  }
+}
+
+@keyframes hp-fr-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Ends at gen N (86% across); the layer is empty beyond it, so releasing the clip is invisible. */
+@keyframes hp-fr-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 12% 0 0);
+  }
+}
+
+@keyframes hp-fr-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 641px) and (max-width: 1100px) {
+  .pg-home .hp-fr__stage--wide {
+    display: none;
+  }
+
+  .pg-home .hp-fr__stage--medium {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .pg-home .hp-fr__stage--wide {
+    display: none;
+  }
+
+  .pg-home .hp-fr__stage--compact {
+    display: block;
+  }
+
+  .pg-home .hp-fr__field--open {
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0%, #000 22%, #000 88%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, #000 55%);
+    mask-image:
+      linear-gradient(90deg, transparent 0%, #000 22%, #000 88%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, #000 55%);
+  }
+
+  .pg-home .hp-fr__field--solved {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 16%);
+  }
+}

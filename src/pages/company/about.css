@@ -1,0 +1,569 @@
+/*
+ * About page (`.pg-about`). Every rule is scoped under the page root.
+ * Layout follows the shared 12-column grid; type uses the ds- primitives.
+ */
+
+/* ---------- Hero: platform loop schematic ---------- */
+
+.pg-about .pg-about-loop {
+  --loop-cg: clamp(36px, 5.5vw, 76px);
+  --loop-rg: clamp(92px, 9vw, 124px);
+  position: relative;
+  /* No side padding: borderless nodes sit on the grid's column edges. */
+  padding-block: clamp(16px, 2.6vw, 32px);
+}
+
+/* Faint dot field behind the loop, dissolving toward its edges (no frame). */
+.pg-about .pg-about-loop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1.4px);
+  background-size: 20px 20px;
+  background-position: center;
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  pointer-events: none;
+}
+
+.pg-about .pg-about-loop__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  column-gap: var(--loop-cg);
+  row-gap: var(--loop-rg);
+}
+
+/* Rounded track joining the four node centres. */
+.pg-about .pg-about-loop__track {
+  position: absolute;
+  z-index: 0;
+  inset-inline: calc((100% - var(--loop-cg)) / 4);
+  inset-block: calc((100% - var(--loop-rg)) / 4);
+  border: 1px dashed var(--ds-line-strong);
+  border-radius: 18px;
+}
+
+.pg-about .pg-about-loop__arrow {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid var(--ds-accent);
+  border-right: 1.5px solid var(--ds-accent);
+}
+
+.pg-about .pg-about-loop__arrow--top {
+  top: -0.5px;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.pg-about .pg-about-loop__arrow--right {
+  top: 50%;
+  right: -0.5px;
+  transform: translate(50%, -50%) rotate(135deg);
+}
+
+.pg-about .pg-about-loop__arrow--bottom {
+  bottom: -0.5px;
+  left: 50%;
+  transform: translate(-50%, 50%) rotate(225deg);
+}
+
+.pg-about .pg-about-loop__arrow--left {
+  top: 50%;
+  left: -0.5px;
+  transform: translate(-50%, -50%) rotate(315deg);
+}
+
+/* A single lit cell travelling clockwise; it passes behind the nodes at the corners. */
+.pg-about .pg-about-loop__pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 1.5px;
+  background: var(--ds-accent);
+  transform: translate(-50%, -50%);
+  animation: pg-about-loop 12s linear infinite;
+}
+
+@keyframes pg-about-loop {
+  0% {
+    top: 0;
+    left: 0;
+  }
+  25% {
+    top: 0;
+    left: 100%;
+  }
+  50% {
+    top: 100%;
+    left: 100%;
+  }
+  75% {
+    top: 100%;
+    left: 0;
+  }
+  100% {
+    top: 0;
+    left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-about .pg-about-loop__pulse {
+    display: none;
+  }
+}
+
+.pg-about .pg-about-loop__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 14px 16px 16px;
+  background: var(--ds-bg);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r);
+}
+
+.pg-about .pg-about-loop__node--1 {
+  grid-area: 1 / 1;
+}
+
+.pg-about .pg-about-loop__node--2 {
+  grid-area: 1 / 2;
+}
+
+.pg-about .pg-about-loop__node--3 {
+  grid-area: 2 / 2;
+}
+
+.pg-about .pg-about-loop__node--4 {
+  grid-area: 2 / 1;
+}
+
+.pg-about [data-tone='cyan'] {
+  --tone: var(--ds-cyan);
+}
+
+.pg-about [data-tone='amber'] {
+  --tone: var(--ds-amber);
+}
+
+.pg-about [data-tone='green'] {
+  --tone: var(--ds-green);
+}
+
+.pg-about [data-tone='accent'] {
+  --tone: var(--ds-accent);
+}
+
+.pg-about .pg-about-loop__node-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pg-about .pg-about-loop__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--tone);
+}
+
+.pg-about .pg-about-loop__index,
+.pg-about .pg-about-loop__detail,
+.pg-about .pg-about-loop__core-detail {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--ds-text-3);
+}
+
+.pg-about .pg-about-loop__name {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.3;
+  color: var(--ds-text);
+}
+
+.pg-about .pg-about-loop__core {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.pg-about .pg-about-loop__core-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-accent-line);
+  border-radius: var(--ds-r-pill);
+  background: var(--ds-bg);
+  color: var(--ds-text);
+  font-size: 0.875rem;
+  font-weight: var(--ds-weight-medium);
+  white-space: nowrap;
+}
+
+.pg-about .pg-about-loop__core-chip svg {
+  width: 10px;
+  height: 10px;
+  color: var(--ds-accent);
+}
+
+.pg-about .pg-about-loop__core-detail {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .pg-about .pg-about-loop__node {
+    padding: 12px 12px 14px;
+  }
+
+  .pg-about .pg-about-loop__core-detail {
+    display: none;
+  }
+}
+
+/* ---------- Story ---------- */
+
+/* Eyebrow on its own row; title and body then share a top edge. */
+.pg-about .pg-about-story__head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 20px;
+  align-items: start;
+  margin-bottom: clamp(56px, 6.5vw, 104px);
+}
+
+.pg-about .pg-about-story__eyebrow {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.pg-about .pg-about-story__title {
+  grid-column: 1 / span 6;
+}
+
+.pg-about .pg-about-story__body {
+  grid-column: 8 / span 5;
+  display: grid;
+  gap: 16px;
+}
+
+.pg-about .pg-about-pillar {
+  gap: 12px;
+}
+
+.pg-about .pg-about-pillar__index {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1;
+  color: var(--ds-text-3);
+}
+
+.pg-about .pg-about-pillar__title {
+  margin-top: 4px;
+}
+
+/* Isometric drawings */
+.pg-about .pg-about-art {
+  --art-bg: var(--ds-bg-raised);
+  margin: 12px 0 28px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.pg-about .pg-about-art svg {
+  width: 100%;
+  height: clamp(140px, 13vw, 184px);
+  overflow: visible;
+}
+
+.pg-about .pg-about-art svg * {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.pg-about .pg-about-art .pg-about-art__fill {
+  fill: var(--art-bg);
+}
+
+.pg-about .pg-about-art .pg-about-art__ghost {
+  opacity: 0.5;
+  stroke-dasharray: 3 3;
+}
+
+.pg-about .pg-about-art .pg-about-art__faint {
+  opacity: 0.45;
+}
+
+.pg-about .pg-about-art .pg-about-art__dashed,
+.pg-about .pg-about-art .pg-about-art__dashed * {
+  stroke-dasharray: 2 4;
+}
+
+.pg-about .pg-about-art .pg-about-art__cell {
+  fill: var(--tone);
+  fill-opacity: 0.24;
+  stroke: var(--tone);
+}
+
+.pg-about .pg-about-art .pg-about-art__dots circle {
+  fill: var(--tone);
+  stroke: none;
+}
+
+/* ---------- Products ---------- */
+
+.pg-about .pg-about-products__list {
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-about .pg-about-product {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 10px;
+  align-items: baseline;
+  padding-block: clamp(24px, 2.6vw, 36px);
+  border-bottom: 1px solid var(--ds-line);
+  color: inherit;
+}
+
+.pg-about .pg-about-product__name {
+  grid-column: 1 / span 7;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+}
+
+.pg-about .pg-about-product__index {
+  min-width: 24px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+.pg-about .pg-about-product__name .ds-h3 {
+  transition: color 160ms var(--ds-ease);
+}
+
+.pg-about .pg-about-product__body {
+  grid-column: 8 / span 4;
+  font-size: var(--ds-text-body);
+  line-height: 1.6;
+  color: var(--ds-text-2);
+}
+
+/* Round arrow button at the row's right edge. */
+.pg-about .pg-about-product__cta {
+  grid-column: 12;
+  justify-self: end;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: 50%;
+  color: var(--ds-text);
+  transition:
+    background-color 160ms var(--ds-ease),
+    border-color 160ms var(--ds-ease);
+}
+
+.pg-about .pg-about-product__cta svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 160ms var(--ds-ease);
+}
+
+.pg-about .pg-about-product:hover .pg-about-product__cta {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.pg-about .pg-about-product:hover .ds-h3,
+.pg-about .pg-about-product:focus-visible .ds-h3 {
+  color: var(--ds-accent);
+}
+
+.pg-about .pg-about-product:hover .pg-about-product__cta svg {
+  transform: translateX(2px);
+}
+
+.pg-about .pg-about-product:focus-visible {
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .pg-about .pg-about-product {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    column-gap: 20px;
+  }
+
+  .pg-about .pg-about-product__name,
+  .pg-about .pg-about-product__body {
+    grid-column: 1;
+  }
+
+  .pg-about .pg-about-product__cta {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
+/* ---------- Team teaser ---------- */
+
+/* Six columns, so the title sets on two balanced lines beside the lead. */
+.pg-about .pg-about-team .ds-section-head__main {
+  grid-column: 1 / span 6;
+}
+
+@media (max-width: 900px) {
+  .pg-about .pg-about-team .ds-section-head__main {
+    grid-column: 1 / -1;
+  }
+}
+
+.pg-about .pg-about-team__strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-about .pg-about-team__founders {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  min-width: 0;
+}
+
+.pg-about .pg-about-team__avatars {
+  display: flex;
+}
+
+.pg-about .pg-about-team__avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--ds-bg-raised);
+  border-radius: 50%;
+  background: var(--ds-panel-2);
+  overflow: hidden;
+}
+
+.pg-about .pg-about-team__avatar + .pg-about-team__avatar {
+  margin-left: -10px;
+}
+
+.pg-about .pg-about-team__avatar img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  filter: grayscale(1) contrast(1.04);
+}
+
+.pg-about .pg-about-team__names {
+  font-size: var(--ds-text-sm);
+  line-height: 1.5;
+  color: var(--ds-text-2);
+}
+
+.pg-about .pg-about-team__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  line-height: 1.4;
+  color: var(--ds-text-3);
+}
+
+.pg-about .pg-about-team__stat svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.pg-about .pg-about-team__stat-value {
+  color: var(--ds-text);
+}
+
+/* ---------- Responsive heads and column rows ---------- */
+
+/* The three-up pillar row stays three-up until phone width (never a 2 + 1 split). */
+.pg-about .pg-about-pillars {
+  --cols: 3;
+}
+
+@media (max-width: 640px) {
+  .pg-about .pg-about-pillars {
+    --cols: 1;
+  }
+
+  .pg-about .pg-about-pillars {
+    row-gap: 48px;
+  }
+
+  .pg-about .pg-about-art {
+    margin: 4px 0 16px;
+  }
+
+  .pg-about .pg-about-art svg {
+    height: 128px;
+  }
+}
+
+/*
+ * The shared CTA sets its accent phrase inline-block; when that phrase wraps,
+ * the closing period drops to a line of its own. Keep it inline here (zh
+ * headings below already break only at spaces and marked points).
+ */
+.pg-about .ds-cta__title .ds-accent-text {
+  display: inline;
+}
+
+/*
+ * zh headings and short labels break only at punctuation, spaces and marked
+ * points (U+200B); the team teaser lead too, so 阿里巴巴 never splits.
+ */
+.pg-about :is(h1, h2, h3):lang(zh),
+.pg-about .pg-about-team .ds-lead:lang(zh),
+.pg-about .pg-about-loop__name:lang(zh),
+.pg-about .pg-about-loop__detail:lang(zh) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .pg-about .pg-about-story__title,
+  .pg-about .pg-about-story__body {
+    grid-column: 1 / -1;
+  }
+}

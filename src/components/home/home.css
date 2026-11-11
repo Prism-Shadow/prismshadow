@@ -1,0 +1,16 @@
+/*
+ * Homepage root. The page is built entirely on the shared `--ds-*` tokens and
+ * primitives (src/index.css); each section has its own stylesheet next to its
+ * component, scoped under `.pg-home` with an `hp-<section>` block prefix.
+ */
+
+.pg-home {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chinese headings: keep short phrases together instead of orphaning a glyph. */
+.pg-home :where(h1, h2, h3):lang(zh) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

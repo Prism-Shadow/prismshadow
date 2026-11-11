@@ -1,0 +1,408 @@
+/* Agent marketplace (/resources/agent-marketplace). Scoped under .pg-marketplace. */
+
+/* ---------- Hero visual: approved skills → team workflow layer ---------- */
+
+.pg-marketplace__layer {
+  container-type: inline-size;
+  padding: clamp(24px, 3vw, 40px);
+}
+
+.pg-marketplace__layer-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) clamp(28px, 9cqi, 72px) minmax(0, 1.28fr);
+  align-items: center;
+  min-height: 360px;
+}
+
+.pg-marketplace__box {
+  position: relative;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r);
+  background: var(--ds-panel-2);
+}
+
+.pg-marketplace__box-label {
+  display: block;
+  margin-bottom: 16px;
+  font-family: var(--ds-font-mono);
+  font-size: 10.5px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-text-2);
+}
+
+.pg-marketplace__diamonds {
+  display: grid;
+  grid-template-columns: repeat(3, 18px);
+  gap: 22px 24px;
+  padding: 6px 4px;
+}
+
+.pg-marketplace__diamonds i {
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 2px;
+  background: var(--ds-accent);
+  transform: rotate(45deg);
+}
+
+.pg-marketplace__diamonds i:nth-child(3n + 2) {
+  background: var(--ds-accent-soft);
+}
+
+.pg-marketplace__wire {
+  position: relative;
+  height: 1px;
+  background: var(--ds-line-strong);
+}
+
+.pg-marketplace__wire::before,
+.pg-marketplace__wire::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+}
+
+.pg-marketplace__wire::before {
+  left: -4px;
+}
+
+.pg-marketplace__wire::after {
+  right: -4px;
+}
+
+.pg-marketplace__teams {
+  display: grid;
+  gap: 14px;
+}
+
+.pg-marketplace__teams li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.pg-marketplace__team {
+  min-width: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-2);
+}
+
+.pg-marketplace__cells {
+  display: flex;
+  gap: 5px;
+}
+
+.pg-marketplace__cells i {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pg-marketplace__cells i[data-on] {
+  border-color: var(--ds-accent);
+  background: var(--ds-accent);
+  opacity: 0.8;
+}
+
+@container (max-width: 480px) {
+  .pg-marketplace__layer-inner {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .pg-marketplace__wire {
+    justify-self: center;
+    width: 1px;
+    height: 32px;
+  }
+
+  .pg-marketplace__wire::before,
+  .pg-marketplace__wire::after {
+    left: -3px;
+    right: auto;
+  }
+
+  .pg-marketplace__wire::before {
+    top: -4px;
+  }
+
+  .pg-marketplace__wire::after {
+    top: auto;
+    bottom: -4px;
+  }
+
+  .pg-marketplace__diamonds {
+    grid-template-columns: repeat(6, 18px);
+  }
+}
+
+/* ---------- Intro ---------- */
+
+.pg-marketplace__intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 32px;
+  align-items: end;
+}
+
+.pg-marketplace__intro-head {
+  grid-column: 1 / span 6;
+  display: grid;
+  justify-items: start;
+  gap: 20px;
+}
+
+.pg-marketplace__intro-body {
+  grid-column: 8 / span 5;
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .pg-marketplace__intro-head,
+  .pg-marketplace__intro-body {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Skill catalogue (paper band) ---------- */
+
+.pg-marketplace .pg-marketplace__skills-head {
+  margin-bottom: 32px;
+}
+
+.pg-marketplace__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: clamp(40px, 4.5vw, 64px);
+}
+
+.pg-marketplace__filter {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-pill);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-2);
+  transition:
+    background-color 160ms var(--ds-ease),
+    color 160ms var(--ds-ease),
+    border-color 160ms var(--ds-ease);
+}
+
+.pg-marketplace__filter:hover {
+  color: var(--ds-text);
+  border-color: var(--ds-text-3);
+}
+
+.pg-marketplace__filter[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--ds-text);
+  color: var(--ds-paper);
+}
+
+.pg-marketplace__skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pg-marketplace__skill {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  padding: 24px 0 48px;
+  border-top: 1px solid var(--ds-line-strong);
+}
+
+.pg-marketplace__skill[hidden] {
+  display: none;
+}
+
+.pg-marketplace__skill-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.pg-marketplace__skill-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-2);
+}
+
+.pg-marketplace__skill-team svg {
+  color: var(--ds-text-3);
+}
+
+.pg-marketplace__skill .ds-small {
+  max-width: 30em;
+}
+
+@media (max-width: 900px) {
+  .pg-marketplace__skills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-marketplace__skills {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-marketplace__skill {
+    padding-bottom: 36px;
+  }
+}
+
+/* ---------- Adoption track ---------- */
+
+.pg-marketplace__track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pg-marketplace__track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 14px;
+  height: 1px;
+  background: var(--ds-line-strong);
+}
+
+.pg-marketplace__step {
+  position: relative;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 10px;
+  padding-right: 8px;
+}
+
+.pg-marketplace__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 28px;
+  margin-bottom: 22px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-sm);
+  background: var(--ds-bg);
+  font-family: var(--ds-font-mono);
+  font-size: 11px;
+  color: var(--ds-text-2);
+}
+
+.pg-marketplace__step[data-last] .pg-marketplace__node {
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+}
+
+@media (max-width: 900px) {
+  .pg-marketplace__track {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+  }
+
+  .pg-marketplace__track::before {
+    display: none;
+  }
+
+  .pg-marketplace__step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: -32px;
+    width: 1px;
+    background: var(--ds-line-strong);
+  }
+
+  .pg-marketplace__step {
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 8px;
+    padding-right: 0;
+  }
+
+  .pg-marketplace__node {
+    grid-row: 1 / span 2;
+    margin-bottom: 0;
+  }
+
+  .pg-marketplace__step > :not(.pg-marketplace__node) {
+    grid-column: 2;
+  }
+}
+
+/* ---------- Benefits ---------- */
+
+.pg-marketplace__benefits {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 56px;
+  align-items: start;
+}
+
+.pg-marketplace__benefits-head {
+  grid-column: 1 / span 5;
+  display: grid;
+  justify-items: start;
+  gap: 20px;
+}
+
+.pg-marketplace__benefit-list {
+  grid-column: 7 / span 6;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  row-gap: 48px;
+}
+
+@media (max-width: 900px) {
+  .pg-marketplace__benefits-head,
+  .pg-marketplace__benefit-list {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Keep the accent phrase of the closing CTA on one line (zh breaks otherwise split it). */
+.pg-marketplace .ds-cta__title .ds-accent-text {
+  display: inline-block;
+}

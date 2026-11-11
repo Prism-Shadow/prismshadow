@@ -1,0 +1,218 @@
+/* FlowSchematic: inputs → core → outputs, hairline wires, coloured vertex dots. */
+
+.pg-flow-wrap {
+  container-type: inline-size;
+  width: 100%;
+}
+
+.pg-flow {
+  --flow-wire: clamp(28px, 10cqi, 72px);
+  display: grid;
+  grid-template-columns:
+    minmax(0, var(--flow-in-fr, 1fr)) var(--flow-wire) minmax(0, max-content)
+    var(--flow-wire) minmax(0, var(--flow-out-fr, 1fr));
+  align-items: stretch;
+}
+
+.pg-flow__col {
+  display: grid;
+  grid-template-rows: repeat(var(--flow-in), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pg-flow__col--out {
+  grid-template-rows: repeat(var(--flow-out), minmax(0, 1fr));
+}
+
+.pg-flow__node {
+  display: flex;
+  align-items: center;
+  padding-block: 4px;
+}
+
+.pg-flow__node[data-tone='accent'] {
+  --flow-tone: var(--ds-accent);
+}
+.pg-flow__node[data-tone='cyan'] {
+  --flow-tone: var(--ds-cyan);
+}
+.pg-flow__node[data-tone='amber'] {
+  --flow-tone: var(--ds-amber);
+}
+.pg-flow__node[data-tone='coral'] {
+  --flow-tone: var(--ds-coral);
+}
+.pg-flow__node[data-tone='green'] {
+  --flow-tone: var(--ds-green);
+}
+
+.pg-flow__box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-r-sm);
+  background: var(--ds-panel-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.3;
+  color: var(--ds-text-2);
+}
+
+/* Chips size to their longest label; the wires take the remaining width. */
+.pg-flow--chip {
+  grid-template-columns:
+    max-content minmax(24px, 1fr) max-content minmax(24px, 1fr)
+    max-content;
+}
+
+.pg-flow--chip .pg-flow__box {
+  white-space: nowrap;
+}
+
+.pg-flow--card {
+  --flow-wire: clamp(20px, 6cqi, 44px);
+}
+
+.pg-flow--card .pg-flow__box {
+  display: grid;
+  align-items: start;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.pg-flow__node--in .pg-flow__box::after,
+.pg-flow__node--out .pg-flow__box::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--flow-tone, var(--ds-accent));
+}
+
+.pg-flow__node--in .pg-flow__box::after {
+  right: -3.5px;
+}
+
+.pg-flow__node--out .pg-flow__box::before {
+  left: -3.5px;
+}
+
+.pg-flow__wire {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pg-flow__wire path {
+  fill: none;
+  stroke: var(--ds-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.pg-flow__core {
+  position: relative;
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--ds-accent-line);
+  border-radius: var(--ds-r);
+  background: var(--ds-bg);
+  text-align: center;
+}
+
+.pg-flow__core::before,
+.pg-flow__core::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 2px;
+  background: var(--ds-accent);
+}
+
+.pg-flow__core::before {
+  left: -4px;
+}
+
+.pg-flow__core::after {
+  right: -4px;
+}
+
+/* Narrow containers: stack vertically, no curved wires. */
+@container (max-width: 520px) {
+  .pg-flow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-flow__wire {
+    display: none;
+  }
+
+  .pg-flow--chip .pg-flow__box {
+    white-space: normal;
+  }
+
+  .pg-flow__col,
+  .pg-flow__col--out {
+    grid-template-rows: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .pg-flow__node {
+    padding-block: 0;
+    align-items: stretch;
+  }
+
+  .pg-flow--card .pg-flow__col--in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-flow--card .pg-flow__col--out {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pg-flow__node--in .pg-flow__box::after,
+  .pg-flow__node--out .pg-flow__box::before {
+    display: none;
+  }
+
+  .pg-flow__core {
+    justify-self: center;
+    margin-block: 32px;
+  }
+
+  .pg-flow__core::before,
+  .pg-flow__core::after {
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: 32px;
+    margin: 0;
+    border-radius: 0;
+    background: var(--ds-line-strong);
+  }
+
+  .pg-flow__core::before {
+    top: -33px;
+  }
+
+  .pg-flow__core::after {
+    top: auto;
+    bottom: -33px;
+  }
+}

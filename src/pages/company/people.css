@@ -1,0 +1,419 @@
+/*
+ * People page (`.pg-people`). Every rule is scoped under the page root.
+ * Layout follows the shared 12-column grid; type uses the ds- primitives.
+ */
+
+/* ---------- Hero ---------- */
+
+.pg-people .pg-people-hero {
+  padding-bottom: clamp(48px, 5.5vw, 88px);
+}
+
+.pg-people .pg-people-hero .ds-page-hero__inner {
+  row-gap: clamp(48px, 5vw, 72px);
+}
+
+/* Year-long activity field: short and wide, dissolving into the past (left). */
+.pg-people .pg-people-field {
+  grid-column: 1 / -1;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 52 / 7;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%, #000 97%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 42%, #000 97%, transparent 100%);
+}
+
+.pg-people .pg-people-field__dots {
+  fill: rgba(255, 255, 255, 0.13);
+}
+
+.pg-people .pg-people-field__mark,
+.pg-people .pg-people-field__focal {
+  fill: var(--ds-accent);
+}
+
+.pg-people .pg-people-field__mark--1 {
+  opacity: 0.16;
+}
+
+.pg-people .pg-people-field__mark--2 {
+  opacity: 0.3;
+}
+
+.pg-people .pg-people-field__mark--3 {
+  opacity: 0.52;
+}
+
+.pg-people .pg-people-field__ring {
+  fill: none;
+  stroke: var(--ds-accent-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 640px) {
+  /* Keep marks legible on phones: fixed height, showing the most recent weeks. */
+  .pg-people .pg-people-field {
+    aspect-ratio: auto;
+    height: 96px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 96%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 96%, transparent 100%);
+  }
+}
+
+/* ---------- Founders ---------- */
+
+.pg-people .pg-people-founders__title {
+  margin-bottom: clamp(40px, 4.5vw, 64px);
+}
+
+.pg-people .pg-people-founders__list {
+  display: grid;
+  row-gap: clamp(72px, 8vw, 120px);
+}
+
+.pg-people .pg-people-founder {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 32px;
+  align-items: start;
+}
+
+.pg-people .pg-people-founder__photo {
+  grid-column: 1 / span 4;
+  aspect-ratio: 4 / 3;
+}
+
+/* Faint dot field behind the portrait, dissolving toward the frame edges. */
+.pg-people .pg-people-founder__photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1.4px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 45%, #000 20%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 45%, #000 20%, transparent 100%);
+}
+
+.pg-people .pg-people-founder__photo img {
+  position: absolute;
+  z-index: 1;
+  max-width: none;
+  height: auto;
+  filter: grayscale(1) contrast(1.04);
+}
+
+.pg-people .pg-people-founder__index {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 16px;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1;
+  color: var(--ds-text-3);
+}
+
+.pg-people .pg-people-founder__body {
+  grid-column: 6 / -1;
+  display: grid;
+  align-content: start;
+  gap: 28px;
+}
+
+.pg-people .pg-people-founder__ident {
+  display: grid;
+  gap: 12px;
+}
+
+.pg-people .pg-people-founder__role {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  line-height: 1.4;
+  color: var(--ds-accent);
+}
+
+.pg-people .pg-people-founder__highlights {
+  border-top: 1px solid var(--ds-line);
+}
+
+.pg-people .pg-people-founder__highlights > li {
+  padding-block: 13px;
+  border-bottom: 1px solid var(--ds-line);
+  font-size: var(--ds-text-body);
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+.pg-people .pg-people-em {
+  color: var(--ds-text);
+}
+
+.pg-people .pg-people-founder__from {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--ds-text-3);
+}
+
+@media (max-width: 1024px) {
+  .pg-people .pg-people-founder__photo {
+    grid-column: 1 / span 5;
+  }
+
+  .pg-people .pg-people-founder__body {
+    grid-column: 7 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .pg-people .pg-people-founder__photo,
+  .pg-people .pg-people-founder__body {
+    grid-column: 1 / -1;
+  }
+
+  .pg-people .pg-people-founder__photo {
+    max-width: 480px;
+  }
+
+  .pg-people .pg-people-founder__body {
+    gap: 24px;
+  }
+
+  .pg-people .pg-people-founder__highlights > li {
+    font-size: var(--ds-text-sm);
+  }
+}
+
+/* ---------- Open source ---------- */
+
+.pg-people .pg-people-repo__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.pg-people .pg-people-repo__id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  min-width: 0;
+}
+
+.pg-people .pg-people-repo__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--ds-text-2);
+}
+
+.pg-people .pg-people-repo__name {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text);
+}
+
+.pg-people .pg-people-repo__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+  overflow-wrap: anywhere;
+  transition: color 160ms var(--ds-ease);
+}
+
+.pg-people .pg-people-repo__link svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+.pg-people .pg-people-repo__link:hover {
+  color: var(--ds-text);
+}
+
+.pg-people .pg-people-repo__label {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  color: var(--ds-text-3);
+}
+
+/* Four numbers in hairline columns: value on top, label beneath. */
+.pg-people .pg-people-repo__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 40px;
+  margin: 0;
+  padding-top: 40px;
+}
+
+.pg-people .pg-people-repo__stat {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding-left: 20px;
+  border-left: 1px solid var(--ds-line-strong);
+}
+
+.pg-people .pg-people-repo__stat dd {
+  order: -1;
+  margin: 0;
+}
+
+.pg-people .pg-people-repo__stat-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ds-text-2);
+}
+
+.pg-people .pg-people-repo__stat-label svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--ds-text-3);
+}
+
+.pg-people .pg-people-projects {
+  margin-top: clamp(72px, 8vw, 120px);
+}
+
+/* Name, body and links share rows across the three columns (links line up). */
+.pg-people .pg-people-project {
+  grid-row: span 3;
+  grid-template-rows: auto 1fr auto;
+  grid-template-rows: subgrid;
+  row-gap: 10px;
+}
+
+.pg-people .pg-people-project__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-self: start;
+  align-content: flex-start;
+  gap: 8px 24px;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .pg-people .pg-people-repo__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Three-up project row stays three-up until phone width (never a 2 + 1 split). */
+.pg-people .pg-people-projects {
+  --cols: 3;
+}
+
+@media (max-width: 640px) {
+  .pg-people .pg-people-projects {
+    --cols: 1;
+  }
+}
+
+/* ---------- Backgrounds (paper band) ---------- */
+
+.pg-people .pg-people-backgrounds__inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 32px;
+  align-items: center;
+}
+
+.pg-people .pg-people-backgrounds__title {
+  grid-column: 1 / span 3;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  color: var(--ds-text);
+}
+
+.pg-people .pg-people-backgrounds__logos {
+  grid-column: 4 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 36px;
+}
+
+.pg-people .pg-people-backgrounds__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.0625rem;
+  font-weight: var(--ds-weight-medium);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ds-paper-ink);
+  white-space: nowrap;
+}
+
+.pg-people .pg-people-backgrounds__logo img {
+  width: auto;
+  height: 22px;
+  filter: brightness(0);
+  opacity: 0.86;
+}
+
+@media (max-width: 1024px) {
+  .pg-people .pg-people-backgrounds__title,
+  .pg-people .pg-people-backgrounds__logos {
+    grid-column: 1 / -1;
+  }
+
+  .pg-people .pg-people-backgrounds__logos {
+    justify-content: flex-start;
+    gap: 24px 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-people .pg-people-backgrounds__logos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px var(--ds-col-gap);
+  }
+
+  .pg-people .pg-people-backgrounds__logo {
+    font-size: var(--ds-text-sm);
+    white-space: normal;
+  }
+}
+
+/*
+ * The shared CTA sets its accent phrase inline-block; when that phrase wraps,
+ * the closing period drops to a line of its own. Keep it inline here (zh
+ * headings below already break only at spaces and marked points).
+ */
+.pg-people .ds-cta__title .ds-accent-text {
+  display: inline;
+}
+
+/*
+ * zh headings break only at punctuation, spaces and marked points (U+200B);
+ * the hero lead and credential lines too, so names such as 阿里巴巴 never
+ * split across lines and no line ends on a single orphaned character.
+ */
+.pg-people :is(h1, h2, h3):lang(zh),
+.pg-people .ds-page-hero__lead:lang(zh),
+.pg-people .pg-people-founder__highlights > li:lang(zh) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

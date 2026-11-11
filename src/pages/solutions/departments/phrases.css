@@ -1,0 +1,4 @@
+/* Phrases: an unbreakable phrase inside a heading (wraps internally only if wider than the line). */
+.pg-phrase {
+  display: inline-block;
+}
