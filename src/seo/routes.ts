@@ -94,12 +94,12 @@ export const routeSeoMetadata = {
     {
       title: 'Contact PrismShadow | Book a Demo',
       description:
-        "Talk to PrismShadow about enterprise AI workflows, private deployment, model training or agent self-evolution. Bring one workflow and we'll show you how it improves itself.",
+        "Tell us your goals and PrismShadow will put its complete platform to work for your company: data production, model training, private deployment and self-evolving agents, supported all the way to production.",
     },
     {
       title: '联系 PrismShadow | 预约演示',
       description:
-        '联系 PrismShadow，沟通企业 AI 工作流、私有化部署、模型训练与 Agent 自进化需求。',
+        '告诉我们您的目标，PrismShadow 将把最完整的技术平台赋能给贵公司：数据生产、模型训练、私有化部署与自进化 Agent，全程支持直至落地。',
     },
   ),
   '/blog': localize(
