@@ -110,14 +110,15 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* Lit fills sit on top of the empty slot (so an intro can fade the fill alone). */
+/* Adopted skills rest as faint fills on the empty slot; deploying ones (the
+   motion loop) turn solid on top of them. */
 .pg-marketplace__cells i[data-on]::after {
   content: '';
   position: absolute;
   inset: -1px;
+  border: 1px solid var(--ds-accent-line);
   border-radius: inherit;
-  background: var(--ds-accent);
-  opacity: 0.8;
+  background: rgba(169, 156, 255, 0.32);
 }
 
 @container (max-width: 480px) {
@@ -415,19 +416,21 @@
 
 /*
  * All animation runs under html[data-motion]; the rules above are the complete
- * static state, and loops start from it, so nothing jumps on load.
+ * static state, and every loop's first frame equals it, so nothing jumps on load.
  */
 
-/* Wire signal: a dot on a carrier as wide (or tall) as the wire, so moving the
+/* Wire packet: a dot on a carrier as wide (or tall) as the wire, so moving the
    carrier by 100% walks the dot end to end. Invisible at rest. */
-.pg-marketplace__spark {
+.pg-marketplace__spark,
+.pg-marketplace__track-spark {
   position: absolute;
   inset: 0;
   opacity: 0;
   pointer-events: none;
 }
 
-.pg-marketplace__spark::before {
+.pg-marketplace__spark::before,
+.pg-marketplace__track-spark::before {
   content: '';
   position: absolute;
   left: -2px;
@@ -438,31 +441,45 @@
   background: var(--ds-accent);
 }
 
-/* Each team's next free cell carries a ring that glints when a skill arrives. */
-.pg-marketplace__cells i[data-next]::after {
+/* Deploying cells (a team's next two) and the skills' rings, invisible at rest. */
+.pg-marketplace__cells i[data-next]::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--ds-accent);
+  opacity: 0;
+}
+
+.pg-marketplace__diamonds i {
+  position: relative;
+}
+
+.pg-marketplace__diamonds i::after {
   content: '';
   position: absolute;
   inset: -1px;
   border: 1px solid var(--ds-accent);
-  border-radius: 2px;
+  border-radius: inherit;
   opacity: 0;
 }
 
-/* One 6s cycle: the signal crosses the wire (0–16%), then the teams' next
-   cells glint top to bottom. */
+/* One 6s round, one team per second: the team's skill pings (0.4s), a packet
+   crosses the wire, and the team's next two cells fill solid, hold ~2.5s and
+   clear, so about three teams show a deploy at any moment. */
 @keyframes pg-marketplace-spark-x {
   0% {
     opacity: 0;
     transform: translateX(0);
   }
-  2% {
+  8% {
     opacity: 1;
   }
-  14% {
+  45% {
     opacity: 1;
     transform: translateX(100%);
   }
-  16%,
+  52%,
   100% {
     opacity: 0;
     transform: translateX(100%);
@@ -474,30 +491,47 @@
     opacity: 0;
     transform: translateY(0);
   }
-  2% {
+  8% {
     opacity: 1;
   }
-  14% {
+  45% {
     opacity: 1;
     transform: translateY(100%);
   }
-  16%,
+  52%,
   100% {
     opacity: 0;
     transform: translateY(100%);
   }
 }
 
-@keyframes pg-marketplace-glint {
+@keyframes pg-marketplace-deploy {
   0%,
+  52%,
   100% {
     opacity: 0;
+    transform: scale(1);
   }
-  6% {
+  4% {
     opacity: 0.9;
+    transform: scale(1.15);
   }
-  24% {
+  8%,
+  42% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
+@keyframes pg-marketplace-skill {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  12%,
+  100% {
     opacity: 0;
+    transform: scale(2);
   }
 }
 
@@ -509,12 +543,7 @@
 }
 
 html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__spark {
-  animation: pg-marketplace-spark-x 6s var(--ds-ease-in-out) 0.8s infinite;
-}
-
-html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[data-next]::after {
-  animation: pg-marketplace-glint 6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(1.75s + var(--r) * 0.22s);
+  animation: pg-marketplace-spark-x 1s var(--ds-ease-in-out) 0.4s infinite;
 }
 
 @container (max-width: 480px) {
@@ -523,7 +552,21 @@ html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[d
   }
 }
 
-/* Intro (entering view, not first load): the boxes fade in, the lit cells fill. */
+html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__diamonds i::after {
+  animation: pg-marketplace-skill 6s var(--ds-ease-out) infinite;
+  animation-delay: calc(0.4s + var(--r) * 1s);
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[data-next]::before {
+  animation: pg-marketplace-deploy 6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.85s + var(--r) * 1s);
+}
+
+html[data-motion] .pg-marketplace__layer[data-inview] .pg-marketplace__cells i[data-next='2']::before {
+  animation-delay: calc(1s + var(--r) * 1s);
+}
+
+/* Intro (entering view, not first load): the boxes fade in, the adopted cells fill. */
 html[data-motion] .pg-marketplace__layer[data-inview='enter'] .pg-marketplace__box--skills {
   animation: ds-fade-in 600ms var(--ds-ease-out) both;
 }
@@ -547,10 +590,51 @@ html[data-motion] .pg-marketplace__skills[data-inview='enter']:not([data-filtere
   animation-delay: calc(var(--i) * 90ms);
 }
 
-/* Adoption path: the connecting line draws in left to right. */
+/* Adoption path: the line draws in, then a packet runs along it (5s) and each
+   step's node fills as it passes. */
+@keyframes pg-marketplace-track {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  4% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+  66%,
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pg-marketplace-node {
+  0%,
+  30%,
+  100% {
+    background-color: var(--ds-bg);
+  }
+  4%,
+  20% {
+    background-color: rgba(169, 156, 255, 0.32);
+  }
+}
+
 html[data-motion] .pg-marketplace__track-line[data-inview='enter'] {
   transform-origin: left center;
   animation: ds-grow-x 1400ms var(--ds-ease-out) both;
+}
+
+html[data-motion] .pg-marketplace__track-line[data-inview] .pg-marketplace__track-spark {
+  animation: pg-marketplace-track 5s linear 1s infinite;
+}
+
+html[data-motion] .pg-marketplace__track-wrap:has(.pg-marketplace__track-line[data-inview]) .pg-marketplace__node {
+  animation: pg-marketplace-node 5s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(0.95s + var(--i) * 0.75s);
 }
 
 /* Keep the accent phrase of the closing CTA on one line (zh breaks otherwise split it). */

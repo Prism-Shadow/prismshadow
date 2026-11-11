@@ -13,8 +13,10 @@ import { cjkBreaks } from './cjkBreaks'
  * with `visibility`, which also removes them from the accessibility tree.
  *
  * Motion: the active panel's trace list is re-keyed on selection, so the motion
- * system sees a new `[data-animate]` element and its rows appear one by one
- * (industry.css). The server and first render show the final state.
+ * system sees a new `[data-animate]` element and its rows appear one by one;
+ * while in view the agent then re-runs the trace on a loop, each step's node
+ * filling solid in turn (industry.css). The server and first render show the
+ * resting state.
  */
 export function ScenarioExplorer({
   scenarios,
@@ -128,7 +130,9 @@ export function ScenarioExplorer({
                       )}
                       style={{ '--i': step } as CSSProperties}
                     >
-                      <span className="pg-industry-workspace__rail" aria-hidden="true" />
+                      <span className="pg-industry-workspace__rail" aria-hidden="true">
+                        <i className="pg-industry-workspace__run" />
+                      </span>
                       <span className="pg-industry-workspace__key">{label}</span>
                       <span className="pg-industry-workspace__value">{value}</span>
                     </li>

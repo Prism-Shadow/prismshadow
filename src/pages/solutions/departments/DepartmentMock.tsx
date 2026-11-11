@@ -11,9 +11,11 @@ import type { DepartmentId } from '../../../i18n/messages/shared'
  * queue for support, a pipeline for sales, and so on. Illustrative only, so it
  * is exposed as a single image with a descriptive label.
  *
- * Motion (CSS only, see the Motion section of departments.css): when the mock
- * comes into view it fades in and plays one "live" moment, then holds; the
- * focal row's status mark breathes. The markup is always the final state.
+ * Motion (CSS only, see the Motion section of departments.css): while in view
+ * each mock runs a looping story (tickets stream in, deals advance, slots
+ * fill week by week, the chart redraws, risk bars rebalance, clauses are
+ * reviewed, impact squares fill and clear, queues fill and drain). The markup
+ * is always the resting state, which is also the first frame of every loop.
  */
 export function DepartmentMock({
   id,
@@ -75,28 +77,35 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
 
   switch (v.mock) {
     case 'queue':
+      // A conveyor: the tickets twice over, the second set in view at rest. The
+      // loop steps the list down one row at a time (a new ticket arrives on top,
+      // the oldest leaves at the bottom) and lands back on the resting frame.
+      // The active slot (frame, check, draft progress) and the resolving check
+      // are fixed overlays, so they stay put while tickets pass through them.
       return (
-        <ul className="pg-mock__rows">
-          {items.map((item, i) => (
-            <li key={item.detail} className="pg-mock__row" data-active={i === 0 || undefined}>
-              <span className="pg-mock__check" />
-              <span className="pg-mock__main">
-                <span className="pg-mock__label">{item.label}</span>
-                <span className="pg-mock__detail">{item.detail}</span>
-                {i === 0 ? (
-                  <span className="pg-mock__draft">
-                    <i style={level(0.92)} />
-                    <i style={level(0.78)} />
-                    <i style={level(0.54)} />
-                  </span>
-                ) : null}
-              </span>
-              <Tag tone={tone(i)} focal={focal(i)}>
-                {item.tag}
-              </Tag>
-            </li>
-          ))}
-        </ul>
+        <div className="pg-mock__stream">
+          <ul className="pg-mock__rows pg-mock__rows--stream">
+            {[...items, ...items].map((item, n) => (
+              <li
+                key={`${n}-${item.detail}`}
+                className="pg-mock__row"
+                aria-hidden={n < items.length || undefined}
+              >
+                <span className="pg-mock__check" />
+                <span className="pg-mock__main">
+                  <span className="pg-mock__label">{item.label}</span>
+                  <span className="pg-mock__detail">{item.detail}</span>
+                </span>
+                <Tag tone={tone(n % items.length)}>{item.tag}</Tag>
+              </li>
+            ))}
+          </ul>
+          <span className="pg-mock__slot" aria-hidden="true">
+            <i className="pg-mock__slot-check" />
+            <i className="pg-mock__slot-bar" />
+          </span>
+          <span className="pg-mock__resolve" aria-hidden="true" />
+        </div>
       )
 
     case 'pipeline': {
@@ -115,7 +124,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
                     key={item.label}
                     className="pg-mock__card"
                     data-active={focal(i) || undefined}
-                    style={order(i)}
+                    style={{ ...order(i), '--o': (i - v.focal + items.length) % items.length } as CSSProperties}
                   >
                     <span className="pg-mock__label">{item.label}</span>
                     <span className="pg-mock__meter" style={level(v.levels[i] ?? 0.5)} />
@@ -183,6 +192,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
                 <path className="pg-mock__line" d={chartPath(chartChurn)} />
               </g>
             </svg>
+            <span className="pg-mock__cursor" aria-hidden="true" />
             <span className="pg-mock__spike" style={{ '--x': 1, '--y': chartChurn[chartChurn.length - 1] / 100 } as CSSProperties} />
           </div>
           <ul className="pg-mock__kpis">
@@ -210,7 +220,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
                 <span
                   className="pg-mock__fill"
                   data-tone={tone(i)}
-                  style={{ ...level(v.levels[i] ?? 0.5), ...order(i) }}
+                  style={{ ...level(v.levels[i] ?? 0.5), ...order(i), ...rebalance(v.levels[i] ?? 0.5, i) }}
                 />
               </span>
               <Tag tone={tone(i)} focal={focal(i)}>
@@ -238,6 +248,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
                 data-focal={focal(i) || undefined}
                 style={order(i)}
               >
+                <span className="pg-mock__scan" aria-hidden="true" />
                 <span className="pg-mock__main">
                   <span className="pg-mock__label">{item.label}</span>
                   <span className="pg-mock__detail">{item.detail}</span>
@@ -265,7 +276,7 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
               </span>
               <span className="pg-mock__deps" aria-hidden="true">
                 {[0, 1, 2].map((d) => (
-                  <i key={d} data-on={d <= 2 - i || undefined} style={d <= 2 - i ? order(i * 3 + d) : undefined} />
+                  <i key={d} data-on={d <= 2 - i || undefined} style={order(i * 3 + d)} />
                 ))}
               </span>
             </li>
@@ -279,13 +290,17 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
           {items.map((item, i) => (
             <li key={item.label} className="pg-mock__stage" data-tone={tone(i)} style={order(i)}>
               <span className="pg-mock__queue" aria-hidden="true">
-                {Array.from({ length: QUEUE_CELLS }, (_, k) => (
-                  <i
-                    key={k}
-                    data-on={k < Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS) || undefined}
-                    style={{ '--k': k } as CSSProperties}
-                  />
-                ))}
+                {Array.from({ length: QUEUE_CELLS }, (_, k) => {
+                  const depth = Math.round((v.levels[i] ?? 0.3) * QUEUE_CELLS)
+                  return (
+                    <i
+                      key={k}
+                      data-on={k < depth || undefined}
+                      data-wave={queueWave(k, depth)}
+                      style={{ '--k': k } as CSSProperties}
+                    />
+                  )
+                })}
               </span>
               <span className="pg-mock__label">{item.label}</span>
               <span className="pg-mock__detail">{item.detail}</span>
@@ -301,6 +316,25 @@ function renderBody(id: DepartmentId, v: DepartmentVisual, items: DepartmentMock
 
 /** Queue-depth cells per fulfillment stage. */
 const QUEUE_CELLS = 6
+
+/**
+ * Role of a queue cell in the fill-and-drain loop, relative to the stage's
+ * resting depth: the two cells above it fill (solid) and drain, the two at
+ * its top drain and refill. Other cells hold still.
+ */
+function queueWave(k: number, depth: number) {
+  return ({ [depth - 2]: 'down2', [depth - 1]: 'down1', [depth]: 'up1', [depth + 1]: 'up2' } as Record<number, string>)[
+    k
+  ]
+}
+
+/** HR bars rebalance: each swings between its own low and high, out of phase. */
+const rebalance = (level: number, i: number) =>
+  ({
+    '--hi': Math.min(0.97 / level, 1.3).toFixed(3),
+    '--lo': (i % 2 ? 0.62 : 0.74).toFixed(2),
+    '--t': `${[4.2, 5, 3.8, 4.6][i % 4]}s`,
+  }) as CSSProperties
 
 /* KPI monitor series, in % of chart height from the top (0 = top). */
 const chartBase = [62, 60, 61, 57, 58, 55, 56, 53, 54, 51, 52, 50]

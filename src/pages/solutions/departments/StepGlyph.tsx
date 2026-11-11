@@ -5,7 +5,8 @@ import { cx } from '../../../components/site/utils'
  * Isometric line drawings for the three "how it works" steps, in the modal
  * style: 1px strokes, a few coloured vertex dots. Decorative (the step title
  * and body carry the meaning). With motion on, the lines draw in once and the
- * dots land after them (every line has pathLength="1" for that).
+ * dots land after them (every line has pathLength="1" for that); then the
+ * faces marked with `face` fill in turn on a loop (departments.css).
  */
 
 type Pt = [number, number]
@@ -37,12 +38,30 @@ function Dot({ at, tone, index }: { at: Pt; tone: string; index: number }) {
   )
 }
 
+/** A face that fills on the loop: its tone, order in the fill sequence and peak opacity. */
+type Face = { tone: string; order: number; peak: number }
+
 /** A glyph stroke; pathLength="1" lets CSS draw it in with one dash. */
-function Line({ dim, dashed, ...props }: SVGProps<SVGPathElement> & { dim?: boolean; dashed?: boolean }) {
+function Line({
+  dim,
+  dashed,
+  face,
+  ...props
+}: SVGProps<SVGPathElement> & { dim?: boolean; dashed?: boolean; face?: Face }) {
   return (
     <path
-      className={cx('pg-glyph__line', dim && 'pg-glyph__line--dim', dashed && 'pg-glyph__line--dashed')}
+      className={cx(
+        'pg-glyph__line',
+        dim && 'pg-glyph__line--dim',
+        dashed && 'pg-glyph__line--dashed',
+        face && 'pg-glyph__face',
+      )}
       pathLength={dashed ? undefined : 1}
+      style={
+        face
+          ? ({ '--face': `var(--ds-${face.tone})`, '--f': face.order, '--peak': face.peak } as CSSProperties)
+          : undefined
+      }
       {...props}
     />
   )
@@ -55,10 +74,10 @@ function UploadGlyph() {
   const top = square(p, 0, 0, 64, 28)
   return (
     <>
-      {layers.slice(0, 2).map((z) => (
-        <Line key={z} dim d={poly(square(p, 0, 0, 64, z))} />
+      {layers.slice(0, 2).map((z, i) => (
+        <Line key={z} dim d={poly(square(p, 0, 0, 64, z))} face={{ tone: 'cyan', order: i, peak: 0.16 }} />
       ))}
-      <Line d={poly(top)} />
+      <Line d={poly(top)} face={{ tone: 'cyan', order: 2, peak: 0.3 }} />
       {[16, 28, 40].map((y, i) => (
         <Line key={y} dim d={line(p(12, y, 28), p(i === 1 ? 40 : 52, y, 28))} />
       ))}
@@ -80,7 +99,7 @@ function RoleGlyph() {
   return (
     <>
       <Line dashed d={poly(base)} />
-      <Line d={poly(topFace)} />
+      <Line d={poly(topFace)} face={{ tone: 'amber', order: 0, peak: 0.55 }} />
       <Line d={line(p(b, a, 0), p(b, a, h))} />
       <Line d={line(p(b, b, 0), p(b, b, h))} />
       <Line d={line(p(a, b, 0), p(a, b, h))} />
@@ -102,7 +121,7 @@ function RunGlyph() {
     <>
       {tiles.map(({ x, z }, i) => (
         <g key={i}>
-          <Line d={poly(square(p, x, 0, 24, z))} />
+          <Line d={poly(square(p, x, 0, 24, z))} face={{ tone: i < 3 ? 'green' : 'accent', order: i, peak: 0.85 }} />
         </g>
       ))}
       <Line
