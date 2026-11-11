@@ -66,11 +66,14 @@ describe.each(locales)('blog index (%s)', (locale) => {
 
   it('marks the covers for the motion system', () => {
     // Featured media rise in; every grid cover fades its field (or image) in;
-    // code-built covers glint three cells each.
+    // code-built covers carry a seeded wave and a few live cells, empty at rest.
     expect(count(html, /class="pg-blog-card__media" data-animate=""/g)).toBe(featuredPosts.length)
     expect(count(html, /class="pg-blog-cover__(?:field|image)"[^>]*data-animate="custom"/g)).toBe(gridPosts.length)
     const codeCovers = gridPosts.filter((post) => !post.visualImage).length
-    expect(count(html, /data-glint=""/g)).toBe(codeCovers * 3)
+    expect(count(html, /data-wave="(?:dim|outline|solid)"/g)).toBeGreaterThan(codeCovers * 10)
+    const live = html.match(/<rect class="pg-blog-cover__live"[^>]*>/g) ?? []
+    expect(live.length).toBeGreaterThan(codeCovers * 4)
+    for (const cell of live) expect(cell).toContain('fill-opacity="0"')
   })
 })
 

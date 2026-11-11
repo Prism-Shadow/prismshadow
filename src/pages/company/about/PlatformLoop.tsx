@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { AboutPageCopy } from '../../../i18n/messages/about'
 import { DiamondIcon } from '../../../components/site/icons'
 
@@ -11,8 +12,11 @@ const stageTones = ['cyan', 'amber', 'green', 'accent'] as const
  * for assistive tech, described by `copy.ariaLabel`.
  *
  * Motion (about.css, motion contract): the figure rises in when it enters
- * view, and while it is in view one lit cell travels the loop. At rest (no
- * JS, reduced motion, prerendered HTML) the cell is simply not shown.
+ * view. While it is in view a solid packet laps the loop, and each stage
+ * lights up as the packet passes it: its frame takes the stage's tone and
+ * its four-cell meter fills solid in turn, holds, then empties. At rest (no
+ * JS, reduced motion, prerendered HTML) there is no packet and every meter is
+ * an empty outline.
  */
 export function PlatformLoop({ copy }: { copy: AboutPageCopy['loop'] }) {
   return (
@@ -31,10 +35,16 @@ export function PlatformLoop({ copy }: { copy: AboutPageCopy['loop'] }) {
             key={stage.name}
             className={`pg-about-loop__node pg-about-loop__node--${index + 1}`}
             data-tone={stageTones[index]}
+            style={{ '--stage': index } as CSSProperties}
           >
             <span className="pg-about-loop__node-head">
               <span className="pg-about-loop__dot" />
               <span className="pg-about-loop__index">{String(index + 1).padStart(2, '0')}</span>
+              <span className="pg-about-loop__meter" aria-hidden="true">
+                {[0, 1, 2, 3].map((cell) => (
+                  <span key={cell} className="pg-about-loop__meter-cell" style={{ '--j': cell } as CSSProperties} />
+                ))}
+              </span>
             </span>
             <span className="pg-about-loop__name">{stage.name}</span>
             <span className="pg-about-loop__detail">{stage.detail}</span>

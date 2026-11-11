@@ -1,7 +1,7 @@
 import { useId, type CSSProperties } from 'react'
 import type { BlogPost, BlogVisualPlacement } from '../../content/blogPosts'
 import { cx, type PixelTone } from '../../components/site/utils'
-import { coverCells, coverGeometry, coverGlints, topicTone, type CoverGeometry } from './blogData'
+import { coverCells, coverGeometry, coverMotion, topicTone, type CoverGeometry } from './blogData'
 
 // Same cell geometry and styling as the shared PixelField; the faint "off" cells
 // are drawn with one SVG pattern so a page of covers stays light on the DOM.
@@ -27,14 +27,14 @@ function CoverField({
   post: BlogPost
   geometry: CoverGeometry
   className?: string
-  /** Fade the cells in on view (the dark frame stays put) and glint a few. */
+  /** Fade the cells in on view (the dark frame stays put), then keep them live. */
   animate: boolean
 }) {
   const patternId = `pg-blog-cells-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   const width = geometry.cols * STEP - GAP
   const height = geometry.rows * STEP - GAP
   const cells = coverCells(post, geometry)
-  const glints = coverGlints(post, cells)
+  const motion = coverMotion(post, geometry, cells)
 
   return (
     <svg
@@ -43,7 +43,7 @@ function CoverField({
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       focusable="false"
-      style={{ '--phase': glints.phase.toFixed(3) } as CSSProperties}
+      style={{ '--phase': motion.phase.toFixed(3), '--period': `${motion.period}s` } as CSSProperties}
       data-animate={animate ? 'custom' : undefined}
     >
       <defs>
@@ -60,9 +60,26 @@ function CoverField({
         </pattern>
       </defs>
       <rect width={width + GAP} height={height + GAP} fill={`url(#${patternId})`} />
+      {/* Free background cells that fill and clear on their own (zero fill at rest). */}
+      {motion.live.map((cell) => (
+        <rect
+          key={`live-${cell.c}:${cell.r}`}
+          className="pg-blog-cover__live"
+          x={cell.c * STEP + 0.5}
+          y={cell.r * STEP + 0.5}
+          width={CELL - 1}
+          height={CELL - 1}
+          rx={2}
+          fill={toneColor[topicTone[post.topic]]}
+          fillOpacity={0}
+          style={{ '--k': cell.peak, '--fd': `${cell.delay}s`, '--ft': `${cell.period}s` } as CSSProperties}
+        />
+      ))}
       {cells.map((cell) => {
         const color = toneColor[cell.tone ?? 'accent']
-        const glint = glints.order.get(`${cell.c}:${cell.r}`)
+        // Outlined cells keep their colour at zero fill, so the wave can fill them solid.
+        // The white focal cells hold still; the rest of the motif rides the wave.
+        const kind = cell.outline ? 'outline' : cell.dim ? 'dim' : cell.tone === 'text' ? 'focal' : 'solid'
         return (
           <rect
             key={`${cell.c}:${cell.r}`}
@@ -71,12 +88,12 @@ function CoverField({
             width={CELL - 1}
             height={CELL - 1}
             rx={2}
-            fill={cell.outline ? 'var(--pg-blog-cover-bg)' : color}
+            fill={color}
+            fillOpacity={cell.outline ? 0 : undefined}
             stroke={color}
             opacity={cell.dim ? 0.45 : 1}
-            {...(glint === undefined
-              ? {}
-              : { 'data-glint': '', style: { '--g': glint, '--ds-glint-rest': 0.45 } as CSSProperties })}
+            data-wave={kind}
+            style={{ '--w': motion.wave.get(`${cell.c}:${cell.r}`) ?? 0 } as CSSProperties}
           />
         )
       })}
@@ -93,7 +110,9 @@ function CoverField({
  * Motion (blog.css): featured media rise in with the default reveal (the
  * card's media frame carries `data-animate`). Everywhere else the cover's
  * dark frame and label stay put while its pixel field (or image) fades in on
- * view, and a few dim cells of a code-built cover glint in a slow stagger.
+ * view. A code-built cover then stays live: a solid wave sweeps its motif
+ * (dim cells brighten, outlined cells fill solid) along an axis and at a pace
+ * seeded by the post, and a few free cells fill and clear on their own.
  * Nothing moves inside the prose.
  */
 export function BlogCover({

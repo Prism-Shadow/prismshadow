@@ -20,28 +20,42 @@ function Node({
   label,
   note,
   lit,
+  step,
   shape = 'square',
 }: {
   label: string
   note?: string
   lit: PixelLit[]
+  /** Place along the flow (0 data, 1 models, 2 agents): when the wave reaches it. */
+  step: number
   shape?: 'square' | 'diamond'
 }) {
   return (
-    <div className="pg-sec-perimeter__node">
+    <div className="pg-sec-perimeter__node" style={{ '--step': step } as CSSProperties}>
       <span className="pg-sec-mono pg-sec-perimeter__label">{label}</span>
-      <PixelField className="pg-sec-perimeter__cells" cols={6} rows={3} cell={11} gap={6} shape={shape} lit={lit} />
+      <PixelField
+        className="pg-sec-perimeter__cells"
+        cols={6}
+        rows={3}
+        cell={11}
+        gap={6}
+        shape={shape}
+        lit={lit}
+        live={0.5}
+        seed={step + 3}
+      />
       {note ? <span className="pg-sec-perimeter__note">{note}</span> : null}
     </div>
   )
 }
 
-/** Hairline connector; `step` orders the signal that travels it (motion only). */
+/** Hairline connector; `step` staggers the packets that travel it (motion only). */
 function Connector({ label, step }: { label?: string; step: number }) {
   return (
     <div className="pg-sec-perimeter__link" style={{ '--step': step } as CSSProperties}>
       {label ? <span className="pg-sec-perimeter__link-label">{label}</span> : null}
-      <span className="pg-sec-perimeter__signal" aria-hidden="true" />
+      <span className="pg-sec-perimeter__signal" aria-hidden="true" style={{ '--k': 0 } as CSSProperties} />
+      <span className="pg-sec-perimeter__signal" aria-hidden="true" style={{ '--k': 1 } as CSSProperties} />
     </div>
   )
 }
@@ -50,9 +64,12 @@ function Connector({ label, step }: { label?: string; step: number }) {
  * Private deployment schematic: everything from data to agents runs inside the
  * customer's perimeter; the path out to the public internet is blocked.
  *
- * Motion (security.css): the panel rises in on view; while in view a signal
- * travels data → models → agents → systems, and the blocked egress mark
- * answers with a gentle ring. At rest the signal is not shown.
+ * Motion (security.css): the panel rises in on view. While in view, solid
+ * packets stream along every connector (two per connector, staggered), each
+ * node's cells brighten in a wave as the flow passes and its empty cells
+ * fill and clear, and a packet heading for the public internet stops at the
+ * blocked egress mark, which rings. At rest nothing moves and no packet is
+ * shown.
  */
 export function PerimeterDiagram({ copy }: { copy: SecurityDeploymentDiagramCopy }) {
   return (
@@ -68,11 +85,11 @@ export function PerimeterDiagram({ copy }: { copy: SecurityDeploymentDiagramCopy
           {copy.boundary}
         </span>
         <div className="pg-sec-perimeter__flow">
-          <Node label={copy.data} lit={dataCells} />
+          <Node label={copy.data} lit={dataCells} step={0} />
           <Connector label={copy.train} step={0} />
-          <Node label={copy.models} note={copy.tuned} lit={modelCells} shape="diamond" />
+          <Node label={copy.models} note={copy.tuned} lit={modelCells} shape="diamond" step={1} />
           <Connector label={copy.api} step={1} />
-          <Node label={copy.agents} lit={agentCells} />
+          <Node label={copy.agents} lit={agentCells} step={2} />
           <Connector step={2} />
           <div className="pg-sec-perimeter__systems">
             {copy.systems.map((system) => (
@@ -85,6 +102,7 @@ export function PerimeterDiagram({ copy }: { copy: SecurityDeploymentDiagramCopy
       </div>
 
       <div className="pg-sec-perimeter__egress">
+        <span className="pg-sec-perimeter__probe" aria-hidden="true" />
         <span className="pg-sec-perimeter__block">
           <CrossIcon />
         </span>

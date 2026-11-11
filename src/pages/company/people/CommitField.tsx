@@ -8,9 +8,12 @@ import type { CSSProperties } from 'react'
  * Purely decorative (aria-hidden); it makes no data claim. Deterministic, so
  * server and client render the same markup.
  *
- * Motion (people.css): a slow glint sweeps the marks from the past toward the
- * focal mark, which answers with a soft ring. Each mark carries `--d`, its
- * place along the sweep (0 at the left edge, 1 at the focal column).
+ * Motion (people.css): the field works like a live contribution graph. Waves
+ * of activity sweep from the past toward "now", filling days solid as they
+ * pass (each day's intensity differs, like a heat map); a few days flicker on
+ * their own rhythm between waves; the focal mark answers each wave with a
+ * ring. Live days are invisible at rest (zero fill), so without motion the
+ * field is exactly the static graph.
  */
 
 const COLS = 52
@@ -50,13 +53,50 @@ function buildMarks(): Mark[] {
 
 const marks = buildMarks()
 
-const sweep = (c: number) => ({ '--d': (c / FOCAL.c).toFixed(3) }) as CSSProperties
+/** Deterministic 0–1 noise per day, independent of the marks' sequence. */
+function noise(c: number, r: number, salt: number) {
+  let h = (Math.imul(c + 11, 73856093) ^ Math.imul(r + 5, 19349663) ^ Math.imul(salt, 83492791)) >>> 0
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0
+  h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+}
+
+/** When the wave reaches a day (seconds into the cycle): left to right from the visible weeks, rows slightly staggered. */
+const waveAt = (c: number, r: number) =>
+  Math.max(0.1, 0.3 + ((c - 10) / (FOCAL.c - 10)) * 3 + r * 0.08 + noise(c, r, 3) * 0.35)
+
+/** Live days: empty at rest; they fill as waves pass, or flicker on their own. */
+type LiveDay = { c: number; r: number; style: CSSProperties; flicker: boolean }
+
+function buildLiveDays(taken: Set<string>): LiveDay[] {
+  const days: LiveDay[] = []
+  for (let c = 10; c <= FOCAL.c; c += 1) {
+    // More activity toward the present.
+    const t = (c - 10) / (FOCAL.c - 10)
+    const share = 0.14 + 0.4 * t * t
+    for (let r = 0; r < ROWS; r += 1) {
+      if (taken.has(`${c}:${r}`) || noise(c, r, 1) >= share) continue
+      const flicker = noise(c, r, 2) < 0.28
+      const peak = [0.35, 0.6, 0.9][Math.floor(noise(c, r, 4) * 3)]
+      days.push({
+        c,
+        r,
+        flicker,
+        style: (flicker
+          ? { '--k': peak, '--fd': `${(noise(c, r, 5) * 2.5).toFixed(2)}s`, '--ft': `${(3 + noise(c, r, 6) * 3).toFixed(2)}s` }
+          : { '--k': peak, '--wd': `${waveAt(c, r).toFixed(2)}s` }) as Record<string, string | number> as CSSProperties,
+      })
+    }
+  }
+  return days
+}
 
 export function CommitField({ className }: { className?: string }) {
   const width = COLS * STEP
   const height = ROWS * STEP
   const lit = new Set(marks.map((m) => `${m.c}:${m.r}`))
   lit.add(`${FOCAL.c}:${FOCAL.r}`)
+  const live = buildLiveDays(lit)
 
   // Every unlit day is a tiny dot; all of them share one path.
   const dot = (c: number, r: number) => {
@@ -85,12 +125,21 @@ export function CommitField({ className }: { className?: string }) {
       data-animate="custom"
     >
       <path className="pg-people-field__dots" d={dots.join('')} />
+      {live.map((day) => (
+        <rect
+          key={`live-${day.c}:${day.r}`}
+          className={`pg-people-field__live pg-people-field__live--${day.flicker ? 'flicker' : 'wave'}`}
+          rx={1.5}
+          style={day.style}
+          {...square(day.c, day.r, MARK)}
+        />
+      ))}
       {marks.map((m) => (
         <rect
           key={`${m.c}:${m.r}`}
           className={`pg-people-field__mark pg-people-field__mark--${m.level}`}
           rx={1.5}
-          style={sweep(m.c)}
+          style={{ '--wd': `${waveAt(m.c, m.r).toFixed(2)}s` } as CSSProperties}
           {...square(m.c, m.r, MARK)}
         />
       ))}

@@ -418,28 +418,81 @@
  * Motion (only under html[data-motion]; the resting CSS is the final state).
  * Featured media rise in with the default reveal (data-animate). Other covers
  * keep their dark frame and label still while the pixel field or image fades
- * in on view. While a code-built cover is in view, its three glint cells
- * light up in a slow stagger (9s cycle, offset per cover by --phase). The
- * prose never moves.
+ * in on view. While a code-built cover is in view it stays live:
+ * - a solid wave sweeps the motif (--w is where it reaches each cell; the
+ *   axis, direction and pace --period are seeded per post, --phase offsets
+ *   covers from each other): dim cells brighten, outlined cells fill solid,
+ *   solid cells empty and refill; the white focal cells hold still;
+ * - a few free background cells fill and clear on their own (--fd, --ft).
+ * The prose never moves.
  */
 html[data-motion] .pg-blog .pg-blog-cover__field[data-inview='enter'],
 html[data-motion] .pg-blog .pg-blog-cover__image[data-inview='enter'] {
   animation: ds-fade-in 900ms var(--ds-ease-out) both;
 }
 
-html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] rect[data-glint] {
-  animation: pg-blog-glint 9s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(400ms + var(--phase) * 2.4s + var(--g) * 1.8s);
+.pg-blog .pg-blog-cover__field [data-wave] {
+  --wave-at: calc(0.6s + var(--phase) * 2s + var(--w) * 2.2s);
 }
 
-@keyframes pg-blog-glint {
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] [data-wave='dim'] {
+  animation: pg-blog-brighten var(--period) var(--ds-ease-in-out) var(--wave-at) infinite;
+}
+
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] [data-wave='outline'] {
+  animation: pg-blog-fill var(--period) var(--ds-ease-in-out) var(--wave-at) infinite;
+}
+
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] [data-wave='solid'] {
+  animation: pg-blog-refill var(--period) var(--ds-ease-in-out) var(--wave-at) infinite;
+}
+
+html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] .pg-blog-cover__live {
+  animation: pg-blog-live var(--ft) var(--ds-ease-in-out) var(--fd) infinite;
+}
+
+@keyframes pg-blog-brighten {
   0%,
   24%,
   100% {
-    opacity: var(--ds-glint-rest, 0.45);
+    opacity: 0.45;
+  }
+  9% {
+    opacity: 1;
+  }
+}
+
+@keyframes pg-blog-fill {
+  0%,
+  24%,
+  100% {
+    fill-opacity: 0;
+  }
+  9% {
+    fill-opacity: 0.85;
+  }
+}
+
+@keyframes pg-blog-refill {
+  0%,
+  24%,
+  100% {
+    fill-opacity: 1;
   }
   10% {
-    opacity: 1;
+    fill-opacity: 0.2;
+  }
+}
+
+@keyframes pg-blog-live {
+  0%,
+  30%,
+  70%,
+  100% {
+    fill-opacity: 0;
+  }
+  50% {
+    fill-opacity: var(--k);
   }
 }
 
