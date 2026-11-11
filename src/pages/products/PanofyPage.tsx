@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { CSSProperties, ReactElement } from 'react'
 import { docsUrl, getDepartmentPath } from '../../components/site/navigation'
 import { ButtonLink, CtaBand, TextLink } from '../../components/site/ui'
 import { panofyCopy, type PanofyVisualKind } from '../../i18n/messages/products/panofy'
@@ -94,7 +94,13 @@ export function PanofyPage({ locale }: PageProps) {
         <ol className="pg-panofy__loop">
           {t.loop.steps.map((step, i) => (
             <li key={step.label} className="pg-panofy__step">
-              <span className="pg-panofy__step-node" aria-hidden="true">
+              {/* Only the timeline moves (the copy beside it stays still). */}
+              <span
+                className="pg-panofy__step-node"
+                aria-hidden="true"
+                data-animate="custom"
+                style={{ '--i': i } as CSSProperties}
+              >
                 <span className="pg-panofy__step-dot" />
               </span>
               <span className="pg-product__mono pg-panofy__step-label">

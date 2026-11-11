@@ -83,12 +83,13 @@
   color: var(--ds-accent);
 }
 
+/* The new-chat page, cropped to the message box and the one-sentence examples. */
 .pg-penguin .pg-penguin__build-shot {
   position: relative;
   flex: 1 0 auto;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1268 / 760;
   overflow: hidden;
-  background: #000;
+  background: var(--ds-panel-2);
 }
 
 .pg-penguin .pg-penguin__build-shot img {
@@ -191,6 +192,7 @@
   top: 0;
   bottom: 0;
   border-radius: 2px;
+  transform-origin: left center;
 }
 
 .pg-penguin .pg-penguin__seg--0 {
@@ -421,6 +423,12 @@
   stroke-linejoin: round;
 }
 
+/* Accent copy of each arrow; unlit at rest, it lights up in turn under motion. */
+.pg-penguin .pg-penguin__arrow-lit {
+  stroke: var(--ds-accent);
+  opacity: 0;
+}
+
 .pg-penguin .pg-penguin__arrow--right {
   grid-area: ar;
 }
@@ -552,6 +560,17 @@
   stroke: var(--ds-line-strong);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
+}
+
+/* Signal overlays (motion only). Dashes need user-space strokes, not non-scaling ones. */
+.pg-penguin .pg-penguin__bus .pg-penguin__bus-signal {
+  stroke: var(--ds-accent);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-dasharray: 0.14 1.2;
+  stroke-dashoffset: 0.2;
+  vector-effect: none;
+  opacity: 0;
 }
 
 .pg-penguin .pg-penguin__root {
@@ -697,6 +716,7 @@
   height: 14px;
   border-radius: 0 4px 4px 0;
   background: var(--pk-rival);
+  transform-origin: left center;
 }
 
 .pg-penguin .pg-penguin__bar-row.is-ours .pg-penguin__bar {
@@ -968,4 +988,211 @@
   .pg-penguin .pg-penguin__install-terminal {
     grid-column: 1 / -1;
   }
+}
+
+/* ---------- Features: a tour of the web app ---------- */
+
+.pg-penguin .pg-penguin__gallery {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 24px;
+  align-items: start;
+  margin-bottom: clamp(64px, 7vw, 104px);
+}
+
+.pg-penguin .pg-penguin__gallery-tabs {
+  grid-column: 1 / span 3;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.pg-penguin .pg-penguin__gallery-tab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ds-r-sm);
+  color: var(--ds-text-2);
+  font-size: 0.875rem;
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.3;
+  text-align: left;
+  transition:
+    background-color 160ms var(--ds-ease),
+    border-color 160ms var(--ds-ease),
+    color 160ms var(--ds-ease);
+}
+
+.pg-penguin .pg-penguin__gallery-tab:hover {
+  color: var(--ds-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pg-penguin .pg-penguin__gallery-tab[aria-selected='true'] {
+  color: var(--ds-text);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ds-line);
+}
+
+.pg-penguin .pg-penguin__gallery-path {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-micro);
+  font-weight: var(--ds-weight-regular);
+  letter-spacing: 0.02em;
+  color: var(--ds-text-3);
+}
+
+.pg-penguin .pg-penguin__gallery-panel {
+  grid-column: 4 / -1;
+  min-width: 0;
+}
+
+.pg-penguin .pg-penguin__gallery-panel[hidden] {
+  display: none;
+}
+
+.pg-penguin .pg-penguin__gallery-panel:focus-visible {
+  outline-offset: 8px;
+}
+
+.pg-penguin .pg-penguin__gallery-figure {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+
+.pg-penguin .pg-penguin__gallery-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pg-penguin .pg-penguin__gallery-caption {
+  font-size: var(--ds-text-sm);
+  line-height: 1.55;
+  color: var(--ds-text-2);
+}
+
+@media (max-width: 1180px) {
+  .pg-penguin .pg-penguin__gallery-tabs {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pg-penguin .pg-penguin__gallery-tab {
+    width: auto;
+    min-height: 36px;
+    padding: 0 14px;
+    align-items: center;
+    border-color: var(--ds-line);
+    border-radius: var(--ds-r-pill);
+  }
+
+  .pg-penguin .pg-penguin__gallery-tab[aria-selected='true'] {
+    border-color: var(--ds-line-strong);
+  }
+
+  .pg-penguin .pg-penguin__gallery-path {
+    display: none;
+  }
+
+  .pg-penguin .pg-penguin__gallery-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/* 1× vs 100×: the lit cells fill in along the diagonal, then a slow glint sweeps the hundred. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field [data-lit] {
+  animation: ds-fade-in 500ms var(--ds-ease-out) both;
+  animation-delay: calc(300ms + var(--i, 0) * 9ms);
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__side-field--ours [data-lit] {
+  animation: pg-penguin-glint 7s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field--ours [data-lit] {
+  animation:
+    ds-fade-in 500ms var(--ds-ease-out) calc(300ms + var(--i, 0) * 9ms) both,
+    pg-penguin-glint 7s var(--ds-ease-in-out) calc(1600ms + var(--i, 0) * 70ms) infinite;
+}
+
+/* ds-glint, with the peak early in the period so the first sweep starts right away. */
+@keyframes pg-penguin-glint {
+  0%,
+  22%,
+  100% {
+    opacity: var(--ds-glint-rest, 0.45);
+  }
+
+  8% {
+    opacity: 1;
+  }
+}
+
+/* Build: the screenshot settles in just after its window. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__build-shot img {
+  animation: ds-fade-up 900ms var(--ds-ease-out) 250ms both;
+}
+
+/* Evaluate: suite cells fill in, then the trace segments grow in time order. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__suite-cell {
+  animation: ds-fade-in 420ms var(--ds-ease-out) both;
+  animation-delay: calc(200ms + var(--i, 0) * 45ms);
+}
+
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__seg {
+  animation: ds-grow-x 560ms var(--ds-ease-out) both;
+  animation-delay: calc(600ms + var(--at, 0) * 1100ms);
+}
+
+/* Evolve: the trend line draws in once; a signal walks the loop, one arrow at a time. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark path {
+  stroke-dasharray: 1;
+  animation: ds-draw 1200ms var(--ds-ease-out) 300ms both;
+}
+
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pg-product-pop 500ms var(--ds-ease-out) 1350ms both;
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__arrow-lit {
+  animation: pg-product-light 4.8s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(600ms + var(--k, 0) * 1.2s);
+}
+
+/* Deploy: signals run from each entry point down into the one data root. */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__bus-signal {
+  opacity: 1;
+  animation: pg-product-signal 3.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(400ms + var(--k, 0) * 220ms);
+}
+
+/* Benchmark: bars grow from the axis once, then values and cost multiples fade in. */
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar {
+  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--r, 0) * 110ms);
+}
+
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar-value {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+  animation-delay: calc(850ms + var(--r, 0) * 110ms);
+}
+
+html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar-tag {
+  animation: ds-fade-in 700ms var(--ds-ease-out) both;
+  animation-delay: calc(1500ms + var(--r, 0) * 110ms);
 }

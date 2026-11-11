@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'react'
+import { useId, useRef, type CSSProperties } from 'react'
+import { useCycle, useInView, useReducedMotion } from '../../../components/site/motion'
 import { cx } from '../../../components/site/utils'
 import type { LlamaFactoryCopy } from '../../../i18n/messages/products/llamaFactory'
 import { MockWindow } from '../shared/Blocks'
@@ -34,27 +35,49 @@ const evalCurve = lossPath(29, 0.27, 16)
 const toLine = (coords: string[]) => `M${coords.join(' L')}`
 const toArea = (coords: string[]) => `${toLine(coords)} L${W - 8} ${H - 4} L8 ${H - 4} Z`
 
+// The latest training step, as a position inside the plot (for the live marker).
+const [lastX, lastY] = trainCurve[trainCurve.length - 1].split(' ').map(Number)
+const lastPoint = { left: `${(lastX / W) * 100}%`, top: `${(lastY / H) * 100}%` }
+
+/**
+ * Loss chart. Under motion the curves are revealed left to right by a clip
+ * (dashes would be mis-measured on these non-scaling strokes), and with `live`
+ * the latest step carries a marker that pings slowly.
+ */
 function LossChart({
   showEval = false,
+  live = false,
   lossLabel,
   stepLabel,
 }: {
   showEval?: boolean
+  live?: boolean
   lossLabel: string
   stepLabel: string
 }) {
+  const clipId = `lf-loss-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   return (
     <div className="pg-llama__chart">
       <span className="pg-product__mono pg-llama__chart-y">{lossLabel}</span>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} className="pg-llama__grid" x1="0" x2={W} y1={H * f} y2={H * f} />
-        ))}
-        <line className="pg-llama__axis" x1="0" x2={W} y1={H - 4} y2={H - 4} />
-        <path className="pg-llama__area" d={toArea(trainCurve)} />
-        <path className="pg-llama__curve" d={toLine(trainCurve)} />
-        {showEval ? <path className="pg-llama__curve pg-llama__curve--eval" d={toLine(evalCurve)} /> : null}
-      </svg>
+      <div className="pg-llama__plot">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <defs>
+            <clipPath id={clipId}>
+              <rect className="pg-llama__wipe" x="0" y="0" width={W} height={H} />
+            </clipPath>
+          </defs>
+          {[0.25, 0.5, 0.75].map((f) => (
+            <line key={f} className="pg-llama__grid" x1="0" x2={W} y1={H * f} y2={H * f} />
+          ))}
+          <line className="pg-llama__axis" x1="0" x2={W} y1={H - 4} y2={H - 4} />
+          <g clipPath={`url(#${clipId})`}>
+            <path className="pg-llama__area" d={toArea(trainCurve)} />
+            <path className="pg-llama__curve" d={toLine(trainCurve)} />
+            {showEval ? <path className="pg-llama__curve pg-llama__curve--eval" d={toLine(evalCurve)} /> : null}
+          </g>
+        </svg>
+        {live ? <span className="pg-llama__live" style={lastPoint} aria-hidden="true" /> : null}
+      </div>
       <span className="pg-product__mono pg-llama__chart-x">{stepLabel}</span>
     </div>
   )
@@ -86,7 +109,7 @@ export function LlamaBoard({ copy }: { copy: LlamaFactoryCopy['hero']['board'] }
         <div className="pg-llama__board-main">
           <div className="pg-llama__board-chart">
             <span className="pg-llama__panel-title">{copy.lossLabel}</span>
-            <LossChart lossLabel="loss" stepLabel={copy.stepLabel} />
+            <LossChart live lossLabel="loss" stepLabel={copy.stepLabel} />
           </div>
           <div className="pg-llama__board-side">
             <span className="pg-llama__panel-title">{copy.commandLabel}</span>
@@ -125,16 +148,27 @@ const stackWindow = (workflow: Workflow, step: Step) => ({
   meta: step.stack,
 })
 
+/**
+ * Model picker. While on screen (and motion is allowed) the selection steps
+ * through the models every few seconds; the server, no-JS and reduced-motion
+ * render keeps the first model selected.
+ */
 export function ModelVisual({ workflow, step }: { workflow: Workflow; step: Step }) {
   const v = workflow.visuals.model
+  const listRef = useRef<HTMLUListElement>(null)
+  const inView = useInView(listRef, 0.5)
+  const reduced = useReducedMotion()
+  const selected = useCycle(pickerModels.length, 3200, inView && !reduced)
   return (
     <MockWindow {...stackWindow(workflow, step)}>
-      <ul className="pg-llama__picker">
+      <ul className="pg-llama__picker" ref={listRef}>
         {pickerModels.map((model, i) => (
-          <li key={model.name} className={cx('pg-llama__pick', i === 0 && 'is-selected')}>
+          <li key={model.name} className={cx('pg-llama__pick', i === selected && 'is-selected')}>
             <span className="pg-llama__pick-head">
               <span className="pg-llama__pick-name">{model.name}</span>
-              {i === 0 ? <span className="ds-tag">{v.selected}</span> : null}
+              <span className="ds-tag pg-llama__pick-tag" aria-hidden={i === selected ? undefined : true}>
+                {v.selected}
+              </span>
               <span className="pg-llama__pick-template">{model.template}</span>
             </span>
             <span className="pg-llama__pick-sizes">{model.sizes}</span>
@@ -172,7 +206,12 @@ export function DatasetVisual({ workflow, step }: { workflow: Workflow; step: St
             <div key={r} className="pg-llama__tr">
               {row.map((w, c) => (
                 <span key={c}>
-                  {w > 0 ? <span className="pg-llama__skel" style={{ width: `${w * 100}%` }} /> : null}
+                  {w > 0 ? (
+                    <span
+                      className="pg-llama__skel"
+                      style={{ width: `${w * 100}%`, '--i': r + c } as CSSProperties}
+                    />
+                  ) : null}
                 </span>
               ))}
             </div>
@@ -192,10 +231,11 @@ export function MethodVisual({ workflow, step }: { workflow: Workflow; step: Ste
       <figure className="pg-llama__memory">
         <figcaption className="pg-llama__panel-title">{v.title}</figcaption>
         <ul className="pg-llama__mem-rows">
-          {memory7b.map((row) => (
+          {memory7b.map((row, r) => (
             <li
               key={`${row.method}-${row.bits}`}
               className={cx('pg-llama__mem-row', row.gb <= 16 && 'is-efficient')}
+              style={{ '--r': r } as CSSProperties}
             >
               <span className="pg-llama__mem-name">
                 {row.method}
@@ -254,6 +294,7 @@ export function ExportVisual({
     <Terminal
       idBase="lf-export"
       className="pg-llama__export"
+      reveal={false}
       label={`${workflow.stackLabel} · ${step.label} — ${step.stack}`}
       copyLabel={copyLabel}
       copiedLabel={copiedLabel}
@@ -277,7 +318,7 @@ export function ExportVisual({
 
 export function MethodsMatrix({ copy }: { copy: LlamaFactoryCopy['methods'] }) {
   return (
-    <div className="ds-panel pg-llama__matrix">
+    <div className="ds-panel pg-llama__matrix" data-animate="">
       <table>
         <caption className="ds-sr-only">{copy.matrixLabel}</caption>
         <thead>
@@ -293,15 +334,16 @@ export function MethodsMatrix({ copy }: { copy: LlamaFactoryCopy['methods'] }) {
           </tr>
         </thead>
         <tbody>
-          {copy.approaches.map((approach) => (
+          {copy.approaches.map((approach, r) => (
             <tr key={approach.short}>
               <th scope="row">
                 <span className="pg-llama__approach-name">{approach.name}</span>
                 <span className="pg-llama__approach-short">{approach.short}</span>
               </th>
-              {tuningMethods.map((method) => (
+              {tuningMethods.map((method, c) => (
                 <td key={method}>
-                  <span className="pg-llama__cell">
+                  {/* --d: diagonal position, for the intro and the highlight sweep. */}
+                  <span className="pg-llama__cell" style={{ '--d': r + c } as CSSProperties}>
                     <span className="ds-sr-only">✓</span>
                   </span>
                 </td>
@@ -318,6 +360,8 @@ export function MethodsMatrix({ copy }: { copy: LlamaFactoryCopy['methods'] }) {
 /* Open-source architecture                                            */
 /* ------------------------------------------------------------------ */
 
+const archWires = ['M50 0 C50 30 100 26 100 56', 'M150 0 C150 30 100 26 100 56']
+
 export function Architecture({ copy }: { copy: LlamaFactoryCopy['open'] }) {
   const [webui, cli, ...engine] = copy.architectureItems
   return (
@@ -328,8 +372,13 @@ export function Architecture({ copy }: { copy: LlamaFactoryCopy['open'] }) {
           <span className="pg-llama__arch-box pg-llama__arch-box--ui">{cli}</span>
         </div>
         <svg className="pg-llama__arch-wires" viewBox="0 0 200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path d="M50 0 C50 30 100 26 100 56" />
-          <path d="M150 0 C150 30 100 26 100 56" />
+          {archWires.map((d) => (
+            <path key={d} d={d} />
+          ))}
+          {/* Signals from both interfaces into the engine (motion only). */}
+          {archWires.map((d) => (
+            <path key={`s-${d}`} className="pg-llama__arch-signal" d={d} pathLength={1} />
+          ))}
         </svg>
         <div className="pg-llama__arch-engine">
           <span className="pg-product__mono">llamafactory-cli</span>
@@ -337,7 +386,9 @@ export function Architecture({ copy }: { copy: LlamaFactoryCopy['open'] }) {
             {engine.map((item, i) => (
               <span key={item} className="pg-llama__arch-step">
                 <span className="pg-llama__arch-box">{item}</span>
-                {i < engine.length - 1 ? <span className="pg-llama__arch-arrow" aria-hidden="true" /> : null}
+                {i < engine.length - 1 ? (
+                  <span className="pg-llama__arch-arrow" style={{ '--k': i } as CSSProperties} aria-hidden="true" />
+                ) : null}
               </span>
             ))}
           </div>

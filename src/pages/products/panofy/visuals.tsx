@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { PixelField, type PixelLit } from '../../../components/site/ui'
 import { cx } from '../../../components/site/utils'
 import type { PanofyCopy } from '../../../i18n/messages/products/panofy'
@@ -33,20 +34,37 @@ const memoryLit: PixelLit[] = [
 /* Hero: training workspace                                            */
 /* ------------------------------------------------------------------ */
 
-/** Three wires fanning between a column of three rows and a centred node. */
-const Wires = ({ reverse = false }: { reverse?: boolean }) => (
-  <svg
-    className="pg-panofy__wires"
-    viewBox="0 0 100 100"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    focusable="false"
-  >
-    {[16.667, 50, 83.333].map((y) => (
-      <path key={y} d={reverse ? `M0 50 C55 50 45 ${y} 100 ${y}` : `M0 ${y} C55 ${y} 45 50 100 50`} />
-    ))}
-  </svg>
-)
+/**
+ * Three wires fanning between a column of three rows and a centred node, each with
+ * a signal overlay that travels along it under motion (sources in, outputs out).
+ */
+const Wires = ({ reverse = false }: { reverse?: boolean }) => {
+  const paths = [16.667, 50, 83.333].map((y) =>
+    reverse ? `M0 50 C55 50 45 ${y} 100 ${y}` : `M0 ${y} C55 ${y} 45 50 100 50`,
+  )
+  return (
+    <svg
+      className={cx('pg-panofy__wires', reverse ? 'pg-panofy__wires--out' : 'pg-panofy__wires--in')}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {paths.map((d) => (
+        <path key={d} d={d} />
+      ))}
+      {paths.map((d, k) => (
+        <path
+          key={`s-${d}`}
+          className="pg-panofy__signal"
+          d={d}
+          pathLength={1}
+          style={{ '--k': k } as CSSProperties}
+        />
+      ))}
+    </svg>
+  )
+}
 
 export function Workbench({ copy }: { copy: PanofyCopy['workbench'] }) {
   return (
@@ -70,8 +88,12 @@ export function Workbench({ copy }: { copy: PanofyCopy['workbench'] }) {
           </div>
           <Wires reverse />
           <ul className="pg-panofy__col pg-panofy__col--out">
-            {copy.outputs.map((output) => (
-              <li key={output} className="pg-panofy__tile pg-panofy__tile--out">
+            {copy.outputs.map((output, k) => (
+              <li
+                key={output}
+                className="pg-panofy__tile pg-panofy__tile--out"
+                style={{ '--k': k } as CSSProperties}
+              >
                 <span>{output}</span>
                 <ArrowSlimIcon />
               </li>
@@ -102,8 +124,8 @@ export function KnowledgeVisual({ copy }: { copy: Visuals['knowledge'] }) {
     <MockWindow label={copy.coreLabel} meta="sources → context" texture="cells" ariaLabel={copy.ariaLabel}>
       <div className="pg-panofy__kmap">
         <ul className="pg-panofy__krow pg-panofy__krow--top">
-          {copy.inputs.map((item) => (
-            <li key={item} className="pg-panofy__ktile">
+          {copy.inputs.map((item, k) => (
+            <li key={item} className="pg-panofy__ktile" style={{ '--k': k } as CSSProperties}>
               <FileIcon />
               <span>{item}</span>
             </li>
@@ -115,8 +137,8 @@ export function KnowledgeVisual({ copy }: { copy: Visuals['knowledge'] }) {
           <PixelField className="pg-panofy__kcore-field" cols={28} rows={2} cell={8} gap={4} lit={memoryLit} />
         </div>
         <ul className="pg-panofy__krow pg-panofy__krow--bottom">
-          {copy.outputs.map((item) => (
-            <li key={item} className="pg-panofy__ktile">
+          {copy.outputs.map((item, k) => (
+            <li key={item} className="pg-panofy__ktile" style={{ '--k': k } as CSSProperties}>
               <BookIcon />
               <span>{item}</span>
             </li>
@@ -129,6 +151,9 @@ export function KnowledgeVisual({ copy }: { copy: Visuals['knowledge'] }) {
 
 const feedbackTones = ['amber', 'green', 'cyan'] as const
 
+const markAt = (left: number, width: number, k: number) =>
+  ({ left: `${left}%`, width: `${width}%`, '--k': k }) as CSSProperties
+
 export function TeachingVisual({ copy }: { copy: Visuals['teaching'] }) {
   return (
     <MockWindow label={copy.exampleLabel} meta="review" ariaLabel={copy.ariaLabel}>
@@ -137,22 +162,27 @@ export function TeachingVisual({ copy }: { copy: Visuals['teaching'] }) {
           <span className="pg-product__mono">{copy.exampleLabel}</span>
           <span className="pg-panofy__sheet-title">{copy.exampleTitle}</span>
           <p className="pg-panofy__sheet-body">{copy.exampleBody}</p>
+          {/* Each highlight (--k) pairs with the feedback note of the same colour. */}
           <span className="pg-panofy__lines" aria-hidden="true">
             <span className="pg-panofy__line" style={{ width: '92%' }}>
-              <span className="pg-panofy__mark pg-panofy__mark--amber" style={{ left: '38%', width: '22%' }} />
+              <span className="pg-panofy__mark pg-panofy__mark--amber" style={markAt(38, 22, 0)} />
             </span>
             <span className="pg-panofy__line" style={{ width: '78%' }} />
             <span className="pg-panofy__line" style={{ width: '86%' }}>
-              <span className="pg-panofy__mark pg-panofy__mark--green" style={{ left: '8%', width: '34%' }} />
+              <span className="pg-panofy__mark pg-panofy__mark--green" style={markAt(8, 34, 1)} />
             </span>
             <span className="pg-panofy__line" style={{ width: '64%' }}>
-              <span className="pg-panofy__mark pg-panofy__mark--cyan" style={{ left: '46%', width: '30%' }} />
+              <span className="pg-panofy__mark pg-panofy__mark--cyan" style={markAt(46, 30, 2)} />
             </span>
           </span>
         </div>
         <ul className="pg-panofy__feedback">
           {copy.feedback.map((item, i) => (
-            <li key={item} className={cx('pg-panofy__fb', `pg-panofy__fb--${feedbackTones[i]}`)}>
+            <li
+              key={item}
+              className={cx('pg-panofy__fb', `pg-panofy__fb--${feedbackTones[i]}`)}
+              style={{ '--k': i } as CSSProperties}
+            >
               <span className="pg-panofy__fb-dot" aria-hidden="true" />
               {item}
             </li>
@@ -170,7 +200,7 @@ export function ControlsVisual({ copy }: { copy: Visuals['controls'] }) {
     <MockWindow label={copy.header} meta="3 / 3" ariaLabel={copy.ariaLabel}>
       <ol className="pg-panofy__controls">
         {copy.rows.map((row, i) => (
-          <li key={row.title} className="pg-panofy__control">
+          <li key={row.title} className="pg-panofy__control" style={{ '--k': i } as CSSProperties}>
             <span className="pg-panofy__control-icon">{controlIcons[i]}</span>
             <span className="pg-panofy__control-text">
               <span className="pg-panofy__control-title">{row.title}</span>
@@ -186,6 +216,9 @@ export function ControlsVisual({ copy }: { copy: Visuals['controls'] }) {
   )
 }
 
+// Hub to each role, in the order of the roles grid (top-left, top-right, bottom-left, bottom-right).
+const spokes = ['M50 50 L25 25', 'M50 50 L75 25', 'M50 50 L25 75', 'M50 50 L75 75']
+
 export function RolloutVisual({ copy }: { copy: Visuals['rollout'] }) {
   return (
     <MockWindow label="agents" meta="4 roles" texture="dots" ariaLabel={copy.ariaLabel}>
@@ -197,7 +230,19 @@ export function RolloutVisual({ copy }: { copy: Visuals['rollout'] }) {
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M50 50 L25 25 M50 50 L75 25 M50 50 L25 75 M50 50 L75 75" />
+          {spokes.map((d) => (
+            <path key={d} d={d} />
+          ))}
+          {/* Signals from the hub out to each role (motion only). */}
+          {spokes.map((d, k) => (
+            <path
+              key={`s-${d}`}
+              className="pg-panofy__signal"
+              d={d}
+              pathLength={1}
+              style={{ '--k': k } as CSSProperties}
+            />
+          ))}
         </svg>
         <ul className="pg-panofy__roles">
           {copy.roles.map((role, i) => (
@@ -206,7 +251,11 @@ export function RolloutVisual({ copy }: { copy: Visuals['rollout'] }) {
               <span className="pg-panofy__role-agent">{role.agent}</span>
               <span className="pg-panofy__role-cells" aria-hidden="true">
                 {Array.from({ length: 8 }, (_, c) => (
-                  <span key={c} className={cx('pg-panofy__role-cell', c < 5 + (i % 3) && 'is-lit')} />
+                  <span
+                    key={c}
+                    className={cx('pg-panofy__role-cell', c < 5 + (i % 3) && 'is-lit')}
+                    style={{ '--i': i + c } as CSSProperties}
+                  />
                 ))}
               </span>
             </li>

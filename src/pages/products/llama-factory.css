@@ -170,13 +170,43 @@
   min-height: 190px;
 }
 
-.pg-llama .pg-llama__chart svg {
+.pg-llama .pg-llama__plot {
+  position: relative;
   grid-column: 2;
   grid-row: 1;
+  min-height: 160px;
+}
+
+.pg-llama .pg-llama__plot svg {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 160px;
+}
+
+.pg-llama .pg-llama__wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+/* The latest training step: the chart's one focal point. */
+.pg-llama .pg-llama__live {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--ds-accent);
+}
+
+.pg-llama .pg-llama__live::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 50%;
+  opacity: 0;
 }
 
 .pg-llama .pg-llama__chart-y {
@@ -252,20 +282,40 @@
 }
 
 .pg-llama .pg-llama__pick {
+  position: relative;
   display: grid;
   gap: 6px;
-  padding: 12px 14px;
+  padding: 12px 14px 12px 16px;
   border-bottom: 1px solid var(--ds-line);
-  border-left: 2px solid transparent;
 }
 
 .pg-llama .pg-llama__pick:last-child {
   border-bottom: 0;
 }
 
-.pg-llama .pg-llama__pick.is-selected {
-  border-left-color: var(--ds-accent);
+/* The selection highlight is a layer that fades between cards (opacity only). */
+.pg-llama .pg-llama__pick::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 2px solid var(--ds-accent);
   background: rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms var(--ds-ease-out);
+}
+
+.pg-llama .pg-llama__pick.is-selected::before {
+  opacity: 1;
+}
+
+.pg-llama .pg-llama__pick-tag {
+  opacity: 0;
+  transition: opacity 600ms var(--ds-ease-out);
+}
+
+.pg-llama .pg-llama__pick.is-selected .pg-llama__pick-tag {
+  opacity: 1;
 }
 
 .pg-llama .pg-llama__pick-head {
@@ -357,6 +407,7 @@
   height: 6px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.12);
+  transform-origin: left center;
 }
 
 .pg-llama .pg-llama__memory {
@@ -406,6 +457,7 @@
   height: 14px;
   border-radius: 0 4px 4px 0;
   background: var(--pk-rival);
+  transform-origin: left center;
 }
 
 .pg-llama .pg-llama__mem-row.is-efficient .pg-llama__mem-bar {
@@ -532,13 +584,25 @@
   border-bottom: 0;
 }
 
+/* Outline first: a quiet accent cell per supported pair; the fill lights only in the sweep. */
 .pg-llama .pg-llama__cell {
+  position: relative;
   display: inline-block;
   width: 14px;
   height: 14px;
+  border: 1px solid var(--ds-accent-line);
   border-radius: 3px;
-  background: var(--ds-accent);
+  background: var(--ds-accent-soft);
   vertical-align: middle;
+}
+
+.pg-llama .pg-llama__cell::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--ds-accent);
+  opacity: 0;
 }
 
 .pg-llama .pg-llama__approach-short {
@@ -581,6 +645,7 @@
 }
 
 .pg-llama .pg-llama__family {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -589,6 +654,17 @@
   padding: 20px;
   border-radius: var(--ds-r);
   background: var(--ds-paper-2);
+}
+
+/* Hairline accent outline; unlit at rest, it steps from card to card under motion. */
+.pg-llama .pg-llama__family::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--ds-accent);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .pg-llama .pg-llama__family-name {
@@ -724,6 +800,17 @@
   vector-effect: non-scaling-stroke;
 }
 
+/* Signal overlays (motion only). Dashes need user-space strokes, not non-scaling ones. */
+.pg-llama .pg-llama__arch-wires .pg-llama__arch-signal {
+  stroke: var(--ds-accent);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-dasharray: 0.14 1.2;
+  stroke-dashoffset: 0.2;
+  vector-effect: none;
+  opacity: 0;
+}
+
 .pg-llama .pg-llama__arch-engine {
   position: relative;
   display: grid;
@@ -777,6 +864,15 @@
   border-left: 5px solid var(--ds-text-3);
 }
 
+/* Accent copy of the arrow's shaft; unlit at rest, it lights in turn under motion. */
+.pg-llama .pg-llama__arch-arrow::before {
+  content: '';
+  position: absolute;
+  inset: 0 2px 0 0;
+  background: var(--ds-accent);
+  opacity: 0;
+}
+
 @media (max-width: 960px) {
   .pg-llama .pg-llama__open-copy,
   .pg-llama .pg-llama__open-visual {
@@ -803,5 +899,105 @@
 
   .pg-llama .pg-llama__arch-engine {
     padding: 20px 10px 12px;
+  }
+}
+
+/* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
+
+/* Loss charts: the curves draw in left to right once; the hero's latest step then pings slowly. */
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__wipe {
+  animation: ds-grow-x 1500ms var(--ds-ease-in-out) 200ms both;
+}
+
+html[data-motion] .pg-llama [data-inview] .pg-llama__live::after {
+  animation: ds-ping 3.2s var(--ds-ease-out) infinite;
+}
+
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__live {
+  animation: pg-product-pop 500ms var(--ds-ease-out) 1600ms both;
+}
+
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__live::after {
+  animation: ds-ping 3.2s var(--ds-ease-out) 2100ms infinite;
+}
+
+/* Dataset: the skeleton cells fill in along the diagonal. */
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__skel {
+  animation: ds-grow-x 700ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--i, 0) * 90ms);
+}
+
+/* GPU memory: bars grow from the axis, top to bottom, then their values fade in. */
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__mem-bar {
+  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
+  animation-delay: calc(250ms + var(--r, 0) * 110ms);
+}
+
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__mem-value {
+  animation: ds-fade-in 600ms var(--ds-ease-out) both;
+  animation-delay: calc(850ms + var(--r, 0) * 110ms);
+}
+
+/* Methods matrix: cells arrive along the diagonal, then a soft highlight sweeps across. */
+html[data-motion] .pg-llama [data-inview='enter'] .pg-llama__cell {
+  animation: pg-product-pop 500ms var(--ds-ease-out) both;
+  animation-delay: calc(200ms + var(--d, 0) * 60ms);
+}
+
+html[data-motion] .pg-llama [data-inview] .pg-llama__cell::after {
+  animation: pg-llama-sweep 7s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1600ms + var(--d, 0) * 220ms);
+}
+
+@keyframes pg-llama-sweep {
+  0%,
+  16%,
+  100% {
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 0.85;
+  }
+}
+
+/* Model families: a hairline highlight steps from card to card. */
+html[data-motion] .pg-llama [data-inview] .pg-llama__family::after {
+  animation: pg-llama-step 9.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(800ms + var(--i, 0) * 600ms);
+}
+
+@keyframes pg-llama-step {
+  0%,
+  10%,
+  100% {
+    opacity: 0;
+  }
+
+  3%,
+  6% {
+    opacity: 0.7;
+  }
+}
+
+/* Architecture: signals run from both interfaces into the engine, then along its stages. */
+html[data-motion] .pg-llama [data-inview] .pg-llama__arch-signal {
+  opacity: 1;
+  animation: pg-llama-wire 4.8s var(--ds-ease-in-out) 400ms infinite;
+}
+
+html[data-motion] .pg-llama [data-inview] .pg-llama__arch-arrow::before {
+  animation: pg-product-light 4.8s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(1800ms + var(--k, 0) * 600ms);
+}
+
+@keyframes pg-llama-wire {
+  0% {
+    stroke-dashoffset: 0.2;
+  }
+
+  26%,
+  100% {
+    stroke-dashoffset: -1.06;
   }
 }
