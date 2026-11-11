@@ -127,11 +127,10 @@ describe.each(locales)('departments overview (%s)', (locale) => {
     // and KPI chart carry their own loops instead.
     expect(count(html, /class="pg-mock__tag"[^>]*data-focal="true"/g)).toBe(departmentOrder.length - 3)
     // The ticket conveyor renders its tickets twice (the incoming copy is hidden
-    // from assistive tech) and the fulfillment queues mark their wave cells.
+    // from assistive tech). Charts carry no loop hooks: they only grow once.
     const queue = t.solutions['customer-support'].mock.items
     expect(count(html, /class="pg-mock__row"/g)).toBe(queue.length * 2)
-    expect(html).toMatch(/data-wave="up1"/)
-    expect(html).toMatch(/data-wave="down1"/)
+    expect(html).not.toContain('data-wave')
   })
 })
 
