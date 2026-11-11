@@ -78,6 +78,17 @@
   color: var(--ds-text);
 }
 
+.pg-penguin .pg-penguin__prompt-cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  background: var(--ds-accent);
+  opacity: 0.85;
+}
+
 .pg-penguin .pg-penguin__prompt-caret {
   font-family: var(--ds-font-mono);
   color: var(--ds-accent);
@@ -147,11 +158,22 @@
 }
 
 .pg-penguin .pg-penguin__suite-cell {
+  position: relative;
   width: 8px;
   height: 8px;
   border: 1px solid var(--ds-accent-line);
   border-radius: 2px;
   background: var(--ds-accent-soft);
+}
+
+/* Solid fill of a task cell; empty at rest, it runs and settles under motion. */
+.pg-penguin .pg-penguin__suite-cell::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--ds-accent);
+  opacity: 0;
 }
 
 .pg-penguin .pg-penguin__trace {
@@ -552,25 +574,8 @@
   display: block;
   width: 100%;
   height: 64px;
-  overflow: visible;
-}
-
-.pg-penguin .pg-penguin__bus path {
-  fill: none;
-  stroke: var(--ds-line-strong);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-/* Signal overlays (motion only). Dashes need user-space strokes, not non-scaling ones. */
-.pg-penguin .pg-penguin__bus .pg-penguin__bus-signal {
-  stroke: var(--ds-accent);
-  stroke-width: 1.25;
-  stroke-linecap: round;
-  stroke-dasharray: 0.14 1.2;
-  stroke-dashoffset: 0.2;
-  vector-effect: none;
-  opacity: 0;
+  --pk-packet: 2.4s;
+  --pk-packet-k: 0.5s;
 }
 
 .pg-penguin .pg-penguin__root {
@@ -599,6 +604,19 @@
   margin-left: -3.5px;
   border-radius: 50%;
   background: var(--ds-violet);
+}
+
+/* A ring on the root's entry dot; unlit at rest, it pings as packets arrive. */
+.pg-penguin .pg-penguin__root-ping {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border: 1px solid var(--ds-accent);
+  border-radius: 50%;
+  opacity: 0;
 }
 
 .pg-penguin .pg-penguin__root svg {
@@ -1111,80 +1129,192 @@
 
 /* ---------- Motion (contract: src/components/site/motion.ts) ---------- */
 
-/* 1× vs 100×: the lit cells fill in along the diagonal, then a slow glint sweeps the hundred. */
-html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field [data-lit] {
-  animation: ds-fade-in 500ms var(--ds-ease-out) both;
-  animation-delay: calc(300ms + var(--i, 0) * 9ms);
-}
+/*
+ * Loops are primary: each visual stays visibly alive while in view, with fills
+ * moving between outline, soft and solid. Every keyframe starts from the resting
+ * state, so nothing snaps on first load. Intros only on [data-inview='enter'].
+ */
 
+/* 1× vs 100×: waves of solid fill sweep the hundred along the diagonal; the single
+   hand-built cell blinks slowly while a few background cells come and go. */
 html[data-motion] .pg-penguin [data-inview] .pg-penguin__side-field--ours [data-lit] {
-  animation: pg-penguin-glint 7s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: pg-product-wave-fill 4.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--i, 0) * 46ms);
 }
 
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__side-field--ours [data-lit] {
   animation:
-    ds-fade-in 500ms var(--ds-ease-out) calc(300ms + var(--i, 0) * 9ms) both,
-    pg-penguin-glint 7s var(--ds-ease-in-out) calc(1600ms + var(--i, 0) * 70ms) infinite;
+    ds-fade-in 500ms var(--ds-ease-out) calc(200ms + var(--i, 0) * 8ms) both,
+    pg-product-wave-fill 4.6s var(--ds-ease-in-out) calc(1100ms + var(--i, 0) * 46ms) infinite;
 }
 
-/* ds-glint, with the peak early in the period so the first sweep starts right away. */
-@keyframes pg-penguin-glint {
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__side-field:not(.pg-penguin__side-field--ours) [data-lit] {
+  animation: pg-penguin-blink 3.2s var(--ds-ease-in-out) infinite;
+}
+
+@keyframes pg-penguin-blink {
   0%,
-  22%,
   100% {
     opacity: var(--ds-glint-rest, 0.45);
   }
 
-  8% {
-    opacity: 1;
+  45%,
+  60% {
+    opacity: 0.8;
   }
 }
 
-/* Build: the screenshot settles in just after its window. */
+/* Build: the prompt's cursor blinks; the screenshot settles in after its window. */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__prompt-cursor {
+  animation: ds-caret 1.2s steps(1, end) infinite;
+}
+
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__build-shot img {
   animation: ds-fade-up 900ms var(--ds-ease-out) 250ms both;
 }
 
-/* Evaluate: suite cells fill in, then the trace segments grow in time order. */
-html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__suite-cell {
-  animation: ds-fade-in 420ms var(--ds-ease-out) both;
-  animation-delay: calc(200ms + var(--i, 0) * 45ms);
+/* Evaluate: each suite runs its tasks left to right (the running cell solid, done
+   cells soft), then the queue resets; the trace timeline keeps re-recording. */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__suite-cell::before {
+  --pk-done: 0.55;
+  animation: pg-product-queue 6s linear infinite;
+  animation-delay: calc(var(--r, 0) * 0.45s + var(--c, 0) * 0.34s);
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__seg {
+  animation: pg-product-rebuild 6.4s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--at, 0) * 2.6s);
 }
 
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__seg {
-  animation: ds-grow-x 560ms var(--ds-ease-out) both;
-  animation-delay: calc(600ms + var(--at, 0) * 1100ms);
+  animation:
+    pg-product-rebuild 6.4s var(--ds-ease-in-out) calc(-1.57s + var(--at, 0) * 2.6s) infinite,
+    ds-grow-x 560ms var(--ds-ease-out) calc(300ms + var(--at, 0) * 1100ms) backwards;
 }
 
-/* Evolve: the trend line draws in once; a signal walks the loop, one arrow at a time. */
-html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark path {
+/* Evolve: a solid signal walks the loop arrow by arrow; the evaluators fill green
+   in parallel, each on its own rhythm; the trend line redraws and its tip pings. */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__arrow-lit {
+  animation: pg-product-light 3.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--k, 0) * 0.9s);
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__hex {
+  position: relative;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__hex::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ds-green);
+  opacity: 0;
+  animation: ds-solid calc(2.6s + var(--i, 0) * 0.13s) var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--i, 0) * 0.37s);
+}
+
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__spark path {
   stroke-dasharray: 1;
-  animation: ds-draw 1200ms var(--ds-ease-out) 300ms both;
+  animation: pg-penguin-trend 5.2s var(--ds-ease-in-out) infinite;
 }
 
-html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__spark circle {
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__spark circle {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pg-product-pop 500ms var(--ds-ease-out) 1350ms both;
+  animation: pg-penguin-tip 5.2s var(--ds-ease-in-out) infinite;
 }
 
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__arrow-lit {
-  animation: pg-product-light 4.8s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(600ms + var(--k, 0) * 1.2s);
+@keyframes pg-penguin-trend {
+  0%,
+  58% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  66% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+
+  66.1% {
+    opacity: 1;
+    stroke-dashoffset: 1;
+  }
+
+  92%,
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
 }
 
-/* Deploy: signals run from each entry point down into the one data root. */
-html[data-motion] .pg-penguin [data-inview] .pg-penguin__bus-signal {
-  opacity: 1;
-  animation: pg-product-signal 3.6s var(--ds-ease-in-out) infinite;
-  animation-delay: calc(400ms + var(--k, 0) * 220ms);
+/* The tip pings twice while the line holds, hides while it redraws. */
+@keyframes pg-penguin-tip {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  14% {
+    opacity: 1;
+    transform: scale(2);
+  }
+
+  28% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  42% {
+    opacity: 1;
+    transform: scale(2);
+  }
+
+  56% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  62%,
+  92% {
+    opacity: 0;
+    transform: scale(1);
+  }
 }
 
-/* Benchmark: bars grow from the axis once, then values and cost multiples fade in. */
+/* Deploy: solid packets run down from every entry point (shared packets) and the
+   data root's entry dot pings as they arrive. */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__root-ping {
+  animation: pg-penguin-arrive 2.4s var(--ds-ease-out) infinite;
+  animation-delay: 2.1s;
+}
+
+@keyframes pg-penguin-arrive {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  36%,
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+/* Benchmark: bars grow once on arrival, then rebuild from the axis on a loop
+   (values and cost multiples stay put; they only fade in once). */
+html[data-motion] .pg-penguin [data-inview] .pg-penguin__bar {
+  animation: pg-product-rebuild 5.6s var(--ds-ease-in-out) infinite;
+  animation-delay: calc(var(--r, 0) * 120ms);
+}
+
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar {
-  animation: ds-grow-x 1000ms var(--ds-ease-out) both;
-  animation-delay: calc(250ms + var(--r, 0) * 110ms);
+  animation:
+    pg-product-rebuild 5.6s var(--ds-ease-in-out) calc(-0.67s + var(--r, 0) * 120ms) infinite,
+    ds-grow-x 1000ms var(--ds-ease-out) calc(250ms + var(--r, 0) * 110ms) backwards;
 }
 
 html[data-motion] .pg-penguin [data-inview='enter'] .pg-penguin__bar-value {

@@ -4,6 +4,7 @@ import { cx, scatterPixels } from '../../../components/site/utils'
 import type { Locale } from '../../../i18n/locales'
 import type { PenguinHarnessCopy } from '../../../i18n/messages/products/penguinHarness'
 import { MockWindow } from '../shared/Blocks'
+import { Connectors } from '../shared/Connectors'
 import {
   CubeIcon,
   DatabaseIcon,
@@ -85,6 +86,8 @@ export function CompareVisual({ sides }: { sides: PenguinHarnessCopy['compare'][
               cell={14}
               gap={6}
               lit={ours ? hundredCells : oneCell}
+              live={ours ? 0 : 0.05}
+              seed={11}
             />
             <p className="pg-penguin__side-note">{side.note}</p>
           </li>
@@ -105,7 +108,10 @@ export function BuildVisual({ locale, copy }: { locale: Locale; copy: HowVisuals
         <span className="pg-penguin__prompt-caret" aria-hidden="true">
           ›
         </span>
-        {copy.prompt}
+        <span>
+          {copy.prompt}
+          <span className="pg-penguin__prompt-cursor" aria-hidden="true" />
+        </span>
       </p>
       <div className="pg-penguin__build-shot">
         <img
@@ -152,7 +158,7 @@ export function EvaluateVisual({ copy }: { copy: HowVisuals['evaluate'] }) {
               <span className="pg-penguin__suite-name">{suite.name}</span>
               <span className="pg-penguin__suite-cells" aria-hidden="true">
                 {Array.from({ length: 10 }, (_, i) => (
-                  <span key={i} className="pg-penguin__suite-cell" style={{ '--i': row + i } as CSSProperties} />
+                  <span key={i} className="pg-penguin__suite-cell" style={{ '--r': row, '--c': i } as CSSProperties} />
                 ))}
               </span>
               <span className="pg-penguin__suite-tasks">{copy.tasks}</span>
@@ -234,7 +240,7 @@ export function EvolveVisual({ copy }: { copy: HowVisuals['evolve'] }) {
           <span className="pg-penguin__node-body">{evaluators.body}</span>
           <span className="pg-penguin__glyphs" aria-hidden="true">
             {Array.from({ length: 8 }, (_, i) => (
-              <span key={i} className={cx('pg-penguin__hex', i < 5 && 'is-lit')} />
+              <span key={i} className={cx('pg-penguin__hex', i < 5 && 'is-lit')} style={{ '--i': i } as CSSProperties} />
             ))}
           </span>
         </div>
@@ -271,7 +277,7 @@ export function EvolveVisual({ copy }: { copy: HowVisuals['evolve'] }) {
   )
 }
 
-const busPaths = ['M50 0 C50 40 150 24 150 64', 'M150 0 V64', 'M250 0 C250 40 150 24 150 64']
+const busPaths = ['M50 0 C50 40 150 24 150 64', 'M150 0 L150 64', 'M250 0 C250 40 150 24 150 64']
 
 export function DeployVisual({ copy }: { copy: HowVisuals['deploy'] }) {
   const icons = [<MonitorIcon key="d" />, <TerminalIcon key="c" />, <CubeIcon key="k" />]
@@ -287,22 +293,10 @@ export function DeployVisual({ copy }: { copy: HowVisuals['deploy'] }) {
             </li>
           ))}
         </ul>
-        <svg className="pg-penguin__bus" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          {busPaths.map((d) => (
-            <path key={d} d={d} />
-          ))}
-          {/* Signals from each entry point down to the data root (motion only). */}
-          {busPaths.map((d, i) => (
-            <path
-              key={`s${i}`}
-              className="pg-penguin__bus-signal"
-              d={d}
-              pathLength={1}
-              style={{ '--k': i } as CSSProperties}
-            />
-          ))}
-        </svg>
+        {/* Packets run from each entry point down into the one data root. */}
+        <Connectors className="pg-penguin__bus" paths={busPaths} box={[300, 64]} packets={2} />
         <div className="pg-penguin__root">
+          <span className="pg-penguin__root-ping" aria-hidden="true" />
           <DatabaseIcon />
           <span className="pg-penguin__root-path">~/.penguin/data</span>
           <span className="pg-product__mono">{copy.rootLabel}</span>

@@ -102,6 +102,7 @@ export function PanofyPage({ locale }: PageProps) {
                 style={{ '--i': i } as CSSProperties}
               >
                 <span className="pg-panofy__step-dot" />
+                <span className="pg-panofy__step-packet" />
               </span>
               <span className="pg-product__mono pg-panofy__step-label">
                 {String(i + 1).padStart(2, '0')} · {step.label}

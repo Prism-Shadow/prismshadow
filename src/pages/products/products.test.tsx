@@ -122,8 +122,12 @@ describe.each(locales)('PenguinHarness page (%s)', (locale) => {
     const compare = html.slice(html.indexOf('id="compare"'), html.indexOf('id="how-it-works"'))
     expect(count(compare, 'data-lit=""')).toBe(101)
     expect(compare).toContain('--i:99')
+    // The 1× field is live: a few of its background cells come and go.
+    expect(compare).toContain('data-twinkle=""')
     expect(count(html, 'class="pg-penguin__arrow-lit"')).toBe(4)
-    expect(count(html, 'class="pg-penguin__bus-signal"')).toBe(3)
+    // Connectors render their hairlines on the server; packets are added only once measured on the client.
+    expect(count(html, 'class="pg-product__wire"')).toBe(3)
+    expect(html).not.toContain('pg-product__packet')
   })
 
   it('renders the hero, proof numbers, tabs and features', () => {
@@ -215,7 +219,10 @@ describe.each(locales)('Panofy page (%s)', (locale) => {
     // Only the training-loop timeline moves; its copy stays still.
     expect(count(html, 'class="pg-panofy__step-node" aria-hidden="true" data-animate="custom"')).toBe(t.loop.steps.length)
     // Signals: three wires in, three out, four spokes.
-    expect(count(html, 'class="pg-panofy__signal"')).toBe(10)
+    expect(count(html, 'class="pg-product__wire"')).toBe(10)
+    // Live memory fields: some background cells fill and empty on their own.
+    expect(count(html, 'data-twinkle=""')).toBeGreaterThan(4)
+    expect(html).not.toContain('pg-product__packet')
   })
 
   it('links to Panofy, the docs, use cases and department pages', () => {
@@ -289,9 +296,12 @@ describe.each(locales)('LlamaFactory page (%s)', (locale) => {
     expect(html).not.toMatch(/class="ds-panel pg-product__terminal pg-llama__export" data-animate/)
     // Static render: the first model is selected and the hero chart marks its latest step.
     expect(count(html, 'class="pg-llama__pick is-selected"')).toBe(1)
-    expect(html).toMatch(/class="pg-llama__pick is-selected"><span class="pg-llama__pick-head"><span class="pg-llama__pick-name">Qwen3</)
+    expect(html).toMatch(
+      /class="pg-llama__pick is-selected"><span class="pg-llama__pick-head"><span class="pg-llama__pick-mark" aria-hidden="true"><\/span><span class="pg-llama__pick-name">Qwen3</,
+    )
     expect(count(html, 'class="pg-llama__live"')).toBe(1)
-    expect(count(html, 'class="pg-llama__arch-signal"')).toBe(2)
+    expect(count(html, 'class="pg-product__wire"')).toBe(2)
+    expect(html).not.toContain('pg-product__packet')
   })
 
   it('links to GitHub, the WebUI anchor and the other products', () => {

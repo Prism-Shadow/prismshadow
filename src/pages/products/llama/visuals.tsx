@@ -3,6 +3,7 @@ import { useCycle, useInView, useReducedMotion } from '../../../components/site/
 import { cx } from '../../../components/site/utils'
 import type { LlamaFactoryCopy } from '../../../i18n/messages/products/llamaFactory'
 import { MockWindow } from '../shared/Blocks'
+import { Connectors } from '../shared/Connectors'
 import { Terminal } from '../shared/Terminal'
 import { boardYaml, memory7b, pickerModels, quickstart, tuningMethods } from './data'
 
@@ -70,12 +71,14 @@ function LossChart({
             <line key={f} className="pg-llama__grid" x1="0" x2={W} y1={H * f} y2={H * f} />
           ))}
           <line className="pg-llama__axis" x1="0" x2={W} y1={H - 4} y2={H - 4} />
-          <g clipPath={`url(#${clipId})`}>
+          <g className="pg-llama__curves" clipPath={`url(#${clipId})`}>
             <path className="pg-llama__area" d={toArea(trainCurve)} />
             <path className="pg-llama__curve" d={toLine(trainCurve)} />
             {showEval ? <path className="pg-llama__curve pg-llama__curve--eval" d={toLine(evalCurve)} /> : null}
           </g>
         </svg>
+        {/* The drawing edge (motion only): a hairline that leads the new points. */}
+        <span className="pg-llama__cursor" aria-hidden="true" />
         {live ? <span className="pg-llama__live" style={lastPoint} aria-hidden="true" /> : null}
       </div>
       <span className="pg-product__mono pg-llama__chart-x">{stepLabel}</span>
@@ -126,7 +129,7 @@ export function LlamaBoard({ copy }: { copy: LlamaFactoryCopy['hero']['board'] }
               ))}
             </dl>
             <span className="pg-llama__progress" aria-hidden="true">
-              <span style={{ width: '62%' }} />
+              <span className="pg-llama__progress-fill" />
             </span>
             <span className="pg-llama__start">{copy.start}</span>
           </div>
@@ -158,13 +161,14 @@ export function ModelVisual({ workflow, step }: { workflow: Workflow; step: Step
   const listRef = useRef<HTMLUListElement>(null)
   const inView = useInView(listRef, 0.5)
   const reduced = useReducedMotion()
-  const selected = useCycle(pickerModels.length, 3200, inView && !reduced)
+  const selected = useCycle(pickerModels.length, 2800, inView && !reduced)
   return (
     <MockWindow {...stackWindow(workflow, step)}>
       <ul className="pg-llama__picker" ref={listRef}>
         {pickerModels.map((model, i) => (
           <li key={model.name} className={cx('pg-llama__pick', i === selected && 'is-selected')}>
             <span className="pg-llama__pick-head">
+              <span className="pg-llama__pick-mark" aria-hidden="true" />
               <span className="pg-llama__pick-name">{model.name}</span>
               <span className="ds-tag pg-llama__pick-tag" aria-hidden={i === selected ? undefined : true}>
                 {v.selected}
@@ -209,7 +213,7 @@ export function DatasetVisual({ workflow, step }: { workflow: Workflow; step: St
                   {w > 0 ? (
                     <span
                       className="pg-llama__skel"
-                      style={{ width: `${w * 100}%`, '--i': r + c } as CSSProperties}
+                      style={{ width: `${w * 100}%`, '--r': r, '--c': c } as CSSProperties}
                     />
                   ) : null}
                 </span>
@@ -371,21 +375,16 @@ export function Architecture({ copy }: { copy: LlamaFactoryCopy['open'] }) {
           <span className="pg-llama__arch-box pg-llama__arch-box--ui">{webui}</span>
           <span className="pg-llama__arch-box pg-llama__arch-box--ui">{cli}</span>
         </div>
-        <svg className="pg-llama__arch-wires" viewBox="0 0 200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          {archWires.map((d) => (
-            <path key={d} d={d} />
-          ))}
-          {/* Signals from both interfaces into the engine (motion only). */}
-          {archWires.map((d) => (
-            <path key={`s-${d}`} className="pg-llama__arch-signal" d={d} pathLength={1} />
-          ))}
-        </svg>
+        {/* Packets from both interfaces into the engine. */}
+        <Connectors className="pg-llama__arch-wires" paths={archWires} box={[200, 56]} packets={2} />
         <div className="pg-llama__arch-engine">
           <span className="pg-product__mono">llamafactory-cli</span>
           <div className="pg-llama__arch-row">
             {engine.map((item, i) => (
               <span key={item} className="pg-llama__arch-step">
-                <span className="pg-llama__arch-box">{item}</span>
+                <span className="pg-llama__arch-box" style={{ '--k': i } as CSSProperties}>
+                  {item}
+                </span>
                 {i < engine.length - 1 ? (
                   <span className="pg-llama__arch-arrow" style={{ '--k': i } as CSSProperties} aria-hidden="true" />
                 ) : null}
