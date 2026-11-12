@@ -6,7 +6,6 @@ import { renderAccent } from '../../components/site/utils'
 import type { PageProps } from '../types'
 import { BlogCard } from './BlogCard'
 import { featuredPosts, fill, gridPosts, topicLabel, topicOrder } from './blogData'
-import { ResearchList } from './ResearchList'
 import './blog.css'
 
 type TopicFilter = BlogTopic | 'all'
@@ -45,8 +44,6 @@ export function BlogIndexPage({ locale }: PageProps) {
           </div>
         </div>
       </section>
-
-      <ResearchList locale={locale} copy={copy} />
 
       <section
         id="posts"

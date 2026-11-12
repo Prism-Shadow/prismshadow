@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { blogPosts } from '../../content/blogPosts'
-import { researchWorks } from '../../content/researchWorks'
 import { locales } from '../../i18n'
 import { blogPageCopy } from '../../i18n/messages/blog'
 import { collectStrings, copyShape, expectPageBasics, renderHtml } from '../../test/pageChecks'
@@ -13,6 +12,7 @@ import {
   findPost,
   gridPosts,
   headingIds,
+  localizePost,
   readingMinutes,
   topicLabel,
 } from './blogData'
@@ -45,7 +45,7 @@ describe('blog data', () => {
   })
 
   it('splits every post between featured and the grid', () => {
-    expect(featuredPosts).toHaveLength(2)
+    expect(featuredPosts).toHaveLength(4)
     expect(featuredPosts.length + gridPosts.length).toBe(blogPosts.length)
   })
 
@@ -58,12 +58,14 @@ describe('blog data', () => {
 })
 
 describe('research', () => {
-  const roundup = '/blog/recursive-self-improvement-framework-survey-benchmark'
-  const amsp = '/blog/introducing-amsp-agent-message-stream-protocol'
+  const rsi = '/blog/awesome-rsi-survey-recursive-self-improvement'
+  const gdpevo = '/blog/gdpevo-benchmark-agent-self-evolution'
   const penguin = '/blog/introducing-penguinharness'
+  const protocols = '/blog/amsp-mmsp-message-stream-protocols'
+  const text = (slug: string) => JSON.stringify(findPost(slug))
 
-  it('features the newest research posts', () => {
-    expect(featuredPosts.map((post) => post.slug)).toEqual([roundup, amsp])
+  it('features one post per work, in the owner’s order', () => {
+    expect(featuredPosts.map((post) => post.slug)).toEqual([rsi, gdpevo, penguin, protocols])
     for (const post of featuredPosts) expect(post.topic).toBe('research')
   })
 
@@ -72,48 +74,45 @@ describe('research', () => {
     expect(topicLabel('research', 'zh', blogPageCopy.zh)).toBe('研究')
   })
 
-  it('lists every paper and project with a summary per locale, live links and a real post', () => {
-    expect(researchWorks.map((work) => work.title)).toEqual([
-      'From Existing Methods to New Research Ideas: Two Perspectives on Recursive Self-Improvement',
-      'GDPevo: Evaluating Agent Self-Evolution on Real Business Tasks',
-      'PenguinHarness',
-      'AMSP: Agent Message Stream Protocol',
-      'MMSP: Model Message Stream Protocol',
-    ])
-    for (const work of researchWorks) {
-      expect(work.date).toMatch(/^2026-(0[1-9]|1[0-2])$/)
-      for (const locale of locales) expect(work.summary[locale].trim(), `${work.id}.${locale}`).not.toBe('')
-      for (const link of work.links) expect(link.href).toMatch(/^https:\/\//)
-      if (work.post) expect(findPost(work.post), work.id).toBeDefined()
+  it('shows the first page of each paper and links it on arXiv', () => {
+    for (const [slug, image, arxiv] of [
+      [rsi, '/blog-assets/paper-rsi-survey-first-page.webp', 'https://arxiv.org/abs/2610.14625'],
+      [gdpevo, '/blog-assets/paper-gdpevo-first-page.webp', 'https://arxiv.org/abs/2608.03764'],
+    ]) {
+      expect(text(slug)).toContain(image)
+      expect(text(slug)).toContain(arxiv)
     }
-    const hrefs = researchWorks.flatMap((work) => work.links.map((link) => link.href))
-    expect(hrefs).toEqual(
-      expect.arrayContaining([
-        'https://arxiv.org/abs/2610.14625',
-        'https://arxiv.org/abs/2608.03764',
-        'https://github.com/Prism-Shadow/awesome-rsi',
-        'https://github.com/Prism-Shadow/GDPevo',
-        'https://github.com/Prism-Shadow/penguin-harness',
-        'https://penguin.ooo/amsp',
-        'https://mmsp.penguin.ooo/',
-      ]),
-    )
   })
 
-  it('keeps the posts’ key facts and sources', () => {
-    const text = (slug: string) => JSON.stringify(findPost(slug))
-    expect(text(roundup)).toContain('https://arxiv.org/abs/2610.14625')
-    expect(text(roundup)).toContain('https://arxiv.org/abs/2608.03764')
-    expect(text(roundup)).toContain('140 recent works')
-    expect(text(roundup)).toContain('240 tasks')
-    expect(text(amsp)).toContain('@prismshadow/amsp')
-    expect(text(amsp)).toContain('https://mmsp.penguin.ooo/')
-    expect(findPost(penguin)?.author).toBe('Yaowei Zheng')
-    expect(findPost(penguin)?.date).toBe('2026-07-17')
+  it('keeps each post’s key facts and sources', () => {
+    expect(text(rsi)).toContain('140 recent works')
+    expect(text(rsi)).toContain('https://github.com/Prism-Shadow/awesome-rsi')
+    expect(text(gdpevo)).toContain('240 tasks in 24 groups')
+    expect(text(gdpevo)).toContain('16.44 percentage points')
+    expect(text(gdpevo)).toContain('91.6%')
+    expect(text(penguin)).toContain('3,000 GitHub stars')
+    expect(text(penguin)).toContain('trace-rsi-toolkit')
     // The benchmark is reported honestly, including where it trails.
     expect(text(penguin)).toContain('trails Claude Code’s 86.25%')
-    expect(text(penguin)).toContain('https://penguin.ooo/blog/introducing-penguinharness')
     expect(text(penguin)).not.toContain('penguin-2026')
+    expect(text(protocols)).toContain('@prismshadow/amsp')
+    expect(text(protocols)).toContain('@prismshadow/mmsp')
+    expect(text(protocols)).toContain('https://mmsp.penguin.ooo/')
+  })
+})
+
+describe('Chinese posts', () => {
+  it('replace the text but keep the slug, topic, date and media', () => {
+    for (const post of blogPosts) {
+      const zh = localizePost(post, 'zh')
+      expect(zh.slug).toBe(post.slug)
+      expect(zh.topic).toBe(post.topic)
+      expect(zh.date).toBe(post.date)
+      expect(zh.visualImage?.src).toBe(post.visualImage?.src)
+      expect(zh.title, post.slug).not.toBe(post.title)
+      expect(headingIds(zh)).toEqual(headingIds(post))
+      expect(readingMinutes(zh)).toBe(readingMinutes(post))
+    }
   })
 })
 
@@ -134,26 +133,6 @@ describe.each(locales)('blog index (%s)', (locale) => {
     expect(html).toContain(blogPageCopy[locale].index.featuredLabel)
   })
 
-  it('lists the papers and open-source work between featured and the grid', () => {
-    const copy = blogPageCopy[locale]
-    const start = html.indexOf('id="research"')
-    expect(start).toBeGreaterThan(html.indexOf('id="blog"'))
-    expect(start).toBeLessThan(html.indexOf('id="posts"'))
-    expect(html).toContain('aria-labelledby="research-title"')
-    expect(html).toContain(escapeHtml(copy.works.title))
-    const list = html.slice(start, html.indexOf('id="posts"'))
-    expect(count(list, /class="pg-blog-works__row"/g)).toBe(researchWorks.length)
-    for (const work of researchWorks) {
-      expect(list).toContain(escapeHtml(work.title))
-      expect(list).toContain(escapeHtml(work.summary[locale]))
-      for (const link of work.links)
-        expect(list).toContain(`href="${link.href}" target="_blank" rel="noreferrer" aria-describedby="work-${work.id}"`)
-      if (work.post) expect(list).toContain(`href="${work.post}" aria-describedby="work-${work.id}"`)
-      expect(list).toContain(copy.works.kinds[work.kind])
-    }
-    if (locale === 'zh') expect(count(list, /class="pg-blog-works__title"[^>]*lang="en"/g)).toBe(researchWorks.length)
-  })
-
   it('marks the covers for the motion system', () => {
     // Featured media rise in; every grid cover fades its field (or image) in;
     // code-built covers carry a seeded wave and a few live cells, empty at rest.
@@ -168,7 +147,7 @@ describe.each(locales)('blog index (%s)', (locale) => {
 })
 
 describe.each(locales)('blog posts (%s)', (locale) => {
-  it.each(blogPosts.map((post) => [post.slug, post] as const))('%s', (slug, post) => {
+  it.each(blogPosts.map((post) => [post.slug, localizePost(post, locale)] as const))('%s', (slug, post) => {
     const html = renderHtml(<BlogPostPage locale={locale} slug={slug} />)
     expectPageBasics(html)
     expect(html).toContain('id="post-title"')
@@ -190,7 +169,8 @@ describe.each(locales)('blog posts (%s)', (locale) => {
       for (const row of section.table?.rows ?? []) for (const cell of row) expect(html).toContain(escapeHtml(cell))
     }
     for (const step of post.visualSteps ?? []) expect(html).toContain(escapeHtml(step))
-    if (locale === 'zh') expect(html).toContain('lang="en"')
+    // Every post is translated, so nothing in the article is marked as English.
+    expect(html.slice(html.indexOf('id="post"'), html.indexOf('id="related"'))).not.toContain('lang="en"')
 
     // Only the cover moves: it carries the motion hook, the prose does not.
     expect(html).toMatch(/class="pg-blog-cover__(?:field pg-blog-cover__field--wide|image)"[^>]*data-animate="custom"/)
@@ -200,7 +180,7 @@ describe.each(locales)('blog posts (%s)', (locale) => {
 
   it('accepts a trailing slash in the pathname', () => {
     const html = renderHtml(<BlogPostPage locale={locale} slug={`${blogPosts[0].slug}/`} />)
-    expect(html).toContain(escapeHtml(blogPosts[0].title))
+    expect(html).toContain(escapeHtml(localizePost(blogPosts[0], locale).title))
   })
 
   it('renders a friendly not-found state for an unknown slug', () => {

@@ -21,26 +21,6 @@ export type BlogPageCopy = {
     /** Screen-reader status after filtering. */
     showing: string
   }
-  /** "Papers and open source": the team's research list on the index. */
-  works: {
-    eyebrow: string
-    title: string
-    lead: string
-    /** Accessible name of the list. */
-    listLabel: string
-    kinds: {
-      paper: string
-      code: string
-      protocol: string
-    }
-    links: {
-      arxiv: string
-      github: string
-      docs: string
-      website: string
-      post: string
-    }
-  }
   topics: {
     product: string
     research: string
@@ -49,11 +29,11 @@ export type BlogPageCopy = {
     readingTime: string
     /** Date pattern; `{month}` is taken from `months`. */
     date: string
-    /** Month-and-year pattern for the research list. */
-    monthYear: string
     months: string[]
   }
   post: {
+    /** Title suffix of a post page, after "|". */
+    seoSuffix: string
     breadcrumb: string
     breadcrumbLabel: string
     onThisPage: string
@@ -86,28 +66,10 @@ export const blogPageCopy = {
       postsEyebrow: 'All posts',
       postsTitle: 'Launches and agents at work',
       postsLead:
-        'Releases of PenguinHarness, AgentHub and Panofy, and how governed, memory-driven agents turn scattered signals into decision-ready workflows, industry by industry.',
+        'Releases of AgentHub and Panofy, and how governed, memory-driven agents turn scattered signals into decision-ready workflows, industry by industry.',
       filterLabel: 'Filter posts by topic',
       filterAll: 'All',
       showing: 'Showing {n} posts',
-    },
-    works: {
-      eyebrow: 'Research',
-      title: 'Papers and open source',
-      lead: 'Our work on recursive self-improvement: the papers we have published, and the framework and protocols you can run today.',
-      listLabel: 'Papers, open-source projects and protocols',
-      kinds: {
-        paper: 'Paper',
-        code: 'Open source',
-        protocol: 'Protocol',
-      },
-      links: {
-        arxiv: 'arXiv',
-        github: 'GitHub',
-        docs: 'Docs',
-        website: 'Website',
-        post: 'Read the post',
-      },
     },
     topics: {
       product: 'Product Updates',
@@ -116,10 +78,10 @@ export const blogPageCopy = {
     meta: {
       readingTime: '{n} min read',
       date: '{month} {day}, {year}',
-      monthYear: '{month} {year}',
       months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     },
     post: {
+      seoSuffix: 'PrismShadow Blog',
       breadcrumb: 'Blog',
       breadcrumbLabel: 'Breadcrumb',
       onThisPage: 'On this page',
@@ -150,28 +112,10 @@ export const blogPageCopy = {
       postsEyebrow: '全部文章',
       postsTitle: '产品发布与 Agent 落地实践',
       postsLead:
-        'PenguinHarness、AgentHub 与 Panofy 的发布动态，以及受治理、具备长期记忆的 Agent 如何在各行各业把分散的信号变成可直接决策的工作流。',
+        'AgentHub 与 Panofy 的发布动态，以及受治理、具备长期记忆的 Agent 如何在各行各业把分散的信号变成可直接决策的工作流。',
       filterLabel: '按主题筛选文章',
       filterAll: '全部',
       showing: '共 {n} 篇文章',
-    },
-    works: {
-      eyebrow: '研究',
-      title: '论文与开源',
-      lead: '我们在递归自我改进（RSI）方向的工作：已发表的论文，以及您现在就能运行的框架与协议。',
-      listLabel: '论文、开源项目与协议',
-      kinds: {
-        paper: '论文',
-        code: '开源项目',
-        protocol: '协议',
-      },
-      links: {
-        arxiv: 'arXiv',
-        github: 'GitHub',
-        docs: '文档',
-        website: '官网',
-        post: '阅读文章',
-      },
     },
     topics: {
       product: '产品动态',
@@ -180,10 +124,10 @@ export const blogPageCopy = {
     meta: {
       readingTime: '约 {n} 分钟阅读',
       date: '{year}年{month}{day}日',
-      monthYear: '{year}年{month}',
       months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
     },
     post: {
+      seoSuffix: 'PrismShadow 博客',
       breadcrumb: '博客',
       breadcrumbLabel: '面包屑导航',
       onThisPage: '本页目录',

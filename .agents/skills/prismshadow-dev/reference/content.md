@@ -79,7 +79,9 @@ coding suite.
 
 ## Research and open-source work
 
-The list on `/blog` lives in `src/content/researchWorks.ts`; the posts are in `src/content/blogPosts.ts`.
+Each work has its own blog post, and all four are featured on `/blog` in this order: Awesome RSI,
+GDPevo, PenguinHarness, then AMSP and MMSP together. The owner asked for posts, not a separate papers
+list. Each paper post shows the paper's real first page, rendered from the arXiv PDF.
 
 - **The goal:** the team behind LlamaFactory is building "the LlamaFactory of RSI", a unified,
   efficient, stable and flexible framework for agent self-evolution.
@@ -119,6 +121,12 @@ else.
   platform working for their company, supported all the way to production, without inventing a
   response-time SLA.
 - **Every string exists in en and zh.** The tests enforce identical shape and no empty strings.
+- **Every blog post exists in en and zh.**
+  - The English post is in `src/content/blogPosts.ts`; its Chinese text is in
+    `src/content/blog-zh/`, keyed by slug.
+  - `blogZh.test.ts` requires the same structure: same sections, blocks, list lengths, image sources,
+    links and code.
+  - A new post isn't done until both versions exist.
 - **zh addresses the reader as 您** on prospect-facing copy.
 - **zh headings must not orphan one character.** Pages keep phrases together with `word-break:
   keep-all` scoped to the page, or with zero-width break hints. Check zh at 1440 and 390.

@@ -180,7 +180,7 @@ export const siteText = {
       'auto-dealerships': 'Auto Dealerships',
     },
     footer: {
-      tagline: 'Enterprise AI that gets better with every task.',
+      tagline: 'The self-evolving AI platform for enterprise.',
       platform: 'Platform',
       products: 'Products',
       departments: 'Departments',
@@ -279,7 +279,7 @@ export const siteText = {
       'auto-dealerships': '汽车经销商',
     },
     footer: {
-      tagline: '越用越聪明的企业 AI。',
+      tagline: '企业级自进化 AI 平台。',
       platform: '平台',
       products: '产品',
       departments: '部门',

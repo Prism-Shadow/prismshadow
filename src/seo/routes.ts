@@ -331,8 +331,11 @@ export const createBlogSeo = (
     slug: string
     title: string
   },
+  /** Appended to the title, e.g. "PrismShadow Blog". */
+  suffix = 'PrismShadow Blog',
 ): SeoMetadata => ({
   canonicalPath: post.slug,
-  title: `${post.seoTitle ?? post.title} | PrismShadow Blog`,
-  description: post.metaDescription ?? post.excerpt,
+  // Zero-width break hints only help headings wrap; keep them out of metadata.
+  title: `${post.seoTitle ?? post.title} | ${suffix}`.replace(/\u200b/g, ''),
+  description: (post.metaDescription ?? post.excerpt).replace(/\u200b/g, ''),
 })

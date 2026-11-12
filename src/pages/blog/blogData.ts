@@ -1,4 +1,5 @@
 import { blogPosts, type BlogPost, type BlogTopic, type BlogVisualPattern } from '../../content/blogPosts'
+import { blogPostsZh } from '../../content/blog-zh'
 import type { Locale } from '../../i18n'
 import type { BlogPageCopy } from '../../i18n/messages/blog'
 import { siteText } from '../../i18n/messages/shared'
@@ -10,8 +11,10 @@ import type { PixelLit, PixelTone } from '../../components/site/utils'
 
 /** Shown first on the index, in this order. */
 export const featuredSlugs = [
-  '/blog/recursive-self-improvement-framework-survey-benchmark',
-  '/blog/introducing-amsp-agent-message-stream-protocol',
+  '/blog/awesome-rsi-survey-recursive-self-improvement',
+  '/blog/gdpevo-benchmark-agent-self-evolution',
+  '/blog/introducing-penguinharness',
+  '/blog/amsp-mmsp-message-stream-protocols',
 ]
 
 /** Every post, newest first (stable: same-day posts keep their authored order). */
@@ -59,8 +62,26 @@ export function relatedPosts(post: BlogPost, count = 3): BlogPost[] {
 
 export const defaultAuthor = 'PrismShadow'
 
-/** Post content is English; mark it as such inside the Chinese UI. */
-export const contentLang = (locale: Locale) => (locale === 'en' ? undefined : 'en')
+/**
+ * The post in the reader's language: the Chinese text (src/content/blog-zh)
+ * over the English post, which keeps the slug, topic, date, author and media.
+ */
+export function localizePost(post: BlogPost, locale: Locale): BlogPost {
+  const zh = locale === 'zh' ? blogPostsZh[post.slug] : undefined
+  if (!zh) return post
+  return {
+    ...post,
+    ...zh,
+    visualImage: post.visualImage && { ...post.visualImage, ...zh.visualImage },
+  }
+}
+
+/** A post shown in English inside the Chinese UI (no translation yet) is marked as such. */
+export const contentLang = (locale: Locale, post: BlogPost) =>
+  locale === 'zh' && !blogPostsZh[post.slug] ? 'en' : undefined
+
+/** The English original of a post, the source for reading time and anchors in both languages. */
+const englishPost = (post: BlogPost) => blogPosts.find((p) => p.slug === post.slug) ?? post
 
 /* ------------------------------------------------------------------ */
 /* Topics                                                              */
@@ -107,12 +128,6 @@ export function formatDate(date: string, copy: BlogPageCopy) {
   return fill(copy.meta.date, { year, month: copy.meta.months[month - 1], day })
 }
 
-/** Year-month formatting for the research list (`YYYY-MM`). */
-export function formatMonth(date: string, copy: BlogPageCopy) {
-  const [year, month] = date.split('-').map(Number)
-  return fill(copy.meta.monthYear, { year, month: copy.meta.months[month - 1] })
-}
-
 function postText(post: BlogPost): string {
   const parts: string[] = [post.title, post.excerpt]
   for (const section of post.content) {
@@ -129,7 +144,8 @@ function postText(post: BlogPost): string {
 }
 
 /** Authored reading time when present, otherwise ~230 words per minute. */
-export function readingMinutes(post: BlogPost): number {
+export function readingMinutes(localized: BlogPost): number {
+  const post = englishPost(localized)
   const authored = post.readingTime?.match(/\d+/)?.[0]
   if (authored) return Number(authored)
   const words = postText(post).split(/\s+/).filter(Boolean).length
@@ -137,7 +153,9 @@ export function readingMinutes(post: BlogPost): number {
 }
 
 /** URL-safe anchor ids for section headings, unique within a post. */
-export function headingIds(post: BlogPost): Array<string | undefined> {
+export function headingIds(localized: BlogPost): Array<string | undefined> {
+  // Anchors come from the English headings, so a link to a section works in both languages.
+  const post = englishPost(localized)
   const seen = new Map<string, number>()
   return post.content.map((section) => {
     if (!section.heading) return undefined
@@ -372,6 +390,20 @@ const motifs: Record<BlogVisualPattern, (paint: Paint, t: PixelTone, rand: () =>
     paint(versions.slice(0, 2), { tone: t, outline: true })
     paint(versions.slice(2, 4), { tone: t })
     paint([versions[4]], { tone: 'text' })
+  },
+  hybrid(paint, t) {
+    // GDPevo's rule hybridization: atomic rules scattered over five training
+    // tasks (left) recombine in five held-out test tasks (right).
+    const rows = [1, 3, 5, 7, 9]
+    const train = [[0, 1], [1, 2], [2, 3], [0, 3], [1, 3]]
+    const test = [[0, 1, 2], [1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2, 3]]
+    paint(line([6, 5], [8, 5]), { tone: t, dim: true })
+    rows.forEach((y, i) => {
+      paint([[0, y]], { tone: t, outline: true })
+      paint(train[i].map((r): Cell => [2 + r, y]), { tone: t, dim: true })
+      paint([[9, y]], i === 4 ? { tone: 'text' } : { tone: t, outline: true })
+      paint(test[i].map((r): Cell => [10 + r, y]), i === 4 ? { tone: t } : { tone: t, outline: true })
+    })
   },
   taxonomy(paint, t) {
     // A survey's tree: one root, four groups, nine design dimensions.

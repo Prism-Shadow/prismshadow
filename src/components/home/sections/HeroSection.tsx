@@ -12,16 +12,14 @@ export function HeroSection({ copy }: { copy: HeroCopy }) {
           <h1 className="ds-display hp-hero__title" id="hero-title">
             {renderAccent(copy.title, copy.titleAccent)}
           </h1>
-          <div className="hp-hero__aside">
-            <p className="ds-lead hp-hero__lead">{copy.body}</p>
-            <div className="ds-actions hp-hero__actions">
-              <ButtonLink href="/contact" variant="primary" size="lg" arrow>
-                {copy.primaryCta}
-              </ButtonLink>
-              <ButtonLink href="#proof" variant="secondary" size="lg">
-                {copy.secondaryCta}
-              </ButtonLink>
-            </div>
+          <p className="ds-lead hp-hero__lead">{copy.body}</p>
+          <div className="ds-actions hp-hero__actions">
+            <ButtonLink href="/contact" variant="primary" size="lg" arrow>
+              {copy.primaryCta}
+            </ButtonLink>
+            <ButtonLink href="#proof" variant="secondary" size="lg">
+              {copy.secondaryCta}
+            </ButtonLink>
           </div>
         </div>
 

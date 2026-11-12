@@ -3,7 +3,7 @@ import type { Locale } from '../../i18n'
 import type { BlogPageCopy } from '../../i18n/messages/blog'
 import { cx } from '../../components/site/utils'
 import { BlogCover } from './BlogCover'
-import { contentLang, formatDate, topicLabel, topicTone } from './blogData'
+import { contentLang, formatDate, localizePost, topicLabel, topicTone } from './blogData'
 
 /** Small colored topic tag (tinted in the topic's spectrum tone). */
 export function TopicTag({
@@ -31,7 +31,7 @@ export function TopicTag({
  * their content in and glint (BlogCover, blog.css). Text never moves.
  */
 export function BlogCard({
-  post,
+  post: source,
   locale,
   copy,
   featured = false,
@@ -41,12 +41,13 @@ export function BlogCard({
   copy: BlogPageCopy
   featured?: boolean
 }) {
+  const post = localizePost(source, locale)
   return (
     <article className={cx('pg-blog-card', featured && 'pg-blog-card--featured')}>
       <div className="pg-blog-card__media" data-animate={featured ? '' : undefined}>
         <BlogCover post={post} placement={featured ? 'featured' : 'card'} />
       </div>
-      <div className="pg-blog-card__body" lang={contentLang(locale)}>
+      <div className="pg-blog-card__body" lang={contentLang(locale, source)}>
         <h3 className="ds-h3 pg-blog-card__title">
           <a href={post.slug}>{post.title}</a>
         </h3>

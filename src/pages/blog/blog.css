@@ -58,6 +58,12 @@
   line-height: 1.3;
 }
 
+/* Chinese headings: break at punctuation and spaces, never inside a word. */
+.pg-blog :where(h1, h2, h3):lang(zh) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 /* ------------------------------------------------------------------ */
 /* Index: hero + featured                                              */
 /* ------------------------------------------------------------------ */
@@ -88,107 +94,6 @@
 
 .pg-blog__featured-grid > * {
   grid-column: span 6;
-}
-
-/* ------------------------------------------------------------------ */
-/* Index: papers and open source (raised band, hairline list)          */
-/* ------------------------------------------------------------------ */
-
-.pg-blog .pg-blog__works-head {
-  margin-bottom: clamp(40px, 4vw, 56px);
-}
-
-.pg-blog-works {
-  border-bottom: 1px solid var(--ds-line);
-}
-
-/* Kind and date · title and summary · links, on the 12-column grid. */
-.pg-blog-works__row {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--ds-col-gap);
-  row-gap: 14px;
-  padding-block: 28px 30px;
-  border-top: 1px solid var(--ds-line);
-}
-
-.pg-blog-works__meta {
-  grid-column: 1 / span 3;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding-top: 5px;
-}
-
-.pg-blog-works__kind {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--ds-text-micro);
-  font-weight: var(--ds-weight-medium);
-  line-height: 1.3;
-  color: var(--ds-text);
-}
-
-/* Papers get a solid mark; code and protocols an outlined one. */
-.pg-blog-works__kind::before {
-  content: '';
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--ds-accent);
-  border-radius: 2px;
-}
-
-.pg-blog-works__kind[data-kind='paper']::before {
-  background: var(--ds-accent);
-}
-
-.pg-blog-works__date {
-  padding-left: 15px;
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-micro);
-  line-height: 1.3;
-  color: var(--ds-text-3);
-}
-
-.pg-blog-works__main {
-  grid-column: 4 / span 6;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-width: 0;
-}
-
-.pg-blog-works__title {
-  font-size: var(--ds-text-h3);
-  font-weight: var(--ds-weight-regular);
-  line-height: 1.35;
-  letter-spacing: -0.012em;
-  color: var(--ds-text);
-  text-wrap: balance;
-}
-
-.pg-blog-works__summary {
-  max-width: 62ch;
-  font-size: var(--ds-text-sm);
-  line-height: 1.6;
-  color: var(--ds-text-2);
-  text-wrap: pretty;
-}
-
-.pg-blog-works__links {
-  grid-column: 10 / span 3;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding-top: 4px;
-}
-
-.pg-blog-works__link {
-  color: var(--ds-text-2);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1075,41 +980,9 @@ html[data-motion] .pg-blog .pg-blog-cover__field[data-inview] .pg-blog-cover__li
   .pg-blog-post__aside {
     display: none;
   }
-
-  .pg-blog-works__meta {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    align-items: center;
-    gap: 14px;
-    padding-top: 0;
-  }
-
-  .pg-blog-works__date {
-    padding-left: 0;
-  }
-
-  .pg-blog-works__main {
-    grid-column: 1 / span 9;
-  }
-
-  .pg-blog-works__links {
-    grid-column: 10 / span 3;
-  }
 }
 
 @media (max-width: 760px) {
-  .pg-blog-works__main,
-  .pg-blog-works__links {
-    grid-column: 1 / -1;
-  }
-
-  .pg-blog-works__links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    column-gap: 20px;
-    padding-top: 2px;
-  }
-
   .pg-blog-post__body,
   .pg-blog .pg-blog-post__lead {
     grid-column: 1 / -1;

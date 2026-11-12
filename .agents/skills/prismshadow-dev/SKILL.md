@@ -41,10 +41,13 @@ Each of these came from the owner rejecting something. Treat them as requirement
    only the page named. Existing content is **inherited**, never silently dropped.
 2. **Look.** modal.com sets the *quality bar* (dark technical canvas, one accent, flat), but the
    site must **not look or read like a copy of it**. "和 modal.com 有点太过于相似" was a rejection.
-   Keep our own signatures: a left-aligned split hero with no eyebrow over it, mono upper-case
-   eyebrows behind a short rule (no icon chips), squared 6px controls (no pills), the nav
-   left-aligned beside the logo, numbered horizontal tab rows. Never borrow modal's headline
-   patterns ("The platform for X", "Trusted by the world's leading…", "Ship … in minutes").
+   Keep our own signatures: no eyebrow over the hero headline, mono upper-case eyebrows behind a
+   short rule (no icon chips), squared 6px controls (no pills), the nav left-aligned beside the
+   logo, numbered horizontal tab rows. Don't borrow modal's phrasing elsewhere ("Trusted by the
+   world's leading…", "Ship … in minutes").
+   **The home hero is fixed by the owner:** stacked (headline above the lead and actions, the
+   frontier below), with the headline "The platform for self-evolving AI" / "让企业 AI 持续自我进化".
+   The self-evolving platform positioning is not to be reworded.
    - **Type is regular weight.** Headings 400, at most 500 anywhere. "字体太粗" was a rejection.
    - **Everything aligns** to the 12-column `.ds-container` grid: shared left edges, equal-height
      rows, consistent gaps. "很多不对齐" was a rejection.
@@ -65,8 +68,8 @@ Each of these came from the owner rejecting something. Treat them as requirement
    Numbers, customers and links come from `reference/content.md`. Never invent a metric, a quote or
    a customer.
 8. **Copy for prospects is warm and service-first,** in both languages. The zh copy addresses the
-   reader as 您. Write like people talk ("越用越聪明的企业 AI"), not like a category label: taglines
-   such as "Enterprise self-evolving AI platform" read as AI-written ("AI 味") and were removed.
+   reader as 您. Write like people talk, not like a category label: the hero eyebrow "Enterprise
+   self-evolving AI platform" read as AI-written ("AI 味") and was removed.
 9. **Product imagery is current.** Use the newest real product UI (e.g. PenguinHarness from
    penguin.ooo/gallery), never stale screenshots or invented mockups presented as product UI.
 10. **Navigation feels smooth.** Internal links swap pages in a View Transition with chunk

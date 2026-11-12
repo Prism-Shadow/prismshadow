@@ -6,15 +6,16 @@ product), **not a template**: the owner rejected the site for looking and readin
 
 ## Our own signatures (keep them; don't drift back to modal's)
 
-- **Home hero:** headline left in 7 columns, lead and actions bottom-aligned in the right 5, the
-  evolution frontier full width below. No eyebrow over the hero headline.
+- **Home hero (owner-fixed):** stacked and centered: the headline "The platform for self-evolving
+  AI" / "让企业 AI 持续自我进化", then the lead and actions, then the evolution frontier full width.
+  No eyebrow over the headline. Don't reword the headline or move it into a split layout.
 - **Eyebrows:** Geist Mono, upper case, tracked, behind an 18px accent rule. No icon chip.
 - **Controls:** buttons, chips, filters and nav items use `--ds-r-control` (6px). No pills.
 - **Header:** nav left-aligned beside the logo; language and "Contact us" on the right.
 - **Tabs:** a numbered row (`01`, `02` … in mono) with a hairline over each tab and an accent rule
   over the selected one, not a vertical icon list beside the panel.
-- **Voice:** plain and human, "we/you" service voice. No "The platform for X", "Trusted by the
-  world's leading…", "Ship … in minutes" or other modal headline patterns.
+- **Voice:** plain and human, "we/you" service voice. Outside the fixed hero headline, avoid
+  modal's phrasing ("Trusted by the world's leading…", "Ship … in minutes").
 
 ## Tokens and primitives (read, don't fork)
 
