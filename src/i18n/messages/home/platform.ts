@@ -100,8 +100,8 @@ export type PlatformCopy = {
 export const platformCopy = {
   en: {
     eyebrow: 'Platform',
-    title: 'One platform, from raw data to self‑improving agents.',
-    body: 'Data production, model training, private deployment and continuous self-evolution run on one stack, so every workflow you automate keeps compounding.',
+    title: 'Data, training, deployment and self‑evolution on one stack.',
+    body: 'We produce the data, train the models, deploy them inside your walls and keep every agent improving. Each workflow you hand over gets better the longer it runs.',
     tabsLabel: 'Platform capabilities',
     cta: 'Explore the platform',
     modules: [
@@ -256,8 +256,8 @@ export const platformCopy = {
   },
   zh: {
     eyebrow: '平台能力',
-    title: '从数据到自进化 Agent，一个平台全线打通。',
-    body: '数据生产、模型训练、私有部署与持续自进化运行在同一套技术栈上，让每一个被自动化的工作流都持续复利。',
+    title: '数据、训练、部署、自进化，一套平台全部覆盖。',
+    body: '我们负责数据生产、模型训练和私有化部署，并让每个 Agent 持续自我优化。您交给它的每个工作流，运行越久越好用。',
     tabsLabel: '平台能力',
     cta: '了解平台',
     modules: [

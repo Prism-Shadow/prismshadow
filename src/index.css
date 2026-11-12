@@ -84,7 +84,8 @@
   --ds-r-sm: 6px;
   --ds-r: 10px;
   --ds-r-lg: 14px;
-  --ds-r-pill: 999px;
+  /* Buttons, chips, filters and nav items are squared-off, never full pills. */
+  --ds-r-control: 6px;
 
   --ds-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
@@ -388,32 +389,31 @@
   color: var(--ds-text-3);
 }
 
-/* Eyebrow: small accent chip + sentence-case label (modal style). */
+/* Eyebrow: a short accent rule + a mono, upper-case label. */
 .ds-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
+  gap: 10px;
+  font-family: var(--ds-font-mono);
+  font-size: 0.75rem;
+  font-weight: var(--ds-weight-regular);
   line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--ds-accent);
-  letter-spacing: 0;
 }
 
-.ds-eyebrow__chip {
-  display: inline-grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: var(--ds-r-xs);
-  background: var(--ds-accent-soft);
-  color: var(--ds-accent);
+.ds-eyebrow::before {
+  content: '';
   flex: none;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
 }
 
-.ds-eyebrow__chip svg {
-  width: 10px;
-  height: 10px;
+/* CJK has no case and needs no tracking. */
+.ds-eyebrow:lang(zh) {
+  letter-spacing: 0.02em;
 }
 
 /* ---------- Buttons and links ---------- */
@@ -433,7 +433,7 @@
   gap: 8px;
   height: var(--btn-h);
   padding: 0 18px;
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   border: 1px solid transparent;
   font-size: 0.875rem;
   font-weight: var(--ds-weight-medium);

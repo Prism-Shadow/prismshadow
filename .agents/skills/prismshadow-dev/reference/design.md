@@ -1,8 +1,20 @@
 # Design system and layout principles
 
-Loaded from `SKILL.md` for any visible change. The reference is **modal.com**: a dark technical
+Loaded from `SKILL.md` for any visible change. modal.com is the **quality bar** (a dark technical
 canvas, regular-weight type, exact alignment, sparse sections and code-built visuals that explain the
-product.
+product), **not a template**: the owner rejected the site for looking and reading too much like it.
+
+## Our own signatures (keep them; don't drift back to modal's)
+
+- **Home hero:** headline left in 7 columns, lead and actions bottom-aligned in the right 5, the
+  evolution frontier full width below. No eyebrow over the hero headline.
+- **Eyebrows:** Geist Mono, upper case, tracked, behind an 18px accent rule. No icon chip.
+- **Controls:** buttons, chips, filters and nav items use `--ds-r-control` (6px). No pills.
+- **Header:** nav left-aligned beside the logo; language and "Contact us" on the right.
+- **Tabs:** a numbered row (`01`, `02` … in mono) with a hairline over each tab and an accent rule
+  over the selected one, not a vertical icon list beside the panel.
+- **Voice:** plain and human, "we/you" service voice. No "The platform for X", "Trusted by the
+  world's leading…", "Ship … in minutes" or other modal headline patterns.
 
 ## Tokens and primitives (read, don't fork)
 
@@ -25,8 +37,8 @@ accent.
   - `.ds-section-head` puts the title in 7 columns and the lead in 5, bottom-aligned. It also comes as
     `--stack` and `--center`.
 - **Pieces:**
-  - `.ds-eyebrow`: chip plus sentence-case label.
-  - `.ds-btn` pills: `--primary`, `--secondary`, `--accent`, `--sm`, `--lg`.
+  - `.ds-eyebrow`: accent rule plus mono upper-case label.
+  - `.ds-btn` (6px radius): `--primary`, `--secondary`, `--accent`, `--sm`, `--lg`.
   - `.ds-features`: hairline-separated columns.
   - Also `.ds-panel` (with `--cells`, `--dots`), `.ds-stat`, `.ds-tag` and `.ds-card`.
 - **Components** in `src/components/site/ui.tsx`: `Eyebrow`, `ButtonLink`, `TextLink`,

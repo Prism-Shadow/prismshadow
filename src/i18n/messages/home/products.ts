@@ -20,8 +20,8 @@ export type ProductsCopy = {
 export const productsCopy = {
   en: {
     eyebrow: 'Products',
-    title: 'Three products, from open models to self‑evolving agents.',
-    body: 'Let agents build and evolve agents with PenguinHarness, train expert agents with Panofy, and fine-tune open models with LlamaFactory.',
+    title: 'Start with the product that fits your team.',
+    body: 'PenguinHarness lets agents build and evolve agents. Panofy trains expert agents on your team’s own work. LlamaFactory fine-tunes open models with zero code.',
     items: [
       {
         id: 'penguin-harness',
@@ -45,8 +45,8 @@ export const productsCopy = {
   },
   zh: {
     eyebrow: '产品',
-    title: '三款产品，从开源模型到自进化 Agent。',
-    body: '用 PenguinHarness 让 Agent 构建并进化 Agent，用 Panofy 训练专家级 Agent，用 LlamaFactory 微调开源模型。',
+    title: '从最适合您团队的产品开始。',
+    body: 'PenguinHarness 让 Agent 构建并进化 Agent，Panofy 用您团队自己的工作训练专家级 Agent，LlamaFactory 零代码微调开源模型。',
     items: [
       {
         id: 'penguin-harness',

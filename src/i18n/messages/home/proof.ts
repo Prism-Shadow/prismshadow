@@ -31,8 +31,8 @@ export type ProofCopy = {
 export const proofCopy = {
   en: {
     eyebrow: 'Results',
-    title: 'Proven in production, not in demos.',
-    body: 'Higher accuracy, lower cost and models that actually ship, across finance, research, manufacturing, pharma and healthcare.',
+    title: 'Results you can put a number on.',
+    body: 'Higher accuracy, lower cost and models running in production, in finance, research, manufacturing, pharma and healthcare.',
     statsLabel: 'Headline results',
     stats: [
       {
@@ -68,8 +68,8 @@ export const proofCopy = {
   },
   zh: {
     eyebrow: '成果',
-    title: '成果在生产环境中验证，而不是在演示里。',
-    body: '更高的准确率、更低的成本、真正上线的模型，覆盖金融、科研、制造、制药与医疗。',
+    title: '成果，用数字说话。',
+    body: '更高的准确率、更低的成本、在生产环境中运行的模型，覆盖金融、科研、制造、制药与医疗。',
     statsLabel: '核心成果',
     stats: [
       {

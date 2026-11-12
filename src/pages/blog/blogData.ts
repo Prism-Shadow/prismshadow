@@ -10,8 +10,8 @@ import type { PixelLit, PixelTone } from '../../components/site/utils'
 
 /** Shown first on the index, in this order. */
 export const featuredSlugs = [
-  '/blog/introducing-agenthub-the-ultimate-model-sdk-for-building-high-precision-agents',
-  '/blog/meet-panofy-the-worlds-first-agent-training-platform',
+  '/blog/recursive-self-improvement-framework-survey-benchmark',
+  '/blog/introducing-amsp-agent-message-stream-protocol',
 ]
 
 /** Every post, newest first (stable: same-day posts keep their authored order). */
@@ -68,6 +68,7 @@ export const contentLang = (locale: Locale) => (locale === 'en' ? undefined : 'e
 
 export const topicOrder: BlogTopic[] = [
   'product',
+  'research',
   'supply-chain',
   'healthcare',
   'retail',
@@ -80,6 +81,7 @@ export const topicOrder: BlogTopic[] = [
 /** One small spectrum highlight per topic: tag tint and lit cover cells. */
 export const topicTone: Record<BlogTopic, PixelTone> = {
   product: 'accent',
+  research: 'accent',
   'supply-chain': 'cyan',
   healthcare: 'green',
   retail: 'coral',
@@ -90,7 +92,7 @@ export const topicTone: Record<BlogTopic, PixelTone> = {
 }
 
 export const topicLabel = (topic: BlogTopic, locale: Locale, copy: BlogPageCopy) =>
-  topic === 'product' ? copy.topics.product : siteText[locale].industries[topic]
+  topic === 'product' || topic === 'research' ? copy.topics[topic] : siteText[locale].industries[topic]
 
 /* ------------------------------------------------------------------ */
 /* Formatting                                                          */
@@ -103,6 +105,12 @@ export const fill = (template: string, values: Record<string, string | number>) 
 export function formatDate(date: string, copy: BlogPageCopy) {
   const [year, month, day] = date.split('-').map(Number)
   return fill(copy.meta.date, { year, month: copy.meta.months[month - 1], day })
+}
+
+/** Year-month formatting for the research list (`YYYY-MM`). */
+export function formatMonth(date: string, copy: BlogPageCopy) {
+  const [year, month] = date.split('-').map(Number)
+  return fill(copy.meta.monthYear, { year, month: copy.meta.months[month - 1] })
 }
 
 function postText(post: BlogPost): string {
@@ -353,6 +361,55 @@ const motifs: Record<BlogVisualPattern, (paint: Paint, t: PixelTone, rand: () =>
         paint([cell], roll < 0.4 ? { tone: t } : roll < 0.6 ? { tone: t, outline: true } : { tone: t, dim: true })
       }
     paint([[7, 4]], { tone: 'text' })
+  },
+  evolution(paint, t) {
+    // Agent versions climbing one step per round, with the feedback loop dotted
+    // along the floor: evaluate, find lost points, ship version N+1.
+    const versions: Cell[] = [[1, 9], [4, 7], [7, 5], [10, 3], [13, 1]]
+    paint(path(versions), { tone: t, dim: true })
+    paint([1, 3, 5, 7, 9, 11, 13].map((x): Cell => [x, 11]), { tone: t, outline: true })
+    paint([[13, 10], [1, 10]], { tone: t, dim: true })
+    paint(versions.slice(0, 2), { tone: t, outline: true })
+    paint(versions.slice(2, 4), { tone: t })
+    paint([versions[4]], { tone: 'text' })
+  },
+  taxonomy(paint, t) {
+    // A survey's tree: one root, four groups, nine design dimensions.
+    paint([...line([1, 6], [3, 6]), ...line([3, 1], [3, 10])], { tone: t, dim: true })
+    const groups: Array<[number, number[]]> = [
+      [1, [0, 1, 2]],
+      [4, [4, 5]],
+      [7, [7, 8]],
+      [10, [10, 11]],
+    ]
+    const bars = [3, 2, 3, 2, 3, 2, 2, 3, 1]
+    let leaf = 0
+    for (const [y, leaves] of groups) {
+      paint([[4, y], ...line([6, y], [7, y]), ...line([8, leaves[0]], [8, leaves[leaves.length - 1]])], {
+        tone: t,
+        dim: true,
+      })
+      paint([[5, y]], { tone: t })
+      for (const ly of leaves) {
+        paint([[9, ly]], leaf === 6 ? { tone: t } : { tone: t, outline: true })
+        paint(rect(11, ly, bars[leaf], 1), { tone: t, dim: true })
+        leaf += 1
+      }
+    }
+    paint([[0, 6]], { tone: 'text' })
+  },
+  stream(paint, t) {
+    // A Session as nested spans: the Task, its Requests, the messages inside.
+    paint([[0, 1]], { tone: t })
+    paint(line([1, 1], [12, 1]), { tone: t, dim: true })
+    paint([[13, 1]], { tone: 'text' })
+    for (const [x0, x1] of [[1, 5], [7, 12]]) {
+      paint([[x0, 4], [x1, 4]], { tone: t, outline: true })
+      paint(line([x0 + 1, 4], [x1 - 1, 4]), { tone: t, dim: true })
+    }
+    paint([...line([1, 7], [2, 7]), ...line([7, 7], [8, 7]), ...line([5, 10], [8, 10])], { tone: t, dim: true })
+    paint([[3, 8], ...line([9, 8], [11, 8])], { tone: t })
+    paint([[4, 9], [12, 9]], { tone: t, outline: true })
   },
   icp(paint, t, rand) {
     // Three persona clusters feeding one synthetic test profile.

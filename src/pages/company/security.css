@@ -102,7 +102,7 @@
   height: 24px;
   padding: 0 10px;
   border: 1px solid var(--ds-line);
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   background: rgba(255, 255, 255, 0.04);
   font-size: var(--ds-text-micro);
   line-height: 1;

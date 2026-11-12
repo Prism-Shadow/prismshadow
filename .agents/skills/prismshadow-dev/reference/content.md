@@ -77,6 +77,27 @@ Its facts come from its README, the source of truth:
 Use only published benchmark numbers. Report them honestly, including where it trails, e.g. on the
 coding suite.
 
+## Research and open-source work
+
+The list on `/blog` lives in `src/content/researchWorks.ts`; the posts are in `src/content/blogPosts.ts`.
+
+- **The goal:** the team behind LlamaFactory is building "the LlamaFactory of RSI", a unified,
+  efficient, stable and flexible framework for agent self-evolution.
+- **PenguinHarness:** every RSI algorithm and Benchmark is a plugin ("everything is a plugin").
+  Counts come from its README, not from older announcements: as of 2026-11, nine algorithms and
+  seventeen built-in Benchmarks, with a target of 100+, and 3,000+ GitHub stars.
+- **Survey:** "From Existing Methods to New Research Ideas: Two Perspectives on Recursive
+  Self-Improvement", https://arxiv.org/abs/2610.14625. It reviews 140 works and maps RSI onto deep
+  learning one to one. The index is https://github.com/Prism-Shadow/awesome-rsi.
+- **GDPevo:** "GDPevo: Evaluating Agent Self-Evolution on Real Business Tasks",
+  https://arxiv.org/abs/2608.03764, https://github.com/Prism-Shadow/GDPevo.
+  - 240 tasks across six enterprise domains, in 24 groups of 5 train and 5 held-out test tasks.
+  - The paper evaluates four agents; the leaderboard tracks six.
+  - Self-evolution improves held-out accuracy by up to 16.44 points, against a 91.6% ceiling.
+- **AMSP** (https://penguin.ooo/amsp) is built on **MMSP** (https://mmsp.penguin.ooo/). It is a
+  minimal, unified protocol for agent Sessions: observe, resume, front-end/back-end transport and
+  many models through one interface. It runs in PenguinHarness.
+
 ## Links
 
 | What | URL |

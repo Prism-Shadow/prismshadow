@@ -202,7 +202,7 @@
   height: 32px;
   padding: 0 14px;
   border: 1px solid var(--ds-line-strong);
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
   color: var(--ds-text-2);

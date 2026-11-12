@@ -13,7 +13,6 @@ export type HeroVisualCopy = {
 }
 
 export type HeroCopy = {
-  eyebrow: string
   /** Full headline; `titleAccent` is the part set in the accent color. */
   title: string
   titleAccent: string
@@ -25,10 +24,9 @@ export type HeroCopy = {
 
 export const heroCopy = {
   en: {
-    eyebrow: 'Enterprise self-evolving AI platform',
-    title: 'The platform for self-evolving AI',
-    titleAccent: 'self-evolving AI',
-    body: 'PrismShadow unifies data production, model training and agent self‑evolution in one platform. Enterprises build and continuously optimize AI workflows and AutoResearch systems that cut labor costs and raise output.',
+    title: 'Enterprise AI that gets better with every task',
+    titleAccent: 'better with every task',
+    body: 'PrismShadow brings data production, model training and agent self‑evolution together. The AI workflows and AutoResearch systems you build with us keep learning from real work, so labor costs fall and output rises.',
     primaryCta: 'Book a demo',
     secondaryCta: 'See the results',
     visual: {
@@ -40,10 +38,9 @@ export const heroCopy = {
     },
   },
   zh: {
-    eyebrow: '企业级自进化 AI 平台',
-    title: '让企业 AI 持续自我进化',
-    titleAccent: '持续自我进化',
-    body: 'PrismShadow 提供一体化的数据生产、模型训练和 Agent 自进化平台，帮助企业构建并持续优化 AI 工作流与 AutoResearch 自主科研系统，降低人力成本，提高产出能力。',
+    title: '越用越聪明的\u200b企业\u00a0AI',
+    titleAccent: '越用越聪明',
+    body: 'PrismShadow 把数据生产、模型训练和 Agent 自进化整合在一起，帮您构建 AI 工作流与 AutoResearch 自主科研系统，并让它们在真实业务中持续优化，降低人力成本，提高产出能力。',
     primaryCta: '预约演示',
     secondaryCta: '查看客户成果',
     visual: {

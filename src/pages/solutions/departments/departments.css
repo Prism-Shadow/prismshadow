@@ -32,7 +32,7 @@
   align-items: center;
   height: 32px;
   padding: 0 12px;
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   font-size: var(--ds-text-xs);
   color: var(--ds-text-2);
   white-space: nowrap;
@@ -224,7 +224,7 @@
 
   .pg-departments__tab {
     flex: none;
-    border-radius: var(--ds-r-pill);
+    border-radius: var(--ds-r-control);
   }
 
   .pg-departments__panel {

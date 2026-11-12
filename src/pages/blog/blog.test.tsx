@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { blogPosts } from '../../content/blogPosts'
+import { researchWorks } from '../../content/researchWorks'
 import { locales } from '../../i18n'
 import { blogPageCopy } from '../../i18n/messages/blog'
 import { collectStrings, copyShape, expectPageBasics, renderHtml } from '../../test/pageChecks'
 import { BlogIndexPage } from './BlogIndexPage'
 import { BlogPostPage } from './BlogPostPage'
-import { coverCells, coverGeometry, featuredPosts, gridPosts, headingIds, readingMinutes } from './blogData'
+import {
+  coverCells,
+  coverGeometry,
+  featuredPosts,
+  findPost,
+  gridPosts,
+  headingIds,
+  readingMinutes,
+  topicLabel,
+} from './blogData'
 
 const count = (html: string, pattern: RegExp) => html.match(pattern)?.length ?? 0
 
@@ -47,6 +57,66 @@ describe('blog data', () => {
   })
 })
 
+describe('research', () => {
+  const roundup = '/blog/recursive-self-improvement-framework-survey-benchmark'
+  const amsp = '/blog/introducing-amsp-agent-message-stream-protocol'
+  const penguin = '/blog/introducing-penguinharness'
+
+  it('features the newest research posts', () => {
+    expect(featuredPosts.map((post) => post.slug)).toEqual([roundup, amsp])
+    for (const post of featuredPosts) expect(post.topic).toBe('research')
+  })
+
+  it('labels the research topic in both locales', () => {
+    expect(topicLabel('research', 'en', blogPageCopy.en)).toBe('Research')
+    expect(topicLabel('research', 'zh', blogPageCopy.zh)).toBe('研究')
+  })
+
+  it('lists every paper and project with a summary per locale, live links and a real post', () => {
+    expect(researchWorks.map((work) => work.title)).toEqual([
+      'From Existing Methods to New Research Ideas: Two Perspectives on Recursive Self-Improvement',
+      'GDPevo: Evaluating Agent Self-Evolution on Real Business Tasks',
+      'PenguinHarness',
+      'AMSP: Agent Message Stream Protocol',
+      'MMSP: Model Message Stream Protocol',
+    ])
+    for (const work of researchWorks) {
+      expect(work.date).toMatch(/^2026-(0[1-9]|1[0-2])$/)
+      for (const locale of locales) expect(work.summary[locale].trim(), `${work.id}.${locale}`).not.toBe('')
+      for (const link of work.links) expect(link.href).toMatch(/^https:\/\//)
+      if (work.post) expect(findPost(work.post), work.id).toBeDefined()
+    }
+    const hrefs = researchWorks.flatMap((work) => work.links.map((link) => link.href))
+    expect(hrefs).toEqual(
+      expect.arrayContaining([
+        'https://arxiv.org/abs/2610.14625',
+        'https://arxiv.org/abs/2608.03764',
+        'https://github.com/Prism-Shadow/awesome-rsi',
+        'https://github.com/Prism-Shadow/GDPevo',
+        'https://github.com/Prism-Shadow/penguin-harness',
+        'https://penguin.ooo/amsp',
+        'https://mmsp.penguin.ooo/',
+      ]),
+    )
+  })
+
+  it('keeps the posts’ key facts and sources', () => {
+    const text = (slug: string) => JSON.stringify(findPost(slug))
+    expect(text(roundup)).toContain('https://arxiv.org/abs/2610.14625')
+    expect(text(roundup)).toContain('https://arxiv.org/abs/2608.03764')
+    expect(text(roundup)).toContain('140 recent works')
+    expect(text(roundup)).toContain('240 tasks')
+    expect(text(amsp)).toContain('@prismshadow/amsp')
+    expect(text(amsp)).toContain('https://mmsp.penguin.ooo/')
+    expect(findPost(penguin)?.author).toBe('Yaowei Zheng')
+    expect(findPost(penguin)?.date).toBe('2026-07-17')
+    // The benchmark is reported honestly, including where it trails.
+    expect(text(penguin)).toContain('trails Claude Code’s 86.25%')
+    expect(text(penguin)).toContain('https://penguin.ooo/blog/introducing-penguinharness')
+    expect(text(penguin)).not.toContain('penguin-2026')
+  })
+})
+
 describe.each(locales)('blog index (%s)', (locale) => {
   const html = renderHtml(<BlogIndexPage locale={locale} />)
 
@@ -62,6 +132,26 @@ describe.each(locales)('blog index (%s)', (locale) => {
     expect(count(html, /class="pg-blog__filter"/g)).toBeGreaterThan(5)
     expect(html).toContain('aria-pressed="true"')
     expect(html).toContain(blogPageCopy[locale].index.featuredLabel)
+  })
+
+  it('lists the papers and open-source work between featured and the grid', () => {
+    const copy = blogPageCopy[locale]
+    const start = html.indexOf('id="research"')
+    expect(start).toBeGreaterThan(html.indexOf('id="blog"'))
+    expect(start).toBeLessThan(html.indexOf('id="posts"'))
+    expect(html).toContain('aria-labelledby="research-title"')
+    expect(html).toContain(escapeHtml(copy.works.title))
+    const list = html.slice(start, html.indexOf('id="posts"'))
+    expect(count(list, /class="pg-blog-works__row"/g)).toBe(researchWorks.length)
+    for (const work of researchWorks) {
+      expect(list).toContain(escapeHtml(work.title))
+      expect(list).toContain(escapeHtml(work.summary[locale]))
+      for (const link of work.links)
+        expect(list).toContain(`href="${link.href}" target="_blank" rel="noreferrer" aria-describedby="work-${work.id}"`)
+      if (work.post) expect(list).toContain(`href="${work.post}" aria-describedby="work-${work.id}"`)
+      expect(list).toContain(copy.works.kinds[work.kind])
+    }
+    if (locale === 'zh') expect(count(list, /class="pg-blog-works__title"[^>]*lang="en"/g)).toBe(researchWorks.length)
   })
 
   it('marks the covers for the motion system', () => {

@@ -1,35 +1,51 @@
-/* Hero: centered display heading, then the evolution frontier, borderless on the canvas. */
+/*
+ * Hero: the headline on the left, the lead and actions bottom-aligned on the
+ * right, then the evolution frontier, borderless on the canvas. Its one focal
+ * point (gen N) sits under the actions, so the eye runs headline → result.
+ */
 
 .pg-home .hp-hero {
   position: relative;
-  padding-top: clamp(64px, 7vw, 104px);
+  padding-top: clamp(56px, 6.5vw, 96px);
   padding-bottom: clamp(40px, 4vw, 56px);
   background: var(--ds-bg);
 }
 
 .pg-home .hp-hero__copy {
   display: grid;
-  justify-items: center;
-  gap: 24px;
-  text-align: center;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  row-gap: 32px;
+  align-items: end;
 }
 
 .pg-home .hp-hero__title {
-  max-width: 12em;
-}
-
-.pg-home .hp-hero__title .ds-accent-text {
-  white-space: nowrap;
-}
-
-.pg-home .hp-hero__lead {
-  max-width: 38em;
+  grid-column: 1 / span 7;
+  max-width: 11em;
   text-wrap: balance;
 }
 
-.pg-home .hp-hero__actions {
-  justify-content: center;
-  margin-top: 8px;
+.pg-home .hp-hero__aside {
+  grid-column: 8 / span 5;
+  display: grid;
+  gap: 28px;
+  justify-items: start;
+  padding-bottom: 0.4em;
+}
+
+.pg-home .hp-hero__lead {
+  max-width: 34em;
+}
+
+@media (max-width: 900px) {
+  .pg-home .hp-hero__title,
+  .pg-home .hp-hero__aside {
+    grid-column: 1 / -1;
+  }
+
+  .pg-home .hp-hero__aside {
+    padding-bottom: 0;
+  }
 }
 
 /* ---------- Evolution frontier ---------- */

@@ -1,5 +1,5 @@
 import type { ReactElement, SVGProps } from 'react'
-import type { PlatformFeatureIcon, PlatformModuleId } from '../../i18n/messages/home'
+import type { PlatformFeatureIcon } from '../../i18n/messages/home'
 
 /* Homepage line icons: 16px grid, 1.5px stroke, currentColor, decorative. */
 
@@ -128,43 +128,4 @@ const featureGlyphs: Record<PlatformFeatureIcon, ReactElement> = {
 
 export const FeatureIcon = ({ name, ...props }: IconProps & { name: PlatformFeatureIcon }) => (
   <Icon16 {...props}>{featureGlyphs[name]}</Icon16>
-)
-
-const tabGlyphs: Record<PlatformModuleId, ReactElement> = {
-  // Three linked agents.
-  agents: (
-    <>
-      <rect x="1.75" y="1.75" width="4.5" height="4.5" rx="1" />
-      <rect x="9.75" y="1.75" width="4.5" height="4.5" rx="1" />
-      <rect x="5.75" y="9.75" width="4.5" height="4.5" rx="1" />
-      <path d="M6.25 4h3.5M4 6.25 6.5 9.75M12 6.25 9.5 9.75" />
-    </>
-  ),
-  // Database: data distillation and synthesis.
-  data: (
-    <>
-      <ellipse cx="8" cy="3.75" rx="5.25" ry="2" />
-      <path d="M2.75 3.75v8.5c0 1.1 2.35 2 5.25 2s5.25-.9 5.25-2v-8.5" />
-      <path d="M2.75 8c0 1.1 2.35 2 5.25 2s5.25-.9 5.25-2" />
-    </>
-  ),
-  // Server inside a boundary: local deployment.
-  deploy: (
-    <>
-      <rect x="1.75" y="1.75" width="12.5" height="12.5" rx="2" strokeDasharray="2 2" />
-      <rect x="4.75" y="5" width="6.5" height="2.5" rx=".5" />
-      <rect x="4.75" y="8.5" width="6.5" height="2.5" rx=".5" />
-    </>
-  ),
-  // Flask: autonomous research.
-  research: (
-    <>
-      <path d="M6 1.75h4M6.75 1.75v4.5L2.9 12.6a1.1 1.1 0 0 0 .95 1.65h8.3a1.1 1.1 0 0 0 .95-1.65L9.25 6.25v-4.5" />
-      <path d="M4.5 10h7" />
-    </>
-  ),
-}
-
-export const TabIcon = ({ name, ...props }: IconProps & { name: PlatformModuleId }) => (
-  <Icon16 {...props}>{tabGlyphs[name]}</Icon16>
 )
