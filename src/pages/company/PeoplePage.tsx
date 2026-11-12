@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ArrowRightIcon, ArrowUpRightIcon, DiamondIcon, GithubIcon } from '../../components/site/icons'
+import { ArrowRightIcon, ArrowUpRightIcon, GithubIcon } from '../../components/site/icons'
 import { ButtonLink, CtaBand, Eyebrow, SectionHead } from '../../components/site/ui'
 import { renderAccent } from '../../components/site/utils'
 import { peoplePageCopy } from '../../i18n/messages/people'
@@ -52,9 +52,6 @@ export function PeoplePage({ locale }: PageProps) {
       >
         <div className="ds-container">
           <h2 id="founders-title" className="ds-eyebrow pg-people-founders__title">
-            <span className="ds-eyebrow__chip" aria-hidden="true">
-              <DiamondIcon />
-            </span>
             {copy.founders.title}
           </h2>
           <ol className="pg-people-founders__list">

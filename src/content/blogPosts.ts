@@ -30,6 +30,8 @@ export type BlogVisualPattern =
   | 'clinical'
   | 'commerce'
   | 'dealer'
+  | 'evolution'
+  | 'hybrid'
   | 'icp'
   | 'journey'
   | 'network'
@@ -39,13 +41,16 @@ export type BlogVisualPattern =
   | 'questions'
   | 'radar'
   | 'simulation'
+  | 'stream'
+  | 'taxonomy'
 
 /** Where a post visual is shown: index card, featured card, or article header. */
 export type BlogVisualPlacement = 'article' | 'card' | 'featured'
 
-/** Filterable topic: product news, or one of the site's industries. */
+/** Filterable topic: product news, research, or one of the site's industries. */
 export type BlogTopic =
   | 'product'
+  | 'research'
   | Extract<
       IndustryId,
       | 'supply-chain'
@@ -115,7 +120,654 @@ export type BlogPost = {
   content: BlogContentSection[]
 }
 
+/**
+ * The Chinese text of a post (src/content/blog-zh/). Same shape as the English:
+ * every optional field the English has is present, every array has the same
+ * length, and `content` mirrors the English section by section and block by
+ * block, with the same image sources, link targets and code. Only the words
+ * change. Enforced by blogZh.test.ts.
+ */
+export type BlogPostZh = {
+  category: string
+  title: string
+  seoTitle?: string
+  excerpt: string
+  metaDescription?: string
+  visualLabel: string
+  visualSteps?: string[]
+  /** Text of the cover image, when the post has one. */
+  visualImage?: { alt: string; caption?: string }
+  tags?: string[]
+  content: BlogContentSection[]
+}
+
 export const blogPosts: BlogPost[] = [
+  {
+    category: 'Research',
+    topic: 'research',
+    title: 'Awesome RSI: a map of recursive self-improvement, and where new ideas come from',
+    seoTitle: 'Awesome RSI and Our Survey of Recursive Self-Improvement',
+    date: '2026-11-12',
+    excerpt:
+      'We read and organized 140 recent works on recursive self-improvement. The result is awesome-rsi, an open index of the field, and a survey that looks at it two ways: as one shared design space, and through the deep-learning ideas RSI methods correspond to.',
+    metaDescription:
+      'awesome-rsi is an open index of recursive self-improvement (RSI) methods, benchmarks and systems. Our survey of 140 works maps RSI onto a nine-dimension design space and onto the history of deep learning.',
+    slug: '/blog/awesome-rsi-survey-recursive-self-improvement',
+    visualLabel: 'Awesome RSI',
+    visualPattern: 'taxonomy',
+    visualSteps: [
+      'Perform tasks',
+      'Collect trajectories',
+      'Learn from feedback',
+      'Update its own state',
+      'Reuse the new state',
+    ],
+    author: 'PrismShadow',
+    tags: ['Recursive Self-Improvement', 'awesome-rsi', 'Survey', 'Agent Self-Evolution', 'Research'],
+    content: [
+      {
+        body: [
+          'LlamaFactory, our open-source framework for fine-tuning language models, has passed 70,000 GitHub stars. We are now building its counterpart for recursive self-improvement (RSI): one unified, efficient, stable and flexible framework for agent self-evolution. Before building it, we wanted to understand the field properly.',
+          'So we read and organized 140 recent works on RSI. Two things came out of it: awesome-rsi, an open index of RSI research that anyone can browse and filter, and a survey paper, From Existing Methods to New Research Ideas: Two Perspectives on Recursive Self-Improvement.',
+        ],
+      },
+      {
+        blocks: [
+          {
+            type: 'image',
+            src: '/blog-assets/paper-rsi-survey-first-page.webp',
+            alt: 'The first page of the survey: its title, the authors from PrismShadow, Peking University, Zhejiang University and New York University, and the abstract.',
+            width: 1380,
+            height: 1120,
+            caption: 'The first page of the survey, arXiv:2610.14625.',
+          },
+        ],
+        links: [{ label: 'Read the survey on arXiv', href: 'https://arxiv.org/abs/2610.14625' }],
+      },
+      {
+        heading: 'What counts as RSI',
+        body: [
+          'We follow one loop: an agent performs tasks, learns from its trajectories and feedback, updates its own state, and uses that updated state in later work. The state can be the model’s parameters, the harness code, the context, memory or skills.',
+          'The collection covers both explicit self-modification and experience-driven improvement during long-running tasks. Methods and systems are grouped by what the agent improves: model parameters on the parametric side; harness code, context, memory, skills and other artifacts on the non-parametric side.',
+        ],
+      },
+      {
+        heading: 'An open index of the field',
+        body: [
+          'awesome-rsi collects benchmarks, methods and systems for RSI, and it keeps growing as new work appears. Its website, in English and Chinese, is built for finding the paper you need:',
+        ],
+        bullets: [
+          'Methods and systems you can filter by artifact, topology, feedback and more, combining tags across dimensions: for example, methods that update Skills, run online and learn from environment feedback.',
+          'Benchmarks you can compare by artifact and by protocol: online, offline or hybrid.',
+          'Citation graphs for methods and for benchmarks: search for a paper, then drag and zoom through its neighborhood.',
+          'Understanding RSI, an illustrated guide to the field.',
+        ],
+        links: [
+          { label: 'Explore the awesome-rsi website', href: 'https://prism-shadow.github.io/awesome-rsi/' },
+          { label: 'Understanding RSI', href: 'https://prism-shadow.github.io/awesome-rsi/blog/understanding-rsi/' },
+          { label: 'awesome-rsi on GitHub', href: 'https://github.com/Prism-Shadow/awesome-rsi' },
+        ],
+      },
+      {
+        heading: 'Perspective one: a shared design space',
+        body: [
+          'The survey first introduces a unified taxonomy of nine design dimensions, organized into four groups: update targets, update organization, update schedule and scope, and feedback and selection.',
+          'The taxonomy places existing methods in one shared design space. Looking at a single dimension, or at how two dimensions interact, shows which combinations have been tried and which have not, and that is where new research ideas start.',
+        ],
+      },
+      {
+        heading: 'Perspective two: deep learning has been here before',
+        body: [
+          'The second perspective lines RSI up against traditional deep learning, and many concepts correspond one to one. Existing RSI methods already draw on optimization, regularization, data augmentation, continual learning and adversarial learning; the difference is that what learns is now an agent.',
+          'The survey then develops further ideas from more specific learning mechanisms, and from evolutionary computation. When deep learning has already met a problem that RSI faces now, its answer is a good place to start.',
+        ],
+      },
+      {
+        heading: 'How self-improvement is measured',
+        body: [
+          'Finally, the survey reviews how existing benchmarks assess self-improvement in three settings. Online, experience accumulates during the task stream and later work can use it. Offline, evolution happens first and a separate held-out evaluation follows. Offline-to-online, an artifact built offline keeps evolving in use.',
+          'Measuring self-improvement fairly on real business work is the problem our own benchmark, GDPevo, takes on.',
+        ],
+      },
+      {
+        heading: 'Read it, use it, add to it',
+        body: [
+          'The survey maps the methods, GDPevo measures them, and PenguinHarness runs them as plugins. If you work on self-evolving agents, we would like to hear from you, whether it is a paper we missed or a new idea the design space suggests.',
+        ],
+        links: [
+          { label: 'Read the survey on arXiv', href: 'https://arxiv.org/abs/2610.14625' },
+          { label: 'awesome-rsi on GitHub', href: 'https://github.com/Prism-Shadow/awesome-rsi' },
+          { label: 'GDPevo: measuring agent self-evolution', href: '/blog/gdpevo-benchmark-agent-self-evolution' },
+          { label: 'PenguinHarness: every RSI algorithm in one framework', href: '/blog/introducing-penguinharness' },
+        ],
+      },
+    ],
+  },
+  {
+    category: 'Research',
+    topic: 'research',
+    title: 'GDPevo: measuring agent self-evolution on real business tasks',
+    seoTitle: 'GDPevo: A Benchmark for Agent Self-Evolution on Real Business Tasks',
+    date: '2026-11-12',
+    excerpt:
+      'Can an agent learn a business’s rules from a few examples and apply them to cases it has never seen? GDPevo measures exactly that: 240 enterprise tasks with held-out tests, rule-based grading, and cost recorded next to accuracy.',
+    metaDescription:
+      'GDPevo is an open benchmark for agent self-evolution on GDP-related enterprise work: 240 tasks in six domains, rule hybridization for attributable gains, rule-based grading, and results for leading agents.',
+    slug: '/blog/gdpevo-benchmark-agent-self-evolution',
+    visualLabel: 'GDPevo',
+    visualPattern: 'hybrid',
+    visualSteps: [
+      'Seed scenario',
+      'Atomic rules',
+      '5 training tasks',
+      '5 held-out tests',
+      'Rule-based grading',
+      'Accuracy and cost',
+    ],
+    author: 'PrismShadow',
+    tags: ['GDPevo', 'Benchmark', 'Agent Self-Evolution', 'Recursive Self-Improvement', 'Enterprise AI'],
+    content: [
+      {
+        body: [
+          'Agent self-evolution means an agent updates its persistent state from prior experience and reuses it to solve related tasks better: an agent that gets better at your work the longer it does it. To build better self-evolution methods, we first have to measure it, and that turns out to be hard.',
+          'Existing benchmarks cover few economically valuable domains. They rarely design training and test tasks so that a gain on the test can be attributed to what the agent learned in training, and they are exposed to data contamination. GDPevo is our answer: an evolution-native benchmark grounded in GDP-related enterprise workflows, together with the fully automated pipeline that generates it.',
+        ],
+      },
+      {
+        blocks: [
+          {
+            type: 'image',
+            src: '/blog-assets/paper-gdpevo-first-page.webp',
+            alt: 'The first page of the GDPevo paper: its title, the authors from PrismShadow and New York University, the abstract and the start of the introduction.',
+            width: 1275,
+            height: 1650,
+            caption: 'The first page of the GDPevo paper, arXiv:2608.03764.',
+          },
+        ],
+        links: [{ label: 'Read the GDPevo paper on arXiv', href: 'https://arxiv.org/abs/2608.03764' }],
+      },
+      {
+        heading: 'Rule hybridization: gains you can attribute',
+        body: [
+          'The core mechanism borrows from crossover in genetic algorithms. Each enterprise workflow is broken into atomic business rules. Subsets of those rules are scattered across five training tasks, so each training task shows only part of them. The five held-out test tasks then recombine the rules in new ways.',
+          'In a CRM group, for example, the training tasks hide a priority order for sponsor status and a blacklist policy, and a test task triggers both at once. In an ERP group, they hide vendor risk-control rules and the response each one calls for. An agent that only memorizes training answers gains nothing on the test set; an agent that learns the rules does. That is what makes the gain attributable to self-evolution.',
+        ],
+      },
+      {
+        heading: 'Built end to end by agents',
+        body: [
+          'People design the workflow once, and agents run it. That keeps the benchmark ahead of contamination, because it can produce new tasks faster than models can memorize leaked answers, and it lets the suite grow without more human labor.',
+        ],
+        bullets: [
+          'Seed scenarios come from public real-business benchmarks: GDPval, SOP-Bench and JobBench.',
+          'Agents turn each scenario into a task group: one shared business environment, five training tasks and five test tasks, each with a rule-based grading script.',
+          'A calibration agent keeps only the groups where an agent’s score after evolution clearly exceeds its score before.',
+          'Six independent reviewer agents audit every group, checking that the files are complete and the hidden rules are really planted. A group is adopted only with at least five passing votes.',
+        ],
+      },
+      {
+        body: [
+          'The first release had 120 tasks in 12 groups. Because the pipeline is fully automated, it grew the suite to 240 tasks in 24 groups within two days.',
+        ],
+      },
+      {
+        heading: 'Six domains, 240 tasks',
+        body: [
+          'GDPevo spans six domains of everyday enterprise work: CRM, ERP and finance, plus legal (reviewing contracts when one company acquires another), healthcare (getting a patient’s records ready before a hospital transfer) and data processing (cleaning up a messy dataset before it can be analyzed). Every group has one shared environment, five training tasks and five held-out test tasks.',
+        ],
+      },
+      {
+        heading: 'Reproducible scores, and cost next to accuracy',
+        body: [
+          'GDPevo grades with deterministic rules, not an LLM judge. Every score is made of several scoring points, so the same answer always earns the same score, and every failure shows exactly which rule was missed. That turns the benchmark into a diagnostic tool: read the agent’s trace back from a lost point, and you know what to improve next.',
+          'Accuracy is not the only thing that matters. A good self-evolution strategy should also make the agent cheaper to run, the way a person gets faster as well as better with practice. Every run records tokens, cost and turn count next to accuracy.',
+        ],
+      },
+      {
+        heading: 'Four ways to evolve',
+        body: ['Each agent, a model running in a harness, is evaluated in four modes:'],
+        bullets: [
+          'base: run the test tasks directly, with no evolution step.',
+          'self: evolve its own working strategy from the training inputs and the environment, without the training answers.',
+          'fewshot: learn from the training inputs plus gold answers as demonstrations.',
+          'reflect-3: iterate with feedback from a training-only judge, then consolidate the evolved workflow.',
+        ],
+      },
+      {
+        heading: 'What we found',
+        body: [
+          'The paper evaluates four agents in these four modes on all 24 task groups, with three runs per experiment. Held-out test accuracy, as the mean of three runs:',
+        ],
+        table: {
+          headers: ['Harness', 'Model', 'base', 'self', 'fewshot', 'reflect-3'],
+          rows: [
+            ['Codex', 'GPT-5.5 (xhigh)', '49.37%', '55.80%', '64.51%', '57.82%'],
+            ['Claude Code', 'Opus 4.8 (xhigh)', '50.63%', '55.05%', '67.07%', '59.27%'],
+            ['Claude Code', 'GLM-5.2 (max)', '46.12%', '50.96%', '60.09%', '55.49%'],
+            ['Claude Code', 'DeepSeek V4 Pro Preview (max)', '43.58%', '46.17%', '48.79%', '47.15%'],
+          ],
+        },
+      },
+      {
+        body: [
+          'Self-evolution improves held-out accuracy for every agent, by up to 16.44 percentage points (Claude Code with Opus 4.8, in fewshot mode). Yet the best evolved agents remain far below the fully informed ceiling of 91.6%. Today’s agents can learn from experience, but their ability to self-evolve is still far from fully realized, and that gap is the opportunity.',
+          'The project leaderboard keeps growing. It now tracks six agents, with per-group breakdowns, skill-transfer heatmaps and radar views.',
+        ],
+      },
+      {
+        heading: 'Run it on your agent',
+        body: [
+          'The pipeline, the benchmark and the full evaluation results are open. Bring your own agent, or your own business scenario. GDPevo Essential’s six scenarios also ship as built-in Train and Test Benchmarks in PenguinHarness, so you can evolve an agent against them with any RSI algorithm.',
+        ],
+        links: [
+          { label: 'Read the GDPevo paper on arXiv', href: 'https://arxiv.org/abs/2608.03764' },
+          { label: 'GDPevo on GitHub', href: 'https://github.com/Prism-Shadow/GDPevo' },
+          { label: 'Leaderboard and project site', href: 'https://prism-shadow.github.io/GDPevo/' },
+          { label: 'PenguinHarness: every RSI algorithm in one framework', href: '/blog/introducing-penguinharness' },
+        ],
+      },
+    ],
+  },
+  {
+    category: 'Research',
+    topic: 'research',
+    title: 'PenguinHarness: every RSI algorithm in one open framework',
+    seoTitle: 'PenguinHarness: An Open-Source Framework for Agent Self-Evolution',
+    date: '2026-11-12',
+    excerpt:
+      'PenguinHarness brings every RSI algorithm and Benchmark into one open-source framework, as plugins, on any model. Agents build agents from one sentence, then evolve them round by round, at a fraction of the usual cost.',
+    metaDescription:
+      'PenguinHarness is the open-source framework for agent self-evolution from the team behind LlamaFactory: nine RSI algorithms and seventeen Benchmarks as plugins, 1000+ models, a desktop app, and the best data-analysis accuracy at 1/70 of Claude Code’s cost.',
+    slug: '/blog/introducing-penguinharness',
+    visualLabel: 'PenguinHarness',
+    visualPattern: 'evolution',
+    visualSteps: [
+      'Pick an algorithm',
+      'Pick a Benchmark',
+      'Evaluators score it',
+      'Find lost points',
+      'Snapshot',
+      'Version N+1',
+    ],
+    author: 'PrismShadow',
+    tags: ['PenguinHarness', 'Recursive Self-Improvement', 'Agent Self-Evolution', 'Open Source', 'Agent Harness'],
+    content: [
+      {
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'LlamaFactory put the data, models, algorithms and evaluation of fine-tuning into one open-source framework, and it has passed 70,000 GitHub stars. PenguinHarness does the same for recursive self-improvement (RSI). It is an open-source (Apache 2.0) multi-agent framework for agent self-evolution, and it has passed 3,000 GitHub stars. The idea behind it fits in one line:',
+          },
+          {
+            type: 'quote',
+            text: 'With LangChain, you build agents by hand — at 1× speed. With PenguinHarness, agents build agents — at 100×.',
+          },
+          {
+            type: 'paragraph',
+            text: 'The model stays fixed; the harness evolves: prompts, Skills, tools and hooks. PenguinHarness runs on your own computer or server as a desktop app, a Web App, a CLI and an SDK, connected to 1000+ models.',
+          },
+        ],
+      },
+      {
+        heading: 'Why we built it',
+        body: [
+          'Before PenguinHarness, our team built the GDPevo benchmark, and with it we verified one thing systematically: agents can self-evolve. An agent can score its own performance, find where it lost points, rewrite its own prompts and Skills, and score higher with each version.',
+          'Self-evolution should not stay a curve in a paper. It should be infrastructure that works out of the box for every developer and every enterprise, and researchers need one place to run and compare RSI methods instead of re-implementing each one. PenguinHarness is built to be both.',
+        ],
+        links: [{ label: 'GDPevo: measuring agent self-evolution', href: '/blog/gdpevo-benchmark-agent-self-evolution' }],
+      },
+      {
+        heading: 'Every algorithm is a plugin',
+        body: [
+          'PenguinHarness follows one rule: everything is a plugin. Every RSI algorithm and every Benchmark is a plugin, decoupled from the rest, so you can pick any algorithm and use it to evolve any agent on any model. Nine algorithms ship today, all on the same Benchmarks, scoreboard and snapshots:',
+        ],
+        table: {
+          headers: ['Toolkit', 'Algorithm'],
+          rows: [
+            ['default-rsi-toolkit', 'Trial, reflect, improve: one hypothesis and one change per round'],
+            ['opro-rsi-toolkit', 'OPRO: new instructions from the history of scored ones'],
+            ['ape-rsi-toolkit', 'APE: candidate instructions induced from examples'],
+            ['ace-rsi-toolkit', 'ACE: lessons from Traces curated into a playbook'],
+            ['awm-rsi-toolkit', 'AWM: workflows induced from successful runs'],
+            ['skilladam-rsi-toolkit', 'SkillAdam: an evolving issue tracker and an adaptive Skill edit budget'],
+            ['skillopt-rsi-toolkit', 'SkillOpt: bounded Skill edits, score-based selection and cross-epoch reflection'],
+            ['openskill-rsi-toolkit', 'OpenSkill: external research and independent virtual tests before frozen-State evaluation'],
+            ['trace-rsi-toolkit', 'TRACE: skill-bank evolution from contrasting trajectories, with consistency measurement'],
+          ],
+        },
+      },
+      {
+        body: [
+          'Every new Project includes seventeen Benchmarks, run as Harbor tasks in Docker: PenguinHarness Benchmark Sec A to Sec E, built from rag-bench-essential, DeepSWE, AutomationBench, Terminal-Bench-Science and Terminal-Bench, plus a Train and Test pair for each of GDPevo Essential’s six scenarios. Our goal is to grow the algorithms and Benchmarks past 100.',
+        ],
+      },
+      {
+        heading: 'Self-evolution, round by round',
+        body: [
+          'Pick an algorithm and a Benchmark, and one agent improves another, round by round. Every candidate is a new version, snapshotted before it changes, and every score lands in the Evaluation Center. In each round:',
+        ],
+        bullets: [
+          'The Optimizer runs several Evaluators in parallel to score the agent.',
+          'It uses the scores and the run Traces to find where points were lost.',
+          'It upgrades the agent from version N to N+1.',
+        ],
+      },
+      {
+        body: [
+          'In one demo, a decision agent is evaluated, revises its working method once and is retested on the same model. Its score goes from 84 to 100, with the cost of every run on screen, and every request can be replayed on the Trajectory page.',
+        ],
+      },
+      {
+        heading: 'Better on complex tasks, at lower cost',
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'PenguinHarness uses a deliberately minimal toolset over clean low-level interfaces, so it makes fewer tool calls and spends fewer Tokens. It is tuned in depth for open models such as DeepSeek.',
+          },
+          {
+            type: 'paragraph',
+            text: 'We compared it head to head with Claude Code and OpenAI Codex on two suites, first published with PenguinHarness 0.1.0. Each harness runs the model it is normally paired with, so the comparison shows the products as people actually use them.',
+          },
+          {
+            type: 'image',
+            src: '/blog-assets/penguinharness-benchmark.svg',
+            alt: 'Benchmark results: PenguinHarness leads the data-analysis suite and ties OpenAI Codex on coding, at a small fraction of either rival’s cost.',
+            width: 920,
+            height: 368,
+            caption:
+              'Accuracy and total cost on both suites. PenguinHarness runs on DeepSeek V4 Pro, Claude Code on Claude Opus 4.8 and OpenAI Codex on GPT-5.5.',
+          },
+        ],
+      },
+      {
+        heading: 'Complex data analysis',
+        level: 3,
+        body: ['15 tasks, one run each. PenguinHarness and OpenAI Codex ran at thinking level xhigh, Claude Code at max.'],
+        table: {
+          headers: ['Framework', 'Model', 'Accuracy (%)', 'Tokens (M)', 'Cost ($)'],
+          rows: [
+            ['PenguinHarness', 'DeepSeek V4 Pro', '66.67', '18.04', '0.55'],
+            ['Claude Code', 'Claude Opus 4.8', '53.33', '22.20', '38.48'],
+            ['OpenAI Codex', 'GPT-5.5', '53.33', '13.72', '19.41'],
+          ],
+        },
+      },
+      {
+        heading: 'Coding',
+        level: 3,
+        body: ['40 tasks × 2 runs; accuracy is over all 80 outcomes.'],
+        table: {
+          headers: ['Framework', 'Model', 'Accuracy (%)', 'Tokens (M)', 'Cost ($)'],
+          rows: [
+            ['PenguinHarness', 'DeepSeek V4 Pro', '71.25', '200.00', '3.81'],
+            ['Claude Code', 'Claude Opus 4.8', '86.25', '151.61', '146.97'],
+            ['OpenAI Codex', 'GPT-5.5', '71.25', '251.20', '220.08'],
+          ],
+        },
+      },
+      {
+        level: 3,
+        body: [
+          'Tokens and cost are totals for the whole suite, not per-run means. On data analysis, PenguinHarness has the highest accuracy of the three, 66.67% against 53.33% for both others, while spending 1/35 of what Codex spent and 1/70 of what Claude Code spent. On coding, it ties Codex at 71.25% and trails Claude Code’s 86.25%, but the whole suite cost $3.81, against $220.08 for Codex and $146.97 for Claude Code. The work is comparable, and the bills are one to two orders of magnitude apart.',
+        ],
+      },
+      {
+        heading: 'Build an agent app from one sentence',
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'Type one sentence, and an agent builds the complete agent application for you, end to end: scaffold, code and run instructions. For example:',
+          },
+          {
+            type: 'code',
+            lines: [
+              'Collect the docs from https://github.com/ericbuess/claude-code-docs',
+              'and build a RAG app that answers Claude Code questions as a',
+              'configuration expert, citing its sources.',
+            ],
+          },
+          {
+            type: 'paragraph',
+            text: 'The finished product is a docs expert with retrieval, cited sources that link to the original files, and built-in example questions:',
+          },
+          {
+            type: 'image',
+            src: '/blog-assets/penguinharness-rag-app.webp',
+            alt: 'The generated RAG app: a Claude Code docs expert answering a question about MCP servers with cited, clickable sources and example questions.',
+            width: 1920,
+            height: 1140,
+            caption: 'The RAG app PenguinHarness generated from that one sentence.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Generating the entire RAG app used $0.02 (¥0.2) of Tokens on DeepSeek V4 Pro.',
+          },
+        ],
+      },
+      {
+        heading: 'Evolution within bounds, security first',
+        body: [
+          'The biggest worry about self-evolution is losing control. PenguinHarness answers it with a contract, CONTRACT.md:',
+        ],
+        bullets: [
+          'Evolution is strictly confined to the Workspace and Skills. The harness core, which is the security boundary, is never modified.',
+          'Tool calls require approval first, and every approval leaves an audit record.',
+          'A version snapshot is taken before any risky change, so any round of evolution can be rolled back.',
+          'PenguinHarness is fully open source and deployed locally, so your data stays on your machine, apart from the requests sent to the model provider you configure. This meets enterprise data-security requirements.',
+        ],
+      },
+      {
+        heading: 'Get started',
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'Download the desktop app for macOS, Windows or Linux from the website. It opens signed in and needs no terminal. Or install the CLI and start the Web App:',
+          },
+          {
+            type: 'code',
+            lines: ['curl -fsSL https://penguin.ooo/install.sh | sh', 'penguin web        # opens http://127.0.0.1:7364'],
+          },
+          {
+            type: 'paragraph',
+            text: 'On Windows, install from PowerShell instead:',
+          },
+          {
+            type: 'code',
+            lines: ['irm https://penguin.ooo/install.ps1 | iex'],
+          },
+          {
+            type: 'paragraph',
+            text: 'Open the Models page, add an API key for a provider and set one of its models as the default. Then give the agent its first task, or open a Benchmark and start evolving.',
+          },
+        ],
+        links: [{ label: 'Download the desktop app', href: 'https://penguin.ooo/download' }],
+      },
+      {
+        heading: 'Join the community',
+        body: [
+          'A self-improving harness needs a community that improves with it. Come discuss, request features and contribute; opening your first issue is a good way to start.',
+        ],
+        links: [
+          { label: 'Discord: chat with us and other developers', href: 'https://discord.gg/eFHKqqcU3D' },
+          { label: 'X (Twitter): the latest updates', href: 'https://x.com/code_hiyouga' },
+          {
+            label: 'WeChat group: the Chinese community',
+            href: 'https://github.com/Prism-Shadow/penguin-harness-community/blob/main/assets/wechat/penguin.jpg',
+          },
+          { label: 'GitHub: stars, issues and pull requests', href: 'https://github.com/Prism-Shadow/penguin-harness' },
+        ],
+      },
+      {
+        heading: 'Links',
+        kind: 'sources',
+        links: [
+          { label: 'PenguinHarness website', href: 'https://penguin.ooo/' },
+          { label: 'PenguinHarness on GitHub', href: 'https://github.com/Prism-Shadow/penguin-harness' },
+          { label: 'Documentation', href: 'https://penguin.ooo/docs/' },
+          { label: 'The 0.1.0 launch post on penguin.ooo', href: 'https://penguin.ooo/blog/introducing-penguinharness' },
+          { label: 'penguin-harness-benchmark', href: 'https://github.com/Prism-Shadow/penguin-harness-benchmark' },
+        ],
+      },
+    ],
+  },
+  {
+    category: 'Agent Infrastructure',
+    topic: 'research',
+    title: 'AMSP and MMSP: one message protocol, from a model call to an agent Session',
+    seoTitle: 'AMSP and MMSP: Message Stream Protocols for Models and Agents',
+    date: '2026-11-12',
+    excerpt:
+      'Every model API streams its own way, and every agent harness records Sessions its own way. MMSP gives every model call one shape. AMSP, built on it, gives every agent Session one minimal protocol: observe it, resume it and stream it to any frontend.',
+    metaDescription:
+      'MMSP, the Model Message Stream Protocol, gives every model provider one message format and one streaming grammar. AMSP, the Agent Message Stream Protocol, builds on it to stream, store and resume agent Sessions in PenguinHarness.',
+    slug: '/blog/amsp-mmsp-message-stream-protocols',
+    visualLabel: 'AMSP · MMSP',
+    visualPattern: 'stream',
+    visualSteps: ['UniConfig', 'UniMessage', 'UniEvent', 'task_begin', 'request_begin', 'task_end'],
+    author: 'PrismShadow',
+    tags: ['AMSP', 'MMSP', 'Agent Infrastructure', 'Protocol', 'PenguinHarness'],
+    content: [
+      {
+        body: [
+          'Two protocols sit underneath PenguinHarness. MMSP, the Model Message Stream Protocol, gives every model call one shape, whichever provider serves it. AMSP, the Agent Message Stream Protocol, builds on MMSP to give a whole agent Session one minimal format: watch it while it runs, resume it after a dropped connection, connect frontend and backend, and reach many models through one interface. Both are open source.',
+        ],
+      },
+      {
+        heading: 'Stop paying a tax on differences',
+        body: [
+          'Neither model APIs nor agent Session records share a format. Anthropic streams content blocks, OpenAI streams output items, Gemini streams steps, and every harness writes its own transcript. Change the model or the harness and you adapt your code again, paying a tax on the differences every time.',
+          'The cost goes beyond engineering time. It also gets in the way of self-evolution: when an agent mines past trajectories to improve itself, it wants one clean, uniform format, so that one piece of code reads every Trajectory and the format adds nothing to what the agent has to keep in mind.',
+        ],
+      },
+      {
+        heading: 'MMSP: one shape for every model call',
+        body: [
+          'Model APIs agree on the building blocks: messages, thinking, tool calls, streaming. They disagree on the encoding: Chat Completions, for one, streams chunks that name nothing. MMSP reads each provider on its own terms and hands your code one shape, from a Python package and a TypeScript package that behave the same way. Everything you send and receive is one of three plain objects:',
+        ],
+        bullets: [
+          'UniConfig: the options of a request, such as tools, thinking level and system prompt.',
+          'UniMessage: one message of the conversation, from the user or the assistant, holding complete content items.',
+          'UniEvent: one event of a streamed response. A stream is delta events closed by exactly one stop event, which carries the token usage and the finish reason.',
+        ],
+      },
+      {
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'Whatever a provider sends that your code does not need but the provider wants back, such as a thinking signature, travels with the item as fidelity. The stateful call keeps the history in the client, so the thinking and tool calls of earlier turns go back to the model exactly as they arrived, which is what an agent loop needs:',
+          },
+          {
+            type: 'code',
+            lines: [
+              'import { AutoLLMClient } from "@prismshadow/mmsp";',
+              '',
+              'const client = new AutoLLMClient({ model: "claude-opus-5-5" });',
+              '',
+              'for await (const event of client.streamingResponseStateful({',
+              '  message: {',
+              '    role: "user",',
+              '    content_items: [{ type: "text.done", text: "What\'s the weather in Paris?" }],',
+              '  },',
+              '  config: { tools: [getWeather] },',
+              '})) {',
+              '  console.log(event);',
+              '}',
+            ],
+          },
+          {
+            type: 'paragraph',
+            text: 'Change the model id and the same code prints the same shapes.',
+          },
+        ],
+        links: [
+          { label: 'MMSP documentation', href: 'https://mmsp.penguin.ooo/' },
+          { label: 'MMSP quickstart', href: 'https://mmsp.penguin.ooo/docs/quickstart/' },
+          { label: 'MMSP on GitHub', href: 'https://github.com/Prism-Shadow/model-message-stream-protocol' },
+        ],
+      },
+      {
+        heading: 'AMSP: one protocol for the whole Session',
+        body: [
+          'MMSP covers one model call; AMSP covers an agent’s whole Session, with its many model calls, the tools they run, approvals, compaction and subagents. We refined it again and again while building a harness from scratch. It scales to hundreds of models, and every Session in PenguinHarness runs on it today.',
+        ],
+      },
+      {
+        heading: 'How a Session streams',
+        body: [
+          'A run nests three spans, longest first: the Task, which is one prompt’s run; each Request to the model; and the messages that fill each Request. task_begin and task_end bracket a Task, and request_begin and request_end bracket each Request.',
+        ],
+        bullets: [
+          'The stream is the Trace, plus fragments. Every record is one line of the Session’s Trace, byte for byte; nothing is translated on the way.',
+          'A message streams as partial_* fragments (start, delta, stop), then its complete record follows and replaces them. Only the fragments are live-only.',
+          'There are three kinds of record: session_meta opens a model context; model_msg carries text, thinking, tool calls and their outputs; event_msg marks Tasks, Requests, token usage, approvals, hooks, compaction and aborts.',
+          'A client ignores a record type or a field it does not know, so the protocol can grow without breaking readers.',
+        ],
+      },
+      {
+        heading: 'Observe, resume, connect',
+        body: [
+          'Records travel as server-sent events, each with an id. To resume after a dropped connection, a client sends the last id it saw as Last-Event-ID, and the server replays what came after. A ping arrives every 20 seconds and data: [DONE] closes a run, so a reader always knows whether a run reached its end.',
+          'Tool calls that wait for approval are a resource the caller lists and answers over HTTP, and every call the engine runs gets an approval_decision record. Because AMSP records are exactly the lines of the Session’s Trace, whatever an agent did can be watched live, read back from the history later and mined for self-evolution with one parser.',
+        ],
+      },
+      {
+        heading: 'Try it',
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'In PenguinHarness, open an agent’s API tab, switch on API access and create a key. Then install the SDK, which has no dependencies and runs on Node 24 and in browsers:',
+          },
+          {
+            type: 'code',
+            lines: ['npm install @prismshadow/amsp'],
+          },
+          {
+            type: 'paragraph',
+            text: 'Stream a run, then continue the same Session with the same context:',
+          },
+          {
+            type: 'code',
+            lines: [
+              'import { AgentClient } from "@prismshadow/amsp";',
+              '',
+              'const client = new AgentClient({',
+              '  baseUrl: "http://localhost:7364/api/amsp/v1",',
+              '  agent: "demo/coder",',
+              '  apiKey: process.env.PENGUIN_AGENT_KEY,',
+              '});',
+              '',
+              'const run = client.stream({ input: "What time is it now?" });',
+              'for await (const record of run) {',
+              '  if (record.type === "model_msg" && record.payload.type === "partial_text") {',
+              '    process.stdout.write(record.payload.text);',
+              '  }',
+              '}',
+              'const { sessionId } = await run.result();',
+              '',
+              '// Same Session, same context',
+              'await client.run({ sessionId, input: "Now say it in French." });',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Bring AMSP to more harnesses',
+        body: [
+          'AMSP runs stably inside PenguinHarness today, and we want it to be useful well beyond one harness. If you build agents or agent tooling, come and explore with us how to bring AMSP to more harnesses. The protocol, the SDK and the source are open under the Apache-2.0 license.',
+        ],
+        links: [
+          { label: 'AMSP overview', href: 'https://penguin.ooo/amsp' },
+          { label: 'AMSP reference', href: 'https://penguin.ooo/docs/amsp/' },
+          { label: 'Agent API guide', href: 'https://penguin.ooo/docs/agent-api/' },
+          { label: '@prismshadow/amsp on npm', href: 'https://www.npmjs.com/package/@prismshadow/amsp' },
+          {
+            label: 'AMSP source on GitHub',
+            href: 'https://github.com/Prism-Shadow/penguin-harness/tree/main/packages/amsp',
+          },
+        ],
+      },
+    ],
+  },
   {
     category: 'Supply Chain',
     topic: 'supply-chain',

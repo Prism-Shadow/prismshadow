@@ -1,6 +1,7 @@
 /*
- * Platform: the four capabilities as product tabs. Tabs take two columns, the
- * copy four and the media panel six, all on the 12-column grid.
+ * Platform: the four capabilities as a numbered tab row across the grid, a
+ * hairline rule over each tab and an accent rule over the selected one. The
+ * panel below puts the copy in five columns and the media panel in six.
  */
 
 .pg-home .hp-platform__body {
@@ -11,51 +12,73 @@
 }
 
 .pg-home .hp-platform__tabs {
-  grid-column: 1 / span 2;
+  grid-column: 1 / -1;
   display: grid;
-  gap: 4px;
-  align-content: start;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--ds-col-gap);
+  margin-bottom: 56px;
 }
 
 .pg-home .hp-platform__tab {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: baseline;
+  gap: 14px;
   width: 100%;
-  min-height: 38px;
-  padding: 8px 12px;
-  border-radius: var(--ds-r);
-  font-size: 0.875rem;
-  line-height: 1.3;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--ds-line-strong);
+  font-size: 0.9375rem;
+  line-height: 1.35;
   text-align: left;
-  color: var(--ds-text-2);
-  transition:
-    background-color 160ms var(--ds-ease),
-    color 160ms var(--ds-ease);
+  color: var(--ds-text-3);
+  transition: color 160ms var(--ds-ease);
+}
+
+.pg-home .hp-platform__tab::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--ds-accent);
+  opacity: 0;
+  transition: opacity 160ms var(--ds-ease);
 }
 
 .pg-home .hp-platform__tab:hover {
-  color: var(--ds-text);
+  color: var(--ds-text-2);
 }
 
 .pg-home .hp-platform__tab[aria-selected='true'] {
-  background: rgba(255, 255, 255, 0.06);
   color: var(--ds-text);
 }
 
-.pg-home .hp-platform__tab-icon {
+.pg-home .hp-platform__tab[aria-selected='true']::before {
+  opacity: 1;
+}
+
+.pg-home .hp-platform__tab:focus-visible {
+  outline-offset: 6px;
+  border-radius: var(--ds-r-xs);
+}
+
+.pg-home .hp-platform__tab-index {
   flex: none;
+  font-family: var(--ds-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
   color: var(--ds-text-3);
 }
 
-.pg-home .hp-platform__tab[aria-selected='true'] .hp-platform__tab-icon {
+.pg-home .hp-platform__tab[aria-selected='true'] .hp-platform__tab-index {
   color: var(--ds-accent);
 }
 
 .pg-home .hp-platform__panel {
-  grid-column: 3 / span 10;
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--ds-col-gap);
   row-gap: 40px;
   align-items: start;
@@ -71,10 +94,9 @@
 }
 
 .pg-home .hp-platform__copy {
-  grid-column: 1 / span 4;
+  grid-column: 1 / span 5;
   display: grid;
   align-content: start;
-  padding-top: 8px;
 }
 
 .pg-home .hp-platform__lead {
@@ -99,7 +121,7 @@
 }
 
 .pg-home .hp-platform__visual {
-  grid-column: 5 / span 6;
+  grid-column: 7 / span 6;
 }
 
 /* ---------- Diagrams: outline first, few lit marks ---------- */
@@ -641,17 +663,6 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__packet {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1100px) {
-  .pg-home .hp-platform__tabs {
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin-bottom: 40px;
-  }
-
-  .pg-home .hp-platform__panel {
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
-
   .pg-home .hp-platform__copy {
     grid-column: 1 / span 5;
   }
@@ -670,7 +681,13 @@ html[data-motion] .pg-home .hp-dg[data-inview='enter'] .hp-dg__packet {
 @media (max-width: 760px) {
   .pg-home .hp-platform__tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 4px;
     margin-bottom: 32px;
+  }
+
+  .pg-home .hp-platform__tab {
+    padding: 14px 0 10px;
+    font-size: 0.875rem;
   }
 
   .pg-home .hp-platform__panel {

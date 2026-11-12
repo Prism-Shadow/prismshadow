@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { siteText, type Locale } from '../../i18n'
-import { ArrowRightIcon, ArrowUpRightIcon, DiamondIcon } from './icons'
+import { ArrowRightIcon, ArrowUpRightIcon } from './icons'
 import { cx, renderAccent, type PixelLit, type PixelTone } from './utils'
 import './ui.css'
 
@@ -10,24 +10,8 @@ export type { PixelLit, PixelTone } from './utils'
 /* Eyebrow                                                             */
 /* ------------------------------------------------------------------ */
 
-export function Eyebrow({
-  children,
-  icon,
-  className,
-}: {
-  children: ReactNode
-  /** 10px glyph inside the chip. Defaults to a diamond. */
-  icon?: ReactNode
-  className?: string
-}) {
-  return (
-    <span className={cx('ds-eyebrow', className)}>
-      <span className="ds-eyebrow__chip" aria-hidden="true">
-        {icon ?? <DiamondIcon />}
-      </span>
-      {children}
-    </span>
-  )
+export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
+  return <span className={cx('ds-eyebrow', className)}>{children}</span>
 }
 
 /* ------------------------------------------------------------------ */

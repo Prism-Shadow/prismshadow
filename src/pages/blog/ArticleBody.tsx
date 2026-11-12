@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { BlogContentBlock, BlogContentSection, BlogPost } from '../../content/blogPosts'
 import type { BlogPageCopy } from '../../i18n/messages/blog'
-import { ArrowUpRightIcon } from '../../components/site/icons'
+import { ArrowRightIcon, ArrowUpRightIcon } from '../../components/site/icons'
 import { cx } from '../../components/site/utils'
 import { figureNumbers } from './blogData'
 
@@ -72,7 +72,10 @@ function Block({
     default:
       return (
         <p>
-          {block.lead ? <strong>{block.lead} </strong> : null}
+          {block.lead ? (
+            // Chinese punctuation carries its own spacing; a Latin lead needs a space.
+            <strong>{/[\u3000-\u303f\uff00-\uffef]$/.test(block.lead) ? block.lead : `${block.lead} `}</strong>
+          ) : null}
           {block.text}
         </p>
       )
@@ -83,14 +86,18 @@ function Links({ section }: { section: BlogContentSection }) {
   if (!section.links?.length) return null
   return (
     <ul className={cx('pg-prose__links', section.kind === 'sources' && 'pg-prose__links--sources')}>
-      {section.links.map((link) => (
-        <li key={link.href}>
-          <a href={link.href} target="_blank" rel="noreferrer">
-            <span>{link.label}</span>
-            <ArrowUpRightIcon />
-          </a>
-        </li>
-      ))}
+      {section.links.map((link) => {
+        // Site paths stay in the tab (the router swaps the page); others open a new one.
+        const internal = link.href.startsWith('/')
+        return (
+          <li key={link.href}>
+            <a href={link.href} {...(internal ? {} : { target: '_blank', rel: 'noreferrer' })}>
+              <span>{link.label}</span>
+              {internal ? <ArrowRightIcon /> : <ArrowUpRightIcon />}
+            </a>
+          </li>
+        )
+      })}
     </ul>
   )
 }

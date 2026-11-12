@@ -374,7 +374,7 @@
     min-height: 36px;
     padding: 0 14px;
     border-color: var(--ds-line);
-    border-radius: var(--ds-r-pill);
+    border-radius: var(--ds-r-control);
   }
 
   .pg-product .pg-product__tab[aria-selected='true'] {

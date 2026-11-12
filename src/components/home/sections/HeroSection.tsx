@@ -1,4 +1,4 @@
-import { ButtonLink, Eyebrow } from '../../site/ui'
+import { ButtonLink } from '../../site/ui'
 import { renderAccent } from '../../site/utils'
 import type { HeroCopy } from '../../../i18n/messages/home'
 import { EvolutionFrontier } from './hero/EvolutionFrontier'
@@ -9,7 +9,6 @@ export function HeroSection({ copy }: { copy: HeroCopy }) {
     <section id="hero" className="hp-hero" aria-labelledby="hero-title">
       <div className="ds-container">
         <div className="hp-hero__copy">
-          <Eyebrow>{copy.eyebrow}</Eyebrow>
           <h1 className="ds-display hp-hero__title" id="hero-title">
             {renderAccent(copy.title, copy.titleAccent)}
           </h1>

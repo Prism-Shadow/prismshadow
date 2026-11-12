@@ -1,8 +1,21 @@
 # Design system and layout principles
 
-Loaded from `SKILL.md` for any visible change. The reference is **modal.com**: a dark technical
+Loaded from `SKILL.md` for any visible change. modal.com is the **quality bar** (a dark technical
 canvas, regular-weight type, exact alignment, sparse sections and code-built visuals that explain the
-product.
+product), **not a template**: the owner rejected the site for looking and reading too much like it.
+
+## Our own signatures (keep them; don't drift back to modal's)
+
+- **Home hero (owner-fixed):** stacked and centered: the headline "The platform for self-evolving
+  AI" / "让企业 AI 持续自我进化", then the lead and actions, then the evolution frontier full width.
+  No eyebrow over the headline. Don't reword the headline or move it into a split layout.
+- **Eyebrows:** Geist Mono, upper case, tracked, behind an 18px accent rule. No icon chip.
+- **Controls:** buttons, chips, filters and nav items use `--ds-r-control` (6px). No pills.
+- **Header:** nav left-aligned beside the logo; language and "Contact us" on the right.
+- **Tabs:** a numbered row (`01`, `02` … in mono) with a hairline over each tab and an accent rule
+  over the selected one, not a vertical icon list beside the panel.
+- **Voice:** plain and human, "we/you" service voice. Outside the fixed hero headline, avoid
+  modal's phrasing ("Trusted by the world's leading…", "Ship … in minutes").
 
 ## Tokens and primitives (read, don't fork)
 
@@ -25,8 +38,8 @@ accent.
   - `.ds-section-head` puts the title in 7 columns and the lead in 5, bottom-aligned. It also comes as
     `--stack` and `--center`.
 - **Pieces:**
-  - `.ds-eyebrow`: chip plus sentence-case label.
-  - `.ds-btn` pills: `--primary`, `--secondary`, `--accent`, `--sm`, `--lg`.
+  - `.ds-eyebrow`: accent rule plus mono upper-case label.
+  - `.ds-btn` (6px radius): `--primary`, `--secondary`, `--accent`, `--sm`, `--lg`.
   - `.ds-features`: hairline-separated columns.
   - Also `.ds-panel` (with `--cells`, `--dots`), `.ds-stat`, `.ds-tag` and `.ds-card`.
 - **Components** in `src/components/site/ui.tsx`: `Eyebrow`, `ButtonLink`, `TextLink`,

@@ -175,7 +175,7 @@
   align-items: center;
   height: 32px;
   padding: 0 16px;
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   background: #eceee9;
   color: #0a0b0d;
   font-size: 0.8125rem;

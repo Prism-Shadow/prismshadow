@@ -17,6 +17,7 @@ import {
   findPost,
   formatDate,
   headingIds,
+  localizePost,
   normalizeSlug,
   postsByDate,
   readingMinutes,
@@ -28,10 +29,11 @@ import './blog.css'
 /** `slug` is the full pathname, e.g. `/blog/agentic-supply-chain-control-towers`. */
 export function BlogPostPage({ locale, slug }: PageProps & { slug: string }) {
   const copy = blogPageCopy[locale]
-  const post = findPost(slug)
+  const source = findPost(slug)
+  const post = source && localizePost(source, locale)
 
   const metadata: SeoMetadata = post
-    ? { ...createBlogSeo(post), ...(post.visualImage ? { image: post.visualImage.src } : {}) }
+    ? { ...createBlogSeo(post, copy.post.seoSuffix), ...(post.visualImage ? { image: post.visualImage.src } : {}) }
     : { title: copy.notFound.metaTitle, description: copy.notFound.lead, canonicalPath: '/blog' }
   usePageMetadata(metadata, normalizeSlug(slug), locale)
 
@@ -54,7 +56,7 @@ function Article({ post, locale, copy }: ArticleProps) {
     .map((section, index) => ({ section, id: ids[index] }))
     .filter(({ section, id }) => id && section.heading && section.level !== 3 && !section.kind)
     .map(({ section, id }) => ({ id: id as string, label: section.heading as string }))
-  const lang = contentLang(locale)
+  const lang = contentLang(locale, post)
 
   return (
     <>

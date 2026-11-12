@@ -296,7 +296,7 @@ html[data-motion] .pg-about .pg-about-loop[data-inview] .pg-about-loop__meter-ce
   height: 32px;
   padding: 0 14px;
   border: 1px solid var(--ds-accent-line);
-  border-radius: var(--ds-r-pill);
+  border-radius: var(--ds-r-control);
   background: var(--ds-bg);
   color: var(--ds-text);
   font-size: 0.875rem;

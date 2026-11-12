@@ -22,7 +22,8 @@ For any visible change, serve the build and look at screenshots with your own ey
 - **Widths and locales:** en and zh at 1440 and 390, plus 1024 and 768 for layout changes.
 - **Logs:** check for console errors and horizontal overflow
   (`documentElement.scrollWidth - innerWidth > 0`).
-- **Owner's bar:** compare against modal.com on alignment, weight, density and elegance.
+- **Owner's bar:** match modal.com's quality on alignment, weight, density and elegance, while
+  checking that the page does not look or read like a copy of it (see `design.md`).
 
 Serve the build the way production does:
 

@@ -13,7 +13,6 @@ export type HeroVisualCopy = {
 }
 
 export type HeroCopy = {
-  eyebrow: string
   /** Full headline; `titleAccent` is the part set in the accent color. */
   title: string
   titleAccent: string
@@ -25,7 +24,6 @@ export type HeroCopy = {
 
 export const heroCopy = {
   en: {
-    eyebrow: 'Enterprise self-evolving AI platform',
     title: 'The platform for self-evolving AI',
     titleAccent: 'self-evolving AI',
     body: 'PrismShadow unifies data production, model training and agent self‑evolution in one platform. Enterprises build and continuously optimize AI workflows and AutoResearch systems that cut labor costs and raise output.',
@@ -40,7 +38,6 @@ export const heroCopy = {
     },
   },
   zh: {
-    eyebrow: '企业级自进化 AI 平台',
     title: '让企业 AI 持续自我进化',
     titleAccent: '持续自我进化',
     body: 'PrismShadow 提供一体化的数据生产、模型训练和 Agent 自进化平台，帮助企业构建并持续优化 AI 工作流与 AutoResearch 自主科研系统，降低人力成本，提高产出能力。',

@@ -18,7 +18,7 @@ Precise, luminous, and enterprise-grade. The brand should feel advanced without 
 
 ## Anti-references
 
-Avoid generic SaaS card stacks, cards inside cards, bold (600+) type, decorative gradients, glow, glassmorphism, stock or people photos, and repeated visuals that do not explain the product idea. Reference: modal.com.
+Avoid generic SaaS card stacks, cards inside cards, bold (600+) type, decorative gradients, glow, glassmorphism, stock or people photos, and repeated visuals that do not explain the product idea. Quality bar: modal.com, but in our own look and voice, never a copy of its layout or phrasing.
 
 ## Design Principles
 

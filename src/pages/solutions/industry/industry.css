@@ -613,7 +613,7 @@
     min-height: 38px;
     padding: 8px 14px;
     border-color: var(--ds-line);
-    border-radius: var(--ds-r-pill);
+    border-radius: var(--ds-r-control);
   }
 
   .pg-industry .pg-industry-explorer__tab[aria-selected='true'] {

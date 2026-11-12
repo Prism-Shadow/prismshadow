@@ -2,14 +2,14 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { SectionHead, TextLink } from '../../site/ui'
 import { platformPath } from '../../site/navigation'
 import type { PlatformCopy } from '../../../i18n/messages/home'
-import { FeatureIcon, TabIcon } from '../icons'
+import { FeatureIcon } from '../icons'
 import { PlatformDiagram } from './platform/PlatformDiagram'
 import './platform.css'
 
 const NEXT_KEYS = ['ArrowDown', 'ArrowRight']
 const PREV_KEYS = ['ArrowUp', 'ArrowLeft']
 
-/** The four capabilities as product tabs (WAI-ARIA tabs, automatic activation). */
+/** The four capabilities as a numbered tab row (WAI-ARIA tabs, automatic activation). */
 export function PlatformSection({ copy }: { copy: PlatformCopy }) {
   const [active, setActive] = useState(0)
   const tabs = useRef<Array<HTMLButtonElement | null>>([])
@@ -45,7 +45,6 @@ export function PlatformSection({ copy }: { copy: PlatformCopy }) {
             className="hp-platform__tabs"
             role="tablist"
             aria-label={copy.tabsLabel}
-            aria-orientation="vertical"
           >
             {copy.modules.map((module, index) => (
               <button
@@ -63,7 +62,9 @@ export function PlatformSection({ copy }: { copy: PlatformCopy }) {
                 onClick={() => setActive(index)}
                 onKeyDown={(event) => onKeyDown(event, index)}
               >
-                <TabIcon name={module.id} className="hp-platform__tab-icon" />
+                <span className="hp-platform__tab-index" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <span>{module.tab}</span>
               </button>
             ))}

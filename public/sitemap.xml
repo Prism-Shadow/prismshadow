@@ -176,9 +176,33 @@
   </url>
   <url>
     <loc>https://prismshadow.com/blog</loc>
-    <lastmod>2026-07-07</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://prismshadow.com/blog/awesome-rsi-survey-recursive-self-improvement</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://prismshadow.com/blog/gdpevo-benchmark-agent-self-evolution</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://prismshadow.com/blog/introducing-penguinharness</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://prismshadow.com/blog/amsp-mmsp-message-stream-protocols</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://prismshadow.com/blog/agentic-supply-chain-control-towers</loc>

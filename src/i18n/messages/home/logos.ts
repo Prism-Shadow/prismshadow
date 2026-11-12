@@ -41,7 +41,7 @@ const logos: PartnerLogo[] = [
 
 export const logosCopy = {
   en: {
-    title: 'Trusted by teams at',
+    title: 'In use at',
     logosLabel: 'Teams using PrismShadow',
     logos,
   },
